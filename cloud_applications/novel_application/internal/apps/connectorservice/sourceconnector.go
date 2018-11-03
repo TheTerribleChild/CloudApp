@@ -1,9 +1,9 @@
-package sourceconnector
+package connector
 
 import (
 	"errors"
 	"fmt"
-	"github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/novel_application/connectors/service"
+	connectorservice "github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/novel_application/internal/apps/connectorservice/service"
 	"github.com/TheTerribleChild/cloud_appplication_portal/commons/utils/fileutil"
 	"plugin"
 )

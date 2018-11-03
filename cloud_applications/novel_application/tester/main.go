@@ -6,11 +6,13 @@ import (
 	"log"
 	"time"
 
-	cs "github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/novel_application/connectors/service"
+	cs "github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/novel_application/internal/apps/connectorservice/service"
 	stomp "github.com/go-stomp/stomp"
 	"github.com/golang/protobuf/proto"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"database/sql"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 const (
@@ -93,7 +95,34 @@ func testMQ() {
 	}
 }
 
+func testSQL(){
+	db, err := sql.Open("mysql", "novelserver:123456@tcp(alluaneat:3306)/noveldb")
+	if err != nil {
+		fmt.Println("1")
+		fmt.Println(err)
+	}
+	start := time.Now()
+	rows, err := db.Query("call get_novels()")
+	//rows, err := db.Query("select * from novel")
+	elapsed := time.Since(start)
+	fmt.Printf("took %s\n", elapsed)
+	
+	if err != nil {
+		fmt.Println("2")
+		fmt.Println(err)
+	}
+	for rows.Next() {
+		var uid int
+		var title string
+		var author string
+		_ = rows.Scan(&uid, &title, &author)
+		fmt.Println(uid)
+		fmt.Println(title)
+		fmt.Println(author)
+	}
+}
+
 func main() {
 	//testWebService()
-	testMQ()
+	testSQL()
 }

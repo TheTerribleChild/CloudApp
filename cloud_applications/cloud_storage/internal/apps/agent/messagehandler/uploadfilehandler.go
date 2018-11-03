@@ -11,7 +11,7 @@ import (
 	"fmt"
 
 	cldstrg "github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/cloud_storage/internal/model"
-	agentutil "github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/cloud_storage/internal/apps/agent/util"
+	fileutil "github.com/TheTerribleChild/cloud_appplication_portal/commons/utils/fileutil"
 	"github.com/golang/protobuf/proto"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -57,7 +57,7 @@ func checkRequirements(paths []string, maxSize int64) error {
 	log.Println("Verifying upload requirements..")
 	var totalSize int64
 	for _, path := range paths {
-		size, err := agentutil.GetFileSize(path)
+		size, err := fileutil.GetFileSize(path)
 		if err != nil {
 			return err
 		}

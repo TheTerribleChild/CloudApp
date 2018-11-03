@@ -2,10 +2,9 @@ package main
 
 import (
 	"bytes"
-	// "encoding/json"
 	"errors"
 	"fmt"
-	"github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/novel_application/connectors/service"
+	model "github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/novel_application/internal/model"
 	"github.com/TheTerribleChild/cloud_appplication_portal/commons/utils/webutil"
 	"golang.org/x/net/html"
 	"strings"
@@ -29,9 +28,9 @@ var titleNodeSignature = "root/1/2/3/7/1/5/0"
 var charSet = webutil.GB2312
 
 //GetChapterList Gets the Novel metadata for download
-func (connector Web69connector) GetChapterList(requestNovelID string) (connectorservice.NovelSourceData, error) {
+func (connector Web69connector) GetChapterList(requestNovelID string) (model.NovelSourceData, error) {
 
-	var novelDownload connectorservice.NovelSourceData
+	var novelDownload model.NovelSourceData
 
 	if len(requestNovelID) == 0 {
 		return novelDownload, errors.New("novel ID cannot be null")
@@ -47,7 +46,7 @@ func (connector Web69connector) GetChapterList(requestNovelID string) (connector
 
 	chapterURLPrefix := fmt.Sprintf(chapterURLTemplate, requestNovelID, "")
 	var index int32 = 0
-	chapters := []*connectorservice.ChapterSourceMetadata{}
+	chapters := []*model.ChapterSourceMetadata{}
 	var novelName string
 
 	for _, signature := range nodeSignatures {
@@ -71,7 +70,7 @@ func (connector Web69connector) GetChapterList(requestNovelID string) (connector
 					return novelDownload, fmt.Errorf("problem parsing the following into chapter index: %d ", index)
 				}
 				chapterInfo.Index = index
-				chapterInfo.SourceId = sourceID
+				chapterInfo.ChapterSourceId = sourceID
 				chapters = append(chapters, &chapterInfo)
 				index++
 			}
@@ -81,8 +80,7 @@ func (connector Web69connector) GetChapterList(requestNovelID string) (connector
 	if len(chapters) == 0 || len(novelName) == 0 {
 		return novelDownload, fmt.Errorf("invalid novel ID: '%s'. unable to find title of novel", requestNovelID)
 	}
-	var novelMetadata connectorservice.NovelSourceMetadata
-	novelMetadata.Name = novelName
+	var novelMetadata model.NovelSourceMetadata
 	novelMetadata.Id = requestNovelID
 	novelMetadata.SourceId = sourceID
 	novelDownload.Metadata = &novelMetadata
@@ -91,11 +89,11 @@ func (connector Web69connector) GetChapterList(requestNovelID string) (connector
 	return novelDownload, nil
 }
 
-func (connector Web69connector) GetChapterContent(chapterMetadata connectorservice.ChapterSourceMetadata) (connectorservice.ChapterSourceData, error) {
-	var chapterData connectorservice.ChapterSourceData
+func (connector Web69connector) GetChapterContent(chapterMetadata model.ChapterSourceMetadata) (model.ChapterSourceData, error) {
+	var chapterData model.ChapterSourceData
 
-	if chapterMetadata.SourceId != sourceID {
-		return chapterData, fmt.Errorf("'%s' is not accepted by %s connector", chapterMetadata.SourceId, sourceName)
+	if chapterMetadata.ChapterSourceId != sourceID {
+		return chapterData, fmt.Errorf("'%s' is not accepted by %s connector", chapterMetadata.ChapterSourceId, sourceName)
 	}
 	if len(chapterMetadata.Url) == 0 || !strings.HasPrefix(chapterMetadata.Url, baseURL) {
 		return chapterData, fmt.Errorf("invalid chapter URL: '%s'. url must start with: ", chapterMetadata.Url, baseURL)
@@ -139,8 +137,8 @@ func (connector Web69connector) GetConnectorName() string {
 	return sourceName
 }
 
-func getChapterInfoFromNode(node *html.Node) (connectorservice.ChapterSourceMetadata, error) {
-	var chapterDownload connectorservice.ChapterSourceMetadata
+func getChapterInfoFromNode(node *html.Node) (model.ChapterSourceMetadata, error) {
+	var chapterDownload model.ChapterSourceMetadata
 	var url string
 	var name string
 	var id string
@@ -174,7 +172,7 @@ func getChapterInfoFromNode(node *html.Node) (connectorservice.ChapterSourceMeta
 	} else {
 		return chapterDownload, fmt.Errorf("getChapterInfoFromNode: unable to extract chapter ID. expected '.' in %s", url)
 	}
-	chapterDownload = connectorservice.ChapterSourceMetadata{Name: name, Id: id, Url: url}
+	chapterDownload = model.ChapterSourceMetadata{ Id: id, Url: url}
 
 	return chapterDownload, nil
 }

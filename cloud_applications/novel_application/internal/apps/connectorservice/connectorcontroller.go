@@ -1,11 +1,10 @@
-package connectorcontroller
+package connector
 
 import (
 	"time"
 	// "encoding/json"
 	"fmt"
-	cs "github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/novel_application/connectors/service"
-	sc "github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/novel_application/connectors/sourceconnectors"
+	cs "github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/novel_application/internal/apps/connectorservice/service"
 	"github.com/golang/protobuf/proto"
 	"golang.org/x/net/context"
 	// "golang.org/x/net/netutil"
@@ -23,7 +22,7 @@ type connectorServer struct{}
 func (s *connectorServer) GetNovelData(ctx context.Context, request *cs.NovelDownloadRequest) (*cs.NovelDownloadReply, error) {
 	var reply cs.NovelDownloadReply
 	requestedSourceId := request.SourceId
-	sourceIds := sc.GetSourceConnectorIDs()
+	sourceIds := GetSourceConnectorIDs()
 	found := false
 	for _, sourceId := range sourceIds {
 		if sourceId == requestedSourceId {
@@ -35,7 +34,7 @@ func (s *connectorServer) GetNovelData(ctx context.Context, request *cs.NovelDow
 		return &reply, grpc.Errorf(codes.Unavailable, "cannot find source connector with ID: %s", requestedSourceId)
 	}
 
-	sourceConnector, err := sc.GetSourceConnector(requestedSourceId)
+	sourceConnector, err := GetSourceConnector(requestedSourceId)
 	if err != nil {
 		return &reply, grpc.Errorf(codes.Internal, "unable to retrieve source connector '%s'", requestedSourceId)
 	}
@@ -61,7 +60,7 @@ func (s *connectorServer) GetChapterData(ctx context.Context, request *cs.Chapte
 func getChapterData(request cs.ChapterSourceMetadata) (cs.ChapterSourceData, error) {
 	var chapterSourceData cs.ChapterSourceData
 	requestedSourceId := request.SourceId
-	sourceIds := sc.GetSourceConnectorIDs()
+	sourceIds := GetSourceConnectorIDs()
 	found := false
 	for _, sourceId := range sourceIds {
 		if sourceId == request.SourceId {
@@ -73,7 +72,7 @@ func getChapterData(request cs.ChapterSourceMetadata) (cs.ChapterSourceData, err
 		return chapterSourceData, grpc.Errorf(codes.Unavailable, "cannot find source connector with ID: %s", requestedSourceId)
 	}
 
-	sourceConnector, err := sc.GetSourceConnector(requestedSourceId)
+	sourceConnector, err := GetSourceConnector(requestedSourceId)
 	if err != nil {
 		return chapterSourceData, grpc.Errorf(codes.Internal, "unable to retrieve source connector '%s'", requestedSourceId)
 	}
