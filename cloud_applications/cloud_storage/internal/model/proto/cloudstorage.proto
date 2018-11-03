@@ -1,0 +1,109 @@
+syntax = "proto3";
+option go_package="github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/cloud_storage/internal/model";
+package cloudstorage;
+
+
+
+
+//==============================Management Service=========================
+
+
+//==============================Storage Service============================
+
+service StorageService{
+    rpc UploadFile(FileChunk) returns (FileChunkRequest) {};
+    rpc DownloadFile(FileChunkRequest) returns (FileChunk) {};
+}
+
+message FileChunkRequest{
+    string message_id = 1;
+    FileChunkInfo info = 2;
+}
+
+message FileChunk{
+    string message_id = 1;
+    FileChunkInfo info = 2;
+    bytes content = 3;
+}
+
+message FileChunkInfo{
+    int64 offset = 1;
+    int64 size = 2;
+}
+
+//==============================Agent Service==============================
+
+service AgentService{
+    rpc RegisterAgent (RegisterAgentRequest) returns (RegisterAgentResponse) {};
+    rpc Poll (AgentPollRequest) returns (AgentMessage) {};
+    rpc PublishDirectoryContent (DirectoryContent) returns (Empty) {};
+    rpc PublishError (AgentError) returns (Empty) {};
+}
+
+message RegisterAgentRequest{
+    string host = 1;
+    string version = 2;
+}
+
+message RegisterAgentResponse{
+    string agent_id = 1;
+}
+
+message AgentPollRequest{
+    string token = 1;
+    string agent_id = 2; //test
+}
+
+message AgentInfo{
+    string id = 1;
+    string name = 2;
+    string version = 3;
+}
+
+enum AgentMessageType {
+    NoMessage = 0;
+    ListDirectory = 1;
+    UploadFile = 2;
+    DownloadFile = 3;
+}
+
+message AgentMessage{
+    string message_id = 1;
+    AgentMessageType type = 2;
+    string token = 3;
+    bytes content = 4;
+}
+
+message ListDirectoryMessageContent{
+    string path = 1;
+}
+
+message FileUploadDownloadMessageContent{
+    string remote_url = 1;
+    repeated string path = 2;
+    int64 max_size = 3;
+}
+
+message DirectoryContent{
+    string message_id = 1;
+    string path = 2;
+    repeated FileItem items = 3;
+    string error_msg = 4;
+}
+
+message AgentError{
+    string message_id = 1;
+    string error_msg = 2;
+}
+
+//==============================Common Object==============================
+
+message Empty {}
+
+message FileItem{
+    string path = 1;
+    int64 size = 2;
+    bool is_directory = 3;
+    bool can_read = 4;
+    bool can_write = 5;
+}
