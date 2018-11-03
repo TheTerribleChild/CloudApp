@@ -37,6 +37,7 @@ service AgentService{
     rpc RegisterAgent (RegisterAgentRequest) returns (RegisterAgentResponse) {};
     rpc Poll (AgentPollRequest) returns (AgentMessage) {};
     rpc PublishDirectoryContent (DirectoryContent) returns (Empty) {};
+    rpc PublishUploadDownloadProgress (Progress) returns (Empty) {}
     rpc PublishError (AgentError) returns (Empty) {};
 }
 
@@ -94,6 +95,11 @@ message DirectoryContent{
 message AgentError{
     string message_id = 1;
     string error_msg = 2;
+}
+
+message Progress{
+    int64 current = 1;
+    int64 total = 2; 
 }
 
 //==============================Common Object==============================
