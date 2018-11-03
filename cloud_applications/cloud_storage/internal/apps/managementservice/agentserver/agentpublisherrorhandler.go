@@ -5,8 +5,11 @@ import(
 	//"os"
 	//"github.com/golang/protobuf/proto"
 	"golang.org/x/net/context"
+	"log"
 )
 
 func (instance *AgentServer) PublishError(ctx context.Context, request *cldstrg.AgentError) (*cldstrg.Empty, error) {
-	return nil, nil
+
+	log.Println("AGENT ERROR: " + request.ErrorMsg)
+	return &cldstrg.Empty{}, nil
 }

@@ -15,7 +15,7 @@ type ListDirectoryHandler struct {
 	message  *cldstrg.AgentMessage;
 }
 
-func (handler ListDirectoryHandler) HandleMessage(){
+func (handler ListDirectoryHandler) HandleMessage() error {
 	listDirectoryMessage := &cldstrg.ListDirectoryMessageContent{}
 	proto.Unmarshal(handler.message.Content, listDirectoryMessage)
 	path := listDirectoryMessage.Path
@@ -33,4 +33,5 @@ func (handler ListDirectoryHandler) HandleMessage(){
 	defer cancel()
 	handler.asc.PublishDirectoryContent(ctx, &cldstrg.DirectoryContent{Items:directoryContents, MessageId: handler.message.MessageId})
 	log.Println("Finishing serving ListDirectory " + handler.message.MessageId)
+	return nil
 }

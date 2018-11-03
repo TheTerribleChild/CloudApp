@@ -7,16 +7,19 @@ import (
 )
 
 //GetAllFileInDirectoryRecursively Gets all regular file with extension in root directory recursively
-func GetAllFileInDirectoryRecursively(root string, ext string) ([]string, error) {
+func GetAllFileInDirectoryRecursively(roots []string, ext string) ([]string, error) {
 	fileList := []string{}
-	err := filepath.Walk(root, func(path string, f os.FileInfo, err error) error {
-		if f.Mode().IsRegular() {
-			if (len(ext) != 0 && filepath.Ext(path) == ext) || len(ext) == 0 {
-				fileList = append(fileList, path)
+	var err error
+	for _, root := range roots {
+		err = filepath.Walk(root, func(path string, f os.FileInfo, err error) error {
+			if f.Mode().IsRegular() {
+				if (len(ext) != 0 && filepath.Ext(path) == ext) || len(ext) == 0 {
+					fileList = append(fileList, path)
+				}
 			}
-		}
-		return nil
-	})
+			return nil
+		})
+	}
 	return fileList, err
 }
 

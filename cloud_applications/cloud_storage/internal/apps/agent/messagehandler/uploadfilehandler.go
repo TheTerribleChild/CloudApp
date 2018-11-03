@@ -23,34 +23,34 @@ type UploadFileHandler struct {
 	message *cldstrg.AgentMessage
 }
 
-func (handler UploadFileHandler) HandleMessage() {
+func (handler UploadFileHandler) HandleMessage() error{
 	fileUploadDownloadMessageContent := &cldstrg.FileUploadDownloadMessageContent{}
 	proto.Unmarshal(handler.message.Content, fileUploadDownloadMessageContent)
 	paths := fileUploadDownloadMessageContent.Path
 	maxSize := fileUploadDownloadMessageContent.MaxSize
 	storageServerAddress := fileUploadDownloadMessageContent.RemoteUrl
 
-	err := checkRequirements(paths, maxSize)
+	if err := checkRequirements(paths, maxSize); err != nil {
+		return err
+	}
 
+	files, err :=fileutil.GetAllFileInDirectoryRecursively(paths, ""); 
 	if err != nil {
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
-		handler.asc.PublishError(ctx, &cldstrg.AgentError{ErrorMsg: err.Error()})
-		return
+		return err
 	}
 
 	sscConn, err := grpc.Dial(storageServerAddress, grpc.WithInsecure())
 	if err != nil {
-		log.Printf("Unable to connect to storage server: %s\n", err.Error())
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
-		handler.asc.PublishError(ctx, &cldstrg.AgentError{ErrorMsg: err.Error()})
-		return
+		return err
 	}
 	handler.ssc = cldstrg.NewStorageServiceClient(sscConn)
 
 	defer sscConn.Close()
-	handler.zipFilesAndUpload(paths)
+	err = handler.zipFilesAndUpload(files)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func checkRequirements(paths []string, maxSize int64) error {

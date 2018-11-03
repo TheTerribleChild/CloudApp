@@ -2,30 +2,51 @@ package agentmessagehandler
 
 import(
 	cldstrg "github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/cloud_storage/internal/model"
+	"golang.org/x/net/context"
+	"time"
 )
 
 type MessageHandler interface{
-	HandleMessage()
+	HandleMessage() error
 }
+
 
 type MessageHandlerFactory struct{
 	Asc cldstrg.AgentServiceClient;
 	Message *cldstrg.AgentMessage;
 }
 
-func (instance *MessageHandlerFactory) GetMessageHandler() MessageHandler {
-	var handler MessageHandler;
+func (instance *MessageHandlerFactory) GetMessageHandlerWrapper() MessageHandlerWrapper {
+	var handlerWrapper MessageHandlerWrapper;
 	switch instance.Message.Type {
 	case cldstrg.AgentMessageType_ListDirectory:
-		handler = ListDirectoryHandler{asc:instance.Asc, message:instance.Message}
+		handlerWrapper = MessageHandlerWrapper{messageHandler: ListDirectoryHandler{asc:instance.Asc, message:instance.Message}, asc:instance.Asc}
 		break
 	case cldstrg.AgentMessageType_DownloadFile:
-		handler = DownloadFileHandler{asc:instance.Asc, message:instance.Message}
+		handlerWrapper = MessageHandlerWrapper{messageHandler: DownloadFileHandler{asc:instance.Asc, message:instance.Message}, asc:instance.Asc}
 		break
 	case cldstrg.AgentMessageType_UploadFile:
-		handler = UploadFileHandler{asc:instance.Asc, message:instance.Message}
+		handlerWrapper = MessageHandlerWrapper{messageHandler: UploadFileHandler{asc:instance.Asc, message:instance.Message}, asc:instance.Asc}
 		break
 	default:
 	}
-	return handler
+	return handlerWrapper
+}
+
+type MessageHandlerWrapper struct {
+	messageHandler MessageHandler;
+	asc cldstrg.AgentServiceClient;
+}
+
+func (instance *MessageHandlerWrapper) HandleMessage(){
+	if instance.messageHandler == nil {
+		return
+	}
+	err := instance.messageHandler.HandleMessage()
+	if err != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		instance.asc.PublishError(ctx, &cldstrg.AgentError{ErrorMsg: err.Error()})
+		return
+	}
 }

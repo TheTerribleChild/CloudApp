@@ -11,6 +11,6 @@ type DownloadFileHandler struct {
 	message  *cldstrg.AgentMessage;
 }
 
-func (handler DownloadFileHandler) HandleMessage(){
-
+func (handler DownloadFileHandler) HandleMessage() error{
+	return nil
 }

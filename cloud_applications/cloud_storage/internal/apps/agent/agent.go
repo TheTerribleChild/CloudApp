@@ -53,8 +53,6 @@ func(agent *Agent) poll(){
 	}
 	log.Println("Received message: " + message.MessageId + "  Type: " + message.Type.String())
 	messageHandlerFactory := msghdlr.MessageHandlerFactory{Asc:agent.asc, Message:message}
-	messageHandler := messageHandlerFactory.GetMessageHandler()
-	if messageHandler != nil{
-		go messageHandler.HandleMessage()
-	}
+	MessageHandlerWrapper := messageHandlerFactory.GetMessageHandlerWrapper()
+	go MessageHandlerWrapper.HandleMessage()
 }
