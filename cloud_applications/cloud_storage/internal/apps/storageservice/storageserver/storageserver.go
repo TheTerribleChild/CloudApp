@@ -8,7 +8,6 @@ import(
 	cldstrg "github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/cloud_storage/internal/model"
 
 	//"github.com/golang/protobuf/proto"
-	"golang.org/x/net/context"
 	// "golang.org/x/net/netutil"
 	//"github.com/go-stomp/stomp"
 	"google.golang.org/grpc"
@@ -26,7 +25,7 @@ func (instance *StorageServer) InitializeServer(){
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	s := grpc.NewServer(grpc.MaxConcurrentStreams(5))
+	s := grpc.NewServer(grpc.MaxConcurrentStreams(5), grpc.MaxRecvMsgSize(11*1024*1024))
 	cldstrg.RegisterStorageServiceServer(s, instance)
 	log.Println("Initializing Storage Server.")
 	reflection.Register(s)
@@ -35,6 +34,3 @@ func (instance *StorageServer) InitializeServer(){
 	}
 }
 
-func (instance *StorageServer) DownloadFile(ctx context.Context, request *cldstrg.FileChunkRequest) (*cldstrg.FileChunk, error) {
-	return nil, nil
-}

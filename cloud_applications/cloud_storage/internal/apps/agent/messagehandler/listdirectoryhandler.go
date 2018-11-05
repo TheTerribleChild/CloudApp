@@ -13,6 +13,7 @@ import(
 type ListDirectoryHandler struct {
 	asc cldstrg.AgentServiceClient;
 	message  *cldstrg.AgentMessage;
+	handlerWrapper *MessageHandlerWrapper;
 }
 
 func (handler ListDirectoryHandler) HandleMessage() error {
@@ -20,7 +21,10 @@ func (handler ListDirectoryHandler) HandleMessage() error {
 	proto.Unmarshal(handler.message.Content, listDirectoryMessage)
 	path := listDirectoryMessage.Path
 
-	files, _ := ioutil.ReadDir(path)
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		return err
+	}
 
 	directoryContents := []*cldstrg.FileItem{}
 

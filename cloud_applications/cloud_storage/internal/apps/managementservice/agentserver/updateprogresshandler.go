@@ -8,13 +8,17 @@ import(
 	"log"
 )
 
-func (instance *AgentServer) PublishUploadDownloadProgress(ctx context.Context, request *cldstrg.Progress) (*cldstrg.Empty, error) {
+func (instance *AgentServer) UpdateProgress(ctx context.Context, request *cldstrg.ProgressUpdate) (*cldstrg.Empty, error) {
 
 	if request.Current < 0 || request.Total < 0 || request.Current > request.Total{
 		log.Println("AGENT PROGRESS: bad data")
 		return &cldstrg.Empty{}, nil
 	}
-	progress := float64(request.Current/request.Total)
-	log.Printf("AGENT Progress: %f\n",  progress)
+	progress := 0.0
+	if request.Total > 0{
+		progress = float64(request.Current)/float64(request.Total)
+	}
+	
+	log.Printf("AGENT Progress: %f %s\n",  progress, request.Message)
 	return &cldstrg.Empty{}, nil
 }
