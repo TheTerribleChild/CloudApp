@@ -2,6 +2,7 @@ package agentmessagehandler
 
 import(
 	cldstrg "github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/cloud_storage/internal/model"
+	auth "github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/cloud_storage/internal/common/auth"
 	"golang.org/x/net/context"
 	"time"
 	"log"
@@ -15,10 +16,15 @@ type MessageHandler interface{
 type MessageHandlerFactory struct{
 	Asc cldstrg.AgentServiceClient;
 	Message *cldstrg.AgentMessage;
+	Jm JobManager;
 }
 
 func (instance *MessageHandlerFactory) GetMessageHandlerWrapper() MessageHandlerWrapper {
-	handlerWrapper := MessageHandlerWrapper{asc:instance.Asc};
+
+	token, _ := auth.DecodeTaskToken("123", instance.Message.TaskToken)
+	
+	handlerWrapper := MessageHandlerWrapper{asc:instance.Asc, jobManager:instance.Jm, taskId : token.TaskId};
+	
 	switch instance.Message.Type {
 	case cldstrg.AgentMessageType_ListDirectory:
 		handlerWrapper.messageHandler = ListDirectoryHandler{asc:instance.Asc, message:instance.Message, handlerWrapper:&handlerWrapper}
@@ -37,6 +43,11 @@ func (instance *MessageHandlerFactory) GetMessageHandlerWrapper() MessageHandler
 type MessageHandlerWrapper struct {
 	messageHandler MessageHandler;
 	asc cldstrg.AgentServiceClient;
+	ssc cldstrg.StorageServiceClient;
+	
+	jobManager JobManager;
+	taskId string;
+	progressUpdateChan chan cldstrg.ProgressUpdate
 }
 
 func (instance *MessageHandlerWrapper) HandleMessage(){
@@ -53,8 +64,14 @@ func (instance *MessageHandlerWrapper) HandleMessage(){
 	instance.updateProgress(cldstrg.ProgressUpdate_Completed, 1, 1, "Task completed.")
 }
 
+func (instance *MessageHandlerWrapper) updateProgressAsync(state cldstrg.ProgressUpdate_ProgressState, current int64, total int64, msg string){
+	go instance.updateProgress(state, current, total, msg)
+}
+
 func (instance *MessageHandlerWrapper) updateProgress(state cldstrg.ProgressUpdate_ProgressState, current int64, total int64, msg string) {
+	progress := cldstrg.ProgressUpdate{State:state, Message:msg, Current:current, Total:total, TaskId:instance.taskId}
+	instance.jobManager.updateTaskProgress(progress)
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	instance.asc.UpdateProgress(ctx, &cldstrg.ProgressUpdate{State:state, Message:msg, Current:current, Total:total})
+	instance.asc.UpdateProgress(ctx, &progress)
 }

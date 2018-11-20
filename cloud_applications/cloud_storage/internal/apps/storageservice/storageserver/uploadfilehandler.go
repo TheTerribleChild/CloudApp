@@ -8,7 +8,7 @@ import(
 )
 
 func (instance *StorageServer) UploadFile(ctx context.Context, request *cldstrg.FileChunk) (*cldstrg.FileChunkRequest, error) {
-	log.Println("Got upload request")
+	log.Println("Got upload request ")
 	
 	fileOffset := request.Info.Offset
 	fileSize := request.Info.Size
@@ -17,7 +17,7 @@ func (instance *StorageServer) UploadFile(ctx context.Context, request *cldstrg.
 		return &cldstrg.FileChunkRequest{Info : &cldstrg.FileChunkInfo{Offset:0, Size:10485760}}, nil
 	}
 	
-	if fileOffset > 0 && fileOffset == 0 {
+	if fileOffset > 0 && fileSize == 0 {
 		return &cldstrg.FileChunkRequest{}, nil
 	}
 	

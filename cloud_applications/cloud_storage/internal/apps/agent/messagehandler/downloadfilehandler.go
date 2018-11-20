@@ -2,7 +2,7 @@ package agentmessagehandler
 
 import(
 	cldstrg "github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/cloud_storage/internal/model"
-	"github.com/golang/protobuf/proto"
+	//"github.com/golang/protobuf/proto"
 )
 
 type DownloadFileHandler struct {
@@ -13,10 +13,10 @@ type DownloadFileHandler struct {
 }
 
 func (handler DownloadFileHandler) HandleMessage() error {
-	fileUploadDownloadMessageContent := &cldstrg.FileUploadDownloadMessageContent{}
-	proto.Unmarshal(handler.message.Content, fileUploadDownloadMessageContent)
-	path := fileUploadDownloadMessageContent.Path
-	handler.downloadFile(path)
+	// fileUploadDownloadMessageContent := &cldstrg.FileUploadDownloadMessageContent{}
+	// proto.Unmarshal(handler.message.Content, fileUploadDownloadMessageContent)
+	// fileUploadDownloadMessageContent.Jobs
+	// handler.downloadFile(nil)
 	return nil
 }
 

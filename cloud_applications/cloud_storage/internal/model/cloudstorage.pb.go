@@ -49,7 +49,42 @@ func (x AgentMessageType) String() string {
 	return proto.EnumName(AgentMessageType_name, int32(x))
 }
 func (AgentMessageType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_cloudstorage_bc6526b8988243e1, []int{0}
+	return fileDescriptor_cloudstorage_fc037c0ebb5011e5, []int{0}
+}
+
+type AccessPermisison int32
+
+const (
+	AccessPermisison_StorageRead  AccessPermisison = 0
+	AccessPermisison_StorageWrite AccessPermisison = 1
+	AccessPermisison_StatusUpdate AccessPermisison = 2
+	AccessPermisison_AgentRead    AccessPermisison = 3
+	AccessPermisison_AgentWrite   AccessPermisison = 4
+	AccessPermisison_AgentPoll    AccessPermisison = 5
+)
+
+var AccessPermisison_name = map[int32]string{
+	0: "StorageRead",
+	1: "StorageWrite",
+	2: "StatusUpdate",
+	3: "AgentRead",
+	4: "AgentWrite",
+	5: "AgentPoll",
+}
+var AccessPermisison_value = map[string]int32{
+	"StorageRead":  0,
+	"StorageWrite": 1,
+	"StatusUpdate": 2,
+	"AgentRead":    3,
+	"AgentWrite":   4,
+	"AgentPoll":    5,
+}
+
+func (x AccessPermisison) String() string {
+	return proto.EnumName(AccessPermisison_name, int32(x))
+}
+func (AccessPermisison) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_cloudstorage_fc037c0ebb5011e5, []int{1}
 }
 
 type ProgressUpdate_ProgressState int32
@@ -59,6 +94,7 @@ const (
 	ProgressUpdate_Error      ProgressUpdate_ProgressState = 1
 	ProgressUpdate_InProgress ProgressUpdate_ProgressState = 2
 	ProgressUpdate_Completed  ProgressUpdate_ProgressState = 3
+	ProgressUpdate_Enqueued   ProgressUpdate_ProgressState = 4
 )
 
 var ProgressUpdate_ProgressState_name = map[int32]string{
@@ -66,19 +102,21 @@ var ProgressUpdate_ProgressState_name = map[int32]string{
 	1: "Error",
 	2: "InProgress",
 	3: "Completed",
+	4: "Enqueued",
 }
 var ProgressUpdate_ProgressState_value = map[string]int32{
 	"NotStarted": 0,
 	"Error":      1,
 	"InProgress": 2,
 	"Completed":  3,
+	"Enqueued":   4,
 }
 
 func (x ProgressUpdate_ProgressState) String() string {
 	return proto.EnumName(ProgressUpdate_ProgressState_name, int32(x))
 }
 func (ProgressUpdate_ProgressState) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_cloudstorage_bc6526b8988243e1, []int{11, 0}
+	return fileDescriptor_cloudstorage_fc037c0ebb5011e5, []int{14, 0}
 }
 
 type FileChunkRequest struct {
@@ -93,7 +131,7 @@ func (m *FileChunkRequest) Reset()         { *m = FileChunkRequest{} }
 func (m *FileChunkRequest) String() string { return proto.CompactTextString(m) }
 func (*FileChunkRequest) ProtoMessage()    {}
 func (*FileChunkRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cloudstorage_bc6526b8988243e1, []int{0}
+	return fileDescriptor_cloudstorage_fc037c0ebb5011e5, []int{0}
 }
 func (m *FileChunkRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_FileChunkRequest.Unmarshal(m, b)
@@ -140,7 +178,7 @@ func (m *FileChunk) Reset()         { *m = FileChunk{} }
 func (m *FileChunk) String() string { return proto.CompactTextString(m) }
 func (*FileChunk) ProtoMessage()    {}
 func (*FileChunk) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cloudstorage_bc6526b8988243e1, []int{1}
+	return fileDescriptor_cloudstorage_fc037c0ebb5011e5, []int{1}
 }
 func (m *FileChunk) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_FileChunk.Unmarshal(m, b)
@@ -193,7 +231,7 @@ func (m *FileChunkInfo) Reset()         { *m = FileChunkInfo{} }
 func (m *FileChunkInfo) String() string { return proto.CompactTextString(m) }
 func (*FileChunkInfo) ProtoMessage()    {}
 func (*FileChunkInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cloudstorage_bc6526b8988243e1, []int{2}
+	return fileDescriptor_cloudstorage_fc037c0ebb5011e5, []int{2}
 }
 func (m *FileChunkInfo) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_FileChunkInfo.Unmarshal(m, b)
@@ -230,6 +268,7 @@ func (m *FileChunkInfo) GetSize() int64 {
 type RegisterAgentRequest struct {
 	Host                 string   `protobuf:"bytes,1,opt,name=host,proto3" json:"host,omitempty"`
 	Version              string   `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
+	UserId               string   `protobuf:"bytes,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -239,7 +278,7 @@ func (m *RegisterAgentRequest) Reset()         { *m = RegisterAgentRequest{} }
 func (m *RegisterAgentRequest) String() string { return proto.CompactTextString(m) }
 func (*RegisterAgentRequest) ProtoMessage()    {}
 func (*RegisterAgentRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cloudstorage_bc6526b8988243e1, []int{3}
+	return fileDescriptor_cloudstorage_fc037c0ebb5011e5, []int{3}
 }
 func (m *RegisterAgentRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_RegisterAgentRequest.Unmarshal(m, b)
@@ -273,6 +312,89 @@ func (m *RegisterAgentRequest) GetVersion() string {
 	return ""
 }
 
+func (m *RegisterAgentRequest) GetUserId() string {
+	if m != nil {
+		return m.UserId
+	}
+	return ""
+}
+
+type SessionRenewRequest struct {
+	ManagementServerPollToken string   `protobuf:"bytes,1,opt,name=management_server_poll_token,json=managementServerPollToken,proto3" json:"management_server_poll_token,omitempty"`
+	XXX_NoUnkeyedLiteral      struct{} `json:"-"`
+	XXX_unrecognized          []byte   `json:"-"`
+	XXX_sizecache             int32    `json:"-"`
+}
+
+func (m *SessionRenewRequest) Reset()         { *m = SessionRenewRequest{} }
+func (m *SessionRenewRequest) String() string { return proto.CompactTextString(m) }
+func (*SessionRenewRequest) ProtoMessage()    {}
+func (*SessionRenewRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cloudstorage_fc037c0ebb5011e5, []int{4}
+}
+func (m *SessionRenewRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SessionRenewRequest.Unmarshal(m, b)
+}
+func (m *SessionRenewRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SessionRenewRequest.Marshal(b, m, deterministic)
+}
+func (dst *SessionRenewRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SessionRenewRequest.Merge(dst, src)
+}
+func (m *SessionRenewRequest) XXX_Size() int {
+	return xxx_messageInfo_SessionRenewRequest.Size(m)
+}
+func (m *SessionRenewRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_SessionRenewRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SessionRenewRequest proto.InternalMessageInfo
+
+func (m *SessionRenewRequest) GetManagementServerPollToken() string {
+	if m != nil {
+		return m.ManagementServerPollToken
+	}
+	return ""
+}
+
+type SessionRenewResponse struct {
+	SecretKey            string   `protobuf:"bytes,1,opt,name=secret_key,json=secretKey,proto3" json:"secret_key,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SessionRenewResponse) Reset()         { *m = SessionRenewResponse{} }
+func (m *SessionRenewResponse) String() string { return proto.CompactTextString(m) }
+func (*SessionRenewResponse) ProtoMessage()    {}
+func (*SessionRenewResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cloudstorage_fc037c0ebb5011e5, []int{5}
+}
+func (m *SessionRenewResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SessionRenewResponse.Unmarshal(m, b)
+}
+func (m *SessionRenewResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SessionRenewResponse.Marshal(b, m, deterministic)
+}
+func (dst *SessionRenewResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SessionRenewResponse.Merge(dst, src)
+}
+func (m *SessionRenewResponse) XXX_Size() int {
+	return xxx_messageInfo_SessionRenewResponse.Size(m)
+}
+func (m *SessionRenewResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_SessionRenewResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SessionRenewResponse proto.InternalMessageInfo
+
+func (m *SessionRenewResponse) GetSecretKey() string {
+	if m != nil {
+		return m.SecretKey
+	}
+	return ""
+}
+
 type RegisterAgentResponse struct {
 	AgentId              string   `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -284,7 +406,7 @@ func (m *RegisterAgentResponse) Reset()         { *m = RegisterAgentResponse{} }
 func (m *RegisterAgentResponse) String() string { return proto.CompactTextString(m) }
 func (*RegisterAgentResponse) ProtoMessage()    {}
 func (*RegisterAgentResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cloudstorage_bc6526b8988243e1, []int{4}
+	return fileDescriptor_cloudstorage_fc037c0ebb5011e5, []int{6}
 }
 func (m *RegisterAgentResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_RegisterAgentResponse.Unmarshal(m, b)
@@ -312,8 +434,7 @@ func (m *RegisterAgentResponse) GetAgentId() string {
 }
 
 type AgentPollRequest struct {
-	Token                string   `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
-	AgentId              string   `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	AgentId              string   `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -323,7 +444,7 @@ func (m *AgentPollRequest) Reset()         { *m = AgentPollRequest{} }
 func (m *AgentPollRequest) String() string { return proto.CompactTextString(m) }
 func (*AgentPollRequest) ProtoMessage()    {}
 func (*AgentPollRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cloudstorage_bc6526b8988243e1, []int{5}
+	return fileDescriptor_cloudstorage_fc037c0ebb5011e5, []int{7}
 }
 func (m *AgentPollRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_AgentPollRequest.Unmarshal(m, b)
@@ -342,13 +463,6 @@ func (m *AgentPollRequest) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_AgentPollRequest proto.InternalMessageInfo
-
-func (m *AgentPollRequest) GetToken() string {
-	if m != nil {
-		return m.Token
-	}
-	return ""
-}
 
 func (m *AgentPollRequest) GetAgentId() string {
 	if m != nil {
@@ -370,7 +484,7 @@ func (m *AgentInfo) Reset()         { *m = AgentInfo{} }
 func (m *AgentInfo) String() string { return proto.CompactTextString(m) }
 func (*AgentInfo) ProtoMessage()    {}
 func (*AgentInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cloudstorage_bc6526b8988243e1, []int{6}
+	return fileDescriptor_cloudstorage_fc037c0ebb5011e5, []int{8}
 }
 func (m *AgentInfo) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_AgentInfo.Unmarshal(m, b)
@@ -414,7 +528,7 @@ func (m *AgentInfo) GetVersion() string {
 type AgentMessage struct {
 	MessageId            string           `protobuf:"bytes,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
 	Type                 AgentMessageType `protobuf:"varint,2,opt,name=type,proto3,enum=cloudstorage.AgentMessageType" json:"type,omitempty"`
-	Token                string           `protobuf:"bytes,3,opt,name=token,proto3" json:"token,omitempty"`
+	TaskToken            string           `protobuf:"bytes,3,opt,name=task_token,json=taskToken,proto3" json:"task_token,omitempty"`
 	Content              []byte           `protobuf:"bytes,4,opt,name=content,proto3" json:"content,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
 	XXX_unrecognized     []byte           `json:"-"`
@@ -425,7 +539,7 @@ func (m *AgentMessage) Reset()         { *m = AgentMessage{} }
 func (m *AgentMessage) String() string { return proto.CompactTextString(m) }
 func (*AgentMessage) ProtoMessage()    {}
 func (*AgentMessage) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cloudstorage_bc6526b8988243e1, []int{7}
+	return fileDescriptor_cloudstorage_fc037c0ebb5011e5, []int{9}
 }
 func (m *AgentMessage) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_AgentMessage.Unmarshal(m, b)
@@ -459,9 +573,9 @@ func (m *AgentMessage) GetType() AgentMessageType {
 	return AgentMessageType_NoMessage
 }
 
-func (m *AgentMessage) GetToken() string {
+func (m *AgentMessage) GetTaskToken() string {
 	if m != nil {
-		return m.Token
+		return m.TaskToken
 	}
 	return ""
 }
@@ -484,7 +598,7 @@ func (m *ListDirectoryMessageContent) Reset()         { *m = ListDirectoryMessag
 func (m *ListDirectoryMessageContent) String() string { return proto.CompactTextString(m) }
 func (*ListDirectoryMessageContent) ProtoMessage()    {}
 func (*ListDirectoryMessageContent) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cloudstorage_bc6526b8988243e1, []int{8}
+	return fileDescriptor_cloudstorage_fc037c0ebb5011e5, []int{10}
 }
 func (m *ListDirectoryMessageContent) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ListDirectoryMessageContent.Unmarshal(m, b)
@@ -512,19 +626,19 @@ func (m *ListDirectoryMessageContent) GetPath() string {
 }
 
 type FileUploadDownloadMessageContent struct {
-	RemoteUrl            string   `protobuf:"bytes,1,opt,name=remote_url,json=remoteUrl,proto3" json:"remote_url,omitempty"`
-	Path                 []string `protobuf:"bytes,2,rep,name=path,proto3" json:"path,omitempty"`
-	MaxSize              int64    `protobuf:"varint,3,opt,name=max_size,json=maxSize,proto3" json:"max_size,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	RemoteUrl            string               `protobuf:"bytes,1,opt,name=remote_url,json=remoteUrl,proto3" json:"remote_url,omitempty"`
+	Jobs                 []*UploadDownloadJob `protobuf:"bytes,2,rep,name=jobs,proto3" json:"jobs,omitempty"`
+	MaxSize              int64                `protobuf:"varint,3,opt,name=max_size,json=maxSize,proto3" json:"max_size,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
 }
 
 func (m *FileUploadDownloadMessageContent) Reset()         { *m = FileUploadDownloadMessageContent{} }
 func (m *FileUploadDownloadMessageContent) String() string { return proto.CompactTextString(m) }
 func (*FileUploadDownloadMessageContent) ProtoMessage()    {}
 func (*FileUploadDownloadMessageContent) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cloudstorage_bc6526b8988243e1, []int{9}
+	return fileDescriptor_cloudstorage_fc037c0ebb5011e5, []int{11}
 }
 func (m *FileUploadDownloadMessageContent) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_FileUploadDownloadMessageContent.Unmarshal(m, b)
@@ -551,9 +665,9 @@ func (m *FileUploadDownloadMessageContent) GetRemoteUrl() string {
 	return ""
 }
 
-func (m *FileUploadDownloadMessageContent) GetPath() []string {
+func (m *FileUploadDownloadMessageContent) GetJobs() []*UploadDownloadJob {
 	if m != nil {
-		return m.Path
+		return m.Jobs
 	}
 	return nil
 }
@@ -563,6 +677,52 @@ func (m *FileUploadDownloadMessageContent) GetMaxSize() int64 {
 		return m.MaxSize
 	}
 	return 0
+}
+
+type UploadDownloadJob struct {
+	Files                []string `protobuf:"bytes,1,rep,name=files,proto3" json:"files,omitempty"`
+	StorageServerToken   string   `protobuf:"bytes,2,opt,name=storage_server_token,json=storageServerToken,proto3" json:"storage_server_token,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *UploadDownloadJob) Reset()         { *m = UploadDownloadJob{} }
+func (m *UploadDownloadJob) String() string { return proto.CompactTextString(m) }
+func (*UploadDownloadJob) ProtoMessage()    {}
+func (*UploadDownloadJob) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cloudstorage_fc037c0ebb5011e5, []int{12}
+}
+func (m *UploadDownloadJob) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UploadDownloadJob.Unmarshal(m, b)
+}
+func (m *UploadDownloadJob) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UploadDownloadJob.Marshal(b, m, deterministic)
+}
+func (dst *UploadDownloadJob) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UploadDownloadJob.Merge(dst, src)
+}
+func (m *UploadDownloadJob) XXX_Size() int {
+	return xxx_messageInfo_UploadDownloadJob.Size(m)
+}
+func (m *UploadDownloadJob) XXX_DiscardUnknown() {
+	xxx_messageInfo_UploadDownloadJob.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UploadDownloadJob proto.InternalMessageInfo
+
+func (m *UploadDownloadJob) GetFiles() []string {
+	if m != nil {
+		return m.Files
+	}
+	return nil
+}
+
+func (m *UploadDownloadJob) GetStorageServerToken() string {
+	if m != nil {
+		return m.StorageServerToken
+	}
+	return ""
 }
 
 type DirectoryContent struct {
@@ -579,7 +739,7 @@ func (m *DirectoryContent) Reset()         { *m = DirectoryContent{} }
 func (m *DirectoryContent) String() string { return proto.CompactTextString(m) }
 func (*DirectoryContent) ProtoMessage()    {}
 func (*DirectoryContent) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cloudstorage_bc6526b8988243e1, []int{10}
+	return fileDescriptor_cloudstorage_fc037c0ebb5011e5, []int{13}
 }
 func (m *DirectoryContent) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_DirectoryContent.Unmarshal(m, b)
@@ -632,6 +792,7 @@ type ProgressUpdate struct {
 	Total                int64                        `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
 	State                ProgressUpdate_ProgressState `protobuf:"varint,3,opt,name=state,proto3,enum=cloudstorage.ProgressUpdate_ProgressState" json:"state,omitempty"`
 	Message              string                       `protobuf:"bytes,4,opt,name=message,proto3" json:"message,omitempty"`
+	TaskId               string                       `protobuf:"bytes,5,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                     `json:"-"`
 	XXX_unrecognized     []byte                       `json:"-"`
 	XXX_sizecache        int32                        `json:"-"`
@@ -641,7 +802,7 @@ func (m *ProgressUpdate) Reset()         { *m = ProgressUpdate{} }
 func (m *ProgressUpdate) String() string { return proto.CompactTextString(m) }
 func (*ProgressUpdate) ProtoMessage()    {}
 func (*ProgressUpdate) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cloudstorage_bc6526b8988243e1, []int{11}
+	return fileDescriptor_cloudstorage_fc037c0ebb5011e5, []int{14}
 }
 func (m *ProgressUpdate) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ProgressUpdate.Unmarshal(m, b)
@@ -689,6 +850,13 @@ func (m *ProgressUpdate) GetMessage() string {
 	return ""
 }
 
+func (m *ProgressUpdate) GetTaskId() string {
+	if m != nil {
+		return m.TaskId
+	}
+	return ""
+}
+
 type Empty struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -699,7 +867,7 @@ func (m *Empty) Reset()         { *m = Empty{} }
 func (m *Empty) String() string { return proto.CompactTextString(m) }
 func (*Empty) ProtoMessage()    {}
 func (*Empty) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cloudstorage_bc6526b8988243e1, []int{12}
+	return fileDescriptor_cloudstorage_fc037c0ebb5011e5, []int{15}
 }
 func (m *Empty) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Empty.Unmarshal(m, b)
@@ -734,7 +902,7 @@ func (m *FileItem) Reset()         { *m = FileItem{} }
 func (m *FileItem) String() string { return proto.CompactTextString(m) }
 func (*FileItem) ProtoMessage()    {}
 func (*FileItem) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cloudstorage_bc6526b8988243e1, []int{13}
+	return fileDescriptor_cloudstorage_fc037c0ebb5011e5, []int{16}
 }
 func (m *FileItem) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_FileItem.Unmarshal(m, b)
@@ -789,22 +957,233 @@ func (m *FileItem) GetCanWrite() bool {
 	return false
 }
 
+// Created by Management Server. Passed to agent to be used to access Storage Server.
+type UploadDownloadToken struct {
+	UserId               string             `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	AgentId              string             `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	Path                 string             `protobuf:"bytes,3,opt,name=path,proto3" json:"path,omitempty"`
+	Permissions          []AccessPermisison `protobuf:"varint,4,rep,packed,name=permissions,proto3,enum=cloudstorage.AccessPermisison" json:"permissions,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
+	XXX_unrecognized     []byte             `json:"-"`
+	XXX_sizecache        int32              `json:"-"`
+}
+
+func (m *UploadDownloadToken) Reset()         { *m = UploadDownloadToken{} }
+func (m *UploadDownloadToken) String() string { return proto.CompactTextString(m) }
+func (*UploadDownloadToken) ProtoMessage()    {}
+func (*UploadDownloadToken) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cloudstorage_fc037c0ebb5011e5, []int{17}
+}
+func (m *UploadDownloadToken) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UploadDownloadToken.Unmarshal(m, b)
+}
+func (m *UploadDownloadToken) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UploadDownloadToken.Marshal(b, m, deterministic)
+}
+func (dst *UploadDownloadToken) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UploadDownloadToken.Merge(dst, src)
+}
+func (m *UploadDownloadToken) XXX_Size() int {
+	return xxx_messageInfo_UploadDownloadToken.Size(m)
+}
+func (m *UploadDownloadToken) XXX_DiscardUnknown() {
+	xxx_messageInfo_UploadDownloadToken.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UploadDownloadToken proto.InternalMessageInfo
+
+func (m *UploadDownloadToken) GetUserId() string {
+	if m != nil {
+		return m.UserId
+	}
+	return ""
+}
+
+func (m *UploadDownloadToken) GetAgentId() string {
+	if m != nil {
+		return m.AgentId
+	}
+	return ""
+}
+
+func (m *UploadDownloadToken) GetPath() string {
+	if m != nil {
+		return m.Path
+	}
+	return ""
+}
+
+func (m *UploadDownloadToken) GetPermissions() []AccessPermisison {
+	if m != nil {
+		return m.Permissions
+	}
+	return nil
+}
+
+// Created by Management Server. Passed to agent to access Management Server.
+type AgentManagementServerToken struct {
+	AgentId              string             `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	Permissions          []AccessPermisison `protobuf:"varint,2,rep,packed,name=permissions,proto3,enum=cloudstorage.AccessPermisison" json:"permissions,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
+	XXX_unrecognized     []byte             `json:"-"`
+	XXX_sizecache        int32              `json:"-"`
+}
+
+func (m *AgentManagementServerToken) Reset()         { *m = AgentManagementServerToken{} }
+func (m *AgentManagementServerToken) String() string { return proto.CompactTextString(m) }
+func (*AgentManagementServerToken) ProtoMessage()    {}
+func (*AgentManagementServerToken) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cloudstorage_fc037c0ebb5011e5, []int{18}
+}
+func (m *AgentManagementServerToken) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_AgentManagementServerToken.Unmarshal(m, b)
+}
+func (m *AgentManagementServerToken) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_AgentManagementServerToken.Marshal(b, m, deterministic)
+}
+func (dst *AgentManagementServerToken) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AgentManagementServerToken.Merge(dst, src)
+}
+func (m *AgentManagementServerToken) XXX_Size() int {
+	return xxx_messageInfo_AgentManagementServerToken.Size(m)
+}
+func (m *AgentManagementServerToken) XXX_DiscardUnknown() {
+	xxx_messageInfo_AgentManagementServerToken.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_AgentManagementServerToken proto.InternalMessageInfo
+
+func (m *AgentManagementServerToken) GetAgentId() string {
+	if m != nil {
+		return m.AgentId
+	}
+	return ""
+}
+
+func (m *AgentManagementServerToken) GetPermissions() []AccessPermisison {
+	if m != nil {
+		return m.Permissions
+	}
+	return nil
+}
+
+// Created by Management Server using Agent's secret during session initialization. Passed to agent to access agent resources.
+type TaskToken struct {
+	TaskId               string             `protobuf:"bytes,1,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
+	UserId               string             `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Permissions          []AccessPermisison `protobuf:"varint,3,rep,packed,name=permissions,proto3,enum=cloudstorage.AccessPermisison" json:"permissions,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
+	XXX_unrecognized     []byte             `json:"-"`
+	XXX_sizecache        int32              `json:"-"`
+}
+
+func (m *TaskToken) Reset()         { *m = TaskToken{} }
+func (m *TaskToken) String() string { return proto.CompactTextString(m) }
+func (*TaskToken) ProtoMessage()    {}
+func (*TaskToken) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cloudstorage_fc037c0ebb5011e5, []int{19}
+}
+func (m *TaskToken) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TaskToken.Unmarshal(m, b)
+}
+func (m *TaskToken) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TaskToken.Marshal(b, m, deterministic)
+}
+func (dst *TaskToken) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TaskToken.Merge(dst, src)
+}
+func (m *TaskToken) XXX_Size() int {
+	return xxx_messageInfo_TaskToken.Size(m)
+}
+func (m *TaskToken) XXX_DiscardUnknown() {
+	xxx_messageInfo_TaskToken.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TaskToken proto.InternalMessageInfo
+
+func (m *TaskToken) GetTaskId() string {
+	if m != nil {
+		return m.TaskId
+	}
+	return ""
+}
+
+func (m *TaskToken) GetUserId() string {
+	if m != nil {
+		return m.UserId
+	}
+	return ""
+}
+
+func (m *TaskToken) GetPermissions() []AccessPermisison {
+	if m != nil {
+		return m.Permissions
+	}
+	return nil
+}
+
+type UserAgentToken struct {
+	UserId               string   `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *UserAgentToken) Reset()         { *m = UserAgentToken{} }
+func (m *UserAgentToken) String() string { return proto.CompactTextString(m) }
+func (*UserAgentToken) ProtoMessage()    {}
+func (*UserAgentToken) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cloudstorage_fc037c0ebb5011e5, []int{20}
+}
+func (m *UserAgentToken) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UserAgentToken.Unmarshal(m, b)
+}
+func (m *UserAgentToken) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UserAgentToken.Marshal(b, m, deterministic)
+}
+func (dst *UserAgentToken) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UserAgentToken.Merge(dst, src)
+}
+func (m *UserAgentToken) XXX_Size() int {
+	return xxx_messageInfo_UserAgentToken.Size(m)
+}
+func (m *UserAgentToken) XXX_DiscardUnknown() {
+	xxx_messageInfo_UserAgentToken.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UserAgentToken proto.InternalMessageInfo
+
+func (m *UserAgentToken) GetUserId() string {
+	if m != nil {
+		return m.UserId
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*FileChunkRequest)(nil), "cloudstorage.FileChunkRequest")
 	proto.RegisterType((*FileChunk)(nil), "cloudstorage.FileChunk")
 	proto.RegisterType((*FileChunkInfo)(nil), "cloudstorage.FileChunkInfo")
 	proto.RegisterType((*RegisterAgentRequest)(nil), "cloudstorage.RegisterAgentRequest")
+	proto.RegisterType((*SessionRenewRequest)(nil), "cloudstorage.SessionRenewRequest")
+	proto.RegisterType((*SessionRenewResponse)(nil), "cloudstorage.SessionRenewResponse")
 	proto.RegisterType((*RegisterAgentResponse)(nil), "cloudstorage.RegisterAgentResponse")
 	proto.RegisterType((*AgentPollRequest)(nil), "cloudstorage.AgentPollRequest")
 	proto.RegisterType((*AgentInfo)(nil), "cloudstorage.AgentInfo")
 	proto.RegisterType((*AgentMessage)(nil), "cloudstorage.AgentMessage")
 	proto.RegisterType((*ListDirectoryMessageContent)(nil), "cloudstorage.ListDirectoryMessageContent")
 	proto.RegisterType((*FileUploadDownloadMessageContent)(nil), "cloudstorage.FileUploadDownloadMessageContent")
+	proto.RegisterType((*UploadDownloadJob)(nil), "cloudstorage.UploadDownloadJob")
 	proto.RegisterType((*DirectoryContent)(nil), "cloudstorage.DirectoryContent")
 	proto.RegisterType((*ProgressUpdate)(nil), "cloudstorage.ProgressUpdate")
 	proto.RegisterType((*Empty)(nil), "cloudstorage.Empty")
 	proto.RegisterType((*FileItem)(nil), "cloudstorage.FileItem")
+	proto.RegisterType((*UploadDownloadToken)(nil), "cloudstorage.UploadDownloadToken")
+	proto.RegisterType((*AgentManagementServerToken)(nil), "cloudstorage.AgentManagementServerToken")
+	proto.RegisterType((*TaskToken)(nil), "cloudstorage.TaskToken")
+	proto.RegisterType((*UserAgentToken)(nil), "cloudstorage.UserAgentToken")
 	proto.RegisterEnum("cloudstorage.AgentMessageType", AgentMessageType_name, AgentMessageType_value)
+	proto.RegisterEnum("cloudstorage.AccessPermisison", AccessPermisison_name, AccessPermisison_value)
 	proto.RegisterEnum("cloudstorage.ProgressUpdate_ProgressState", ProgressUpdate_ProgressState_name, ProgressUpdate_ProgressState_value)
 }
 
@@ -918,6 +1297,7 @@ var _StorageService_serviceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type AgentServiceClient interface {
 	RegisterAgent(ctx context.Context, in *RegisterAgentRequest, opts ...grpc.CallOption) (*RegisterAgentResponse, error)
+	RenewAgentSession(ctx context.Context, in *SessionRenewRequest, opts ...grpc.CallOption) (*SessionRenewResponse, error)
 	Poll(ctx context.Context, in *AgentPollRequest, opts ...grpc.CallOption) (*AgentMessage, error)
 	PublishDirectoryContent(ctx context.Context, in *DirectoryContent, opts ...grpc.CallOption) (*Empty, error)
 	UpdateProgress(ctx context.Context, in *ProgressUpdate, opts ...grpc.CallOption) (*Empty, error)
@@ -934,6 +1314,15 @@ func NewAgentServiceClient(cc *grpc.ClientConn) AgentServiceClient {
 func (c *agentServiceClient) RegisterAgent(ctx context.Context, in *RegisterAgentRequest, opts ...grpc.CallOption) (*RegisterAgentResponse, error) {
 	out := new(RegisterAgentResponse)
 	err := c.cc.Invoke(ctx, "/cloudstorage.AgentService/RegisterAgent", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *agentServiceClient) RenewAgentSession(ctx context.Context, in *SessionRenewRequest, opts ...grpc.CallOption) (*SessionRenewResponse, error) {
+	out := new(SessionRenewResponse)
+	err := c.cc.Invoke(ctx, "/cloudstorage.AgentService/RenewAgentSession", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -970,6 +1359,7 @@ func (c *agentServiceClient) UpdateProgress(ctx context.Context, in *ProgressUpd
 // AgentServiceServer is the server API for AgentService service.
 type AgentServiceServer interface {
 	RegisterAgent(context.Context, *RegisterAgentRequest) (*RegisterAgentResponse, error)
+	RenewAgentSession(context.Context, *SessionRenewRequest) (*SessionRenewResponse, error)
 	Poll(context.Context, *AgentPollRequest) (*AgentMessage, error)
 	PublishDirectoryContent(context.Context, *DirectoryContent) (*Empty, error)
 	UpdateProgress(context.Context, *ProgressUpdate) (*Empty, error)
@@ -993,6 +1383,24 @@ func _AgentService_RegisterAgent_Handler(srv interface{}, ctx context.Context, d
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AgentServiceServer).RegisterAgent(ctx, req.(*RegisterAgentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AgentService_RenewAgentSession_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SessionRenewRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentServiceServer).RenewAgentSession(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/cloudstorage.AgentService/RenewAgentSession",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServiceServer).RenewAgentSession(ctx, req.(*SessionRenewRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1060,6 +1468,10 @@ var _AgentService_serviceDesc = grpc.ServiceDesc{
 			Handler:    _AgentService_RegisterAgent_Handler,
 		},
 		{
+			MethodName: "RenewAgentSession",
+			Handler:    _AgentService_RenewAgentSession_Handler,
+		},
+		{
 			MethodName: "Poll",
 			Handler:    _AgentService_Poll_Handler,
 		},
@@ -1077,65 +1489,86 @@ var _AgentService_serviceDesc = grpc.ServiceDesc{
 }
 
 func init() {
-	proto.RegisterFile("proto/cloudstorage.proto", fileDescriptor_cloudstorage_bc6526b8988243e1)
+	proto.RegisterFile("proto/cloudstorage.proto", fileDescriptor_cloudstorage_fc037c0ebb5011e5)
 }
 
-var fileDescriptor_cloudstorage_bc6526b8988243e1 = []byte{
-	// 889 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x56, 0xdd, 0x6e, 0xe3, 0x44,
-	0x14, 0x8e, 0xe3, 0x64, 0x13, 0x9f, 0x26, 0x91, 0x19, 0x96, 0xdd, 0x90, 0xb2, 0xab, 0x60, 0x6e,
-	0xaa, 0x15, 0x6a, 0x44, 0xb8, 0xe4, 0x06, 0x68, 0x0b, 0x8a, 0xc4, 0xae, 0x2a, 0xa7, 0x05, 0x69,
-	0x6f, 0xa2, 0x89, 0x7d, 0xea, 0x8c, 0xd6, 0xf6, 0x98, 0x99, 0xc9, 0xee, 0x96, 0x77, 0x40, 0x82,
-	0x77, 0xe0, 0x65, 0x78, 0x12, 0x5e, 0x03, 0xcd, 0x8c, 0x9d, 0xda, 0xdd, 0xa6, 0xbd, 0xd9, 0xab,
-	0xfa, 0xfc, 0x7d, 0xe7, 0x7c, 0x73, 0x7e, 0x1a, 0x18, 0x17, 0x82, 0x2b, 0x3e, 0x8b, 0x52, 0xbe,
-	0x8d, 0xa5, 0xe2, 0x82, 0x26, 0x78, 0x6c, 0x54, 0x64, 0x50, 0xd7, 0x05, 0x6b, 0xf0, 0x7f, 0x62,
-	0x29, 0x9e, 0x6c, 0xb6, 0xf9, 0x9b, 0x10, 0x7f, 0xdf, 0xa2, 0x54, 0xe4, 0x19, 0x40, 0x86, 0x52,
-	0xd2, 0x04, 0x57, 0x2c, 0x1e, 0x3b, 0x53, 0xe7, 0xc8, 0x0b, 0xbd, 0x52, 0xb3, 0x88, 0xc9, 0x0c,
-	0x3a, 0x2c, 0xbf, 0xe2, 0xe3, 0xf6, 0xd4, 0x39, 0x3a, 0x98, 0x1f, 0x1e, 0x37, 0x72, 0xec, 0xc0,
-	0x16, 0xf9, 0x15, 0x0f, 0x8d, 0x63, 0xb0, 0x05, 0x6f, 0xa7, 0xfe, 0xd8, 0xe0, 0x64, 0x0c, 0xbd,
-	0x88, 0xe7, 0x0a, 0x73, 0x35, 0x76, 0xa7, 0xce, 0xd1, 0x20, 0xac, 0xc4, 0xe0, 0x3b, 0x18, 0x36,
-	0x02, 0xc8, 0x13, 0x78, 0xc4, 0xaf, 0xae, 0x24, 0x2a, 0x93, 0xd6, 0x0d, 0x4b, 0x89, 0x10, 0xe8,
-	0x48, 0xf6, 0x07, 0x9a, 0x9c, 0x6e, 0x68, 0xbe, 0x83, 0x53, 0x78, 0x1c, 0x62, 0xc2, 0xa4, 0x42,
-	0xf1, 0x43, 0x82, 0xb9, 0xaa, 0xde, 0x86, 0x40, 0x67, 0xc3, 0xa5, 0x2a, 0x0b, 0x37, 0xdf, 0xba,
-	0x84, 0xb7, 0x28, 0x24, 0xe3, 0xb9, 0x81, 0xf0, 0xc2, 0x4a, 0x0c, 0xe6, 0xf0, 0xd9, 0x2d, 0x14,
-	0x59, 0xf0, 0x5c, 0x22, 0xf9, 0x1c, 0xfa, 0x54, 0x2b, 0x6e, 0xde, 0xa0, 0x67, 0xe4, 0x45, 0x1c,
-	0x9c, 0x80, 0x6f, 0x7c, 0xcf, 0x79, 0x9a, 0x56, 0x59, 0x1f, 0x43, 0x57, 0xf1, 0x37, 0x98, 0x97,
-	0xbe, 0x56, 0x68, 0x80, 0xb4, 0x9b, 0x20, 0x0b, 0xf0, 0x0c, 0x88, 0xe1, 0x3d, 0x82, 0xf6, 0x2e,
-	0x4d, 0x9b, 0xc5, 0x9a, 0x43, 0x4e, 0x33, 0x2c, 0x63, 0xcc, 0x77, 0x9d, 0x83, 0xdb, 0xe4, 0xf0,
-	0xb7, 0x03, 0x03, 0x83, 0xf5, 0xd2, 0x36, 0xe9, 0xa1, 0x0e, 0xce, 0xa1, 0xa3, 0xae, 0x0b, 0x8b,
-	0x3e, 0x9a, 0x3f, 0x6f, 0x76, 0xb0, 0x0e, 0x74, 0x71, 0x5d, 0x60, 0x68, 0x7c, 0x6f, 0xf8, 0xb9,
-	0x75, 0x7e, 0xb5, 0xd6, 0x76, 0x9a, 0xad, 0xfd, 0x06, 0x0e, 0x7f, 0x61, 0x52, 0x9d, 0x32, 0x81,
-	0x91, 0xe2, 0xe2, 0xba, 0x44, 0x3c, 0xb1, 0x66, 0x4d, 0xb0, 0xa0, 0x6a, 0x53, 0x35, 0x49, 0x7f,
-	0x07, 0x05, 0x4c, 0xf5, 0x34, 0x5c, 0x16, 0x29, 0xa7, 0xf1, 0x29, 0x7f, 0x97, 0xeb, 0xbf, 0xb7,
-	0xe2, 0x9e, 0x01, 0x08, 0xcc, 0xb8, 0xc2, 0xd5, 0x56, 0xa4, 0x15, 0x33, 0xab, 0xb9, 0x14, 0xe9,
-	0x0e, 0xb6, 0x3d, 0x75, 0x2b, 0x58, 0xdd, 0x83, 0x8c, 0xbe, 0x5f, 0x99, 0xf9, 0x71, 0xcd, 0xfc,
-	0xf4, 0x32, 0xfa, 0x7e, 0xa9, 0x47, 0xe8, 0x2f, 0x07, 0xfc, 0x5d, 0x85, 0xb5, 0x14, 0xf7, 0x3d,
-	0xde, 0x4d, 0x8a, 0x5d, 0xe5, 0xe4, 0x6b, 0xe8, 0x32, 0x85, 0x99, 0x1c, 0xbb, 0x53, 0xf7, 0xe8,
-	0x60, 0xfe, 0xe4, 0xc3, 0x9d, 0x58, 0x28, 0xcc, 0x42, 0xeb, 0x44, 0x0e, 0xc1, 0x43, 0x21, 0xb8,
-	0x58, 0x65, 0x32, 0x31, 0xcf, 0xe6, 0x85, 0x7d, 0xa3, 0x78, 0x29, 0x93, 0xe0, 0x3f, 0x07, 0x46,
-	0xe7, 0x82, 0x27, 0x02, 0xa5, 0xbc, 0x2c, 0x62, 0xaa, 0x4c, 0xe3, 0xa3, 0xad, 0x10, 0xfa, 0x91,
-	0xed, 0x56, 0x54, 0xa2, 0x6d, 0x8a, 0xa2, 0x69, 0xb9, 0x17, 0x56, 0x20, 0xdf, 0x43, 0x57, 0x2a,
-	0xaa, 0x2c, 0xdb, 0xd1, 0xfc, 0x45, 0xb3, 0x9a, 0x26, 0xf8, 0x4e, 0x5c, 0xea, 0x88, 0xd0, 0x06,
-	0xea, 0x8c, 0x25, 0xe1, 0xb2, 0xbe, 0x4a, 0x0c, 0x16, 0x30, 0x6c, 0x44, 0x90, 0x11, 0xc0, 0x2b,
-	0xae, 0x96, 0x8a, 0x0a, 0x85, 0xb1, 0xdf, 0x22, 0x1e, 0x74, 0xcf, 0x34, 0x17, 0xdf, 0xd1, 0xa6,
-	0x45, 0x5e, 0x79, 0xfb, 0x6d, 0x32, 0x04, 0xef, 0x84, 0x67, 0x45, 0x8a, 0xda, 0xd3, 0x0d, 0x7a,
-	0xd0, 0x3d, 0xcb, 0x0a, 0x75, 0x1d, 0xfc, 0xe9, 0x40, 0xbf, 0x7a, 0xa3, 0xbb, 0x06, 0xe3, 0xae,
-	0xed, 0x27, 0x5f, 0xc2, 0x80, 0xc9, 0x55, 0x5c, 0x35, 0xcf, 0x70, 0xed, 0x87, 0x07, 0x4c, 0xee,
-	0xfa, 0xa9, 0x1b, 0x1f, 0xd1, 0x7c, 0x25, 0x90, 0xc6, 0x86, 0x46, 0x3f, 0xec, 0x45, 0x34, 0x0f,
-	0x91, 0xc6, 0xba, 0x05, 0xda, 0xf4, 0x4e, 0x30, 0x85, 0xe3, 0xae, 0xb1, 0x69, 0xdf, 0xdf, 0xb4,
-	0xfc, 0xe2, 0xd7, 0x72, 0xbd, 0x6b, 0x4b, 0xa0, 0x6b, 0x7f, 0xc5, 0x4b, 0x85, 0xdf, 0x22, 0x9f,
-	0xc0, 0xb0, 0x31, 0xdd, 0x96, 0xad, 0x9d, 0x5c, 0x4d, 0xc5, 0x6f, 0x13, 0x1f, 0x06, 0xd5, 0x0c,
-	0x1b, 0x8d, 0x3b, 0xff, 0xc7, 0x81, 0xd1, 0xd2, 0x76, 0x61, 0x89, 0xe2, 0x2d, 0x8b, 0x90, 0xfc,
-	0x5c, 0x0f, 0x22, 0x4f, 0xf7, 0xdc, 0xd2, 0xc9, 0xf3, 0x3d, 0x86, 0xf2, 0xf8, 0x04, 0x2d, 0xb2,
-	0x68, 0x66, 0x23, 0x0f, 0x44, 0x4c, 0xf6, 0xa5, 0x0a, 0x5a, 0xf3, 0x7f, 0xdb, 0xe5, 0x35, 0xa9,
-	0x8a, 0x7c, 0x0d, 0xc3, 0xc6, 0x89, 0x24, 0x41, 0x33, 0xf8, 0xae, 0x2b, 0x3c, 0xf9, 0xea, 0x5e,
-	0x1f, 0x7b, 0x63, 0x83, 0x16, 0x39, 0x85, 0x8e, 0xbe, 0xa2, 0xe4, 0xae, 0x23, 0x54, 0x3b, 0xaf,
-	0x93, 0xc9, 0xfe, 0x23, 0x15, 0xb4, 0xc8, 0x39, 0x3c, 0x3d, 0xdf, 0xae, 0x53, 0x26, 0x37, 0x1f,
-	0x6c, 0xf3, 0x2d, 0xe0, 0xdb, 0xf6, 0xc9, 0xa7, 0x4d, 0xbb, 0x9d, 0xc8, 0x16, 0x39, 0x83, 0x91,
-	0x5d, 0x90, 0x6a, 0x7e, 0xc9, 0x17, 0xf7, 0xad, 0xd1, 0x1e, 0x98, 0x1f, 0x93, 0xd7, 0x98, 0x30,
-	0xb5, 0xd9, 0xae, 0x8f, 0x23, 0x9e, 0xcd, 0x2e, 0x36, 0x78, 0x81, 0x42, 0xb0, 0xb5, 0x7e, 0x6c,
-	0x96, 0xc6, 0xf6, 0x7f, 0xff, 0x8a, 0x16, 0x45, 0x91, 0xb2, 0x88, 0x2a, 0xc6, 0xf3, 0x55, 0xc1,
-	0x85, 0xa2, 0xe9, 0x8d, 0xa5, 0x32, 0xc8, 0x52, 0x55, 0x66, 0x98, 0xb1, 0x5c, 0xa1, 0xc8, 0x69,
-	0x3a, 0xcb, 0x78, 0x8c, 0xe9, 0xfa, 0x91, 0xf9, 0xe5, 0xf0, 0xed, 0xff, 0x01, 0x00, 0x00, 0xff,
-	0xff, 0x84, 0x87, 0xb7, 0xd5, 0x55, 0x08, 0x00, 0x00,
+var fileDescriptor_cloudstorage_fc037c0ebb5011e5 = []byte{
+	// 1228 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x57, 0xcf, 0x73, 0xdb, 0xc4,
+	0x17, 0xb7, 0x2c, 0xbb, 0xb1, 0x5f, 0x12, 0x7f, 0xd5, 0x6d, 0xbe, 0xad, 0xeb, 0xfe, 0xc0, 0x15,
+	0x97, 0xd0, 0x81, 0x06, 0xdc, 0xe1, 0xc4, 0x81, 0x42, 0x1b, 0x18, 0x03, 0xed, 0x64, 0xe4, 0xa4,
+	0x9d, 0x29, 0x30, 0x9e, 0xb5, 0xf4, 0xe2, 0x2c, 0x91, 0xb4, 0xea, 0xee, 0xaa, 0xad, 0xb9, 0xf0,
+	0x17, 0xc0, 0xc0, 0x95, 0x0b, 0x17, 0x66, 0xf8, 0x37, 0x99, 0xdd, 0x95, 0x1c, 0xc9, 0x4d, 0xdc,
+	0xe9, 0x0c, 0xa7, 0xf8, 0xfd, 0xfe, 0xf5, 0xd1, 0x7b, 0x1b, 0xe8, 0x67, 0x82, 0x2b, 0xbe, 0x17,
+	0xc6, 0x3c, 0x8f, 0xa4, 0xe2, 0x82, 0xce, 0xf1, 0x9e, 0x61, 0x91, 0xad, 0x2a, 0xcf, 0x9f, 0x81,
+	0xf7, 0x15, 0x8b, 0xf1, 0xe1, 0x49, 0x9e, 0x9e, 0x06, 0xf8, 0x22, 0x47, 0xa9, 0xc8, 0x2d, 0x80,
+	0x04, 0xa5, 0xa4, 0x73, 0x9c, 0xb2, 0xa8, 0xef, 0x0c, 0x9d, 0xdd, 0x6e, 0xd0, 0x2d, 0x38, 0xe3,
+	0x88, 0xec, 0x41, 0x8b, 0xa5, 0xc7, 0xbc, 0xdf, 0x1c, 0x3a, 0xbb, 0x9b, 0xa3, 0x1b, 0xf7, 0x6a,
+	0x31, 0x96, 0xce, 0xc6, 0xe9, 0x31, 0x0f, 0x8c, 0xa2, 0x9f, 0x43, 0x77, 0xc9, 0xfe, 0xaf, 0x9d,
+	0x93, 0x3e, 0x6c, 0x84, 0x3c, 0x55, 0x98, 0xaa, 0xbe, 0x3b, 0x74, 0x76, 0xb7, 0x82, 0x92, 0xf4,
+	0x3f, 0x83, 0xed, 0x9a, 0x01, 0xb9, 0x0a, 0x97, 0xf8, 0xf1, 0xb1, 0x44, 0x65, 0xc2, 0xba, 0x41,
+	0x41, 0x11, 0x02, 0x2d, 0xc9, 0x7e, 0x46, 0x13, 0xd3, 0x0d, 0xcc, 0x6f, 0xff, 0x47, 0xd8, 0x09,
+	0x70, 0xce, 0xa4, 0x42, 0xf1, 0xc5, 0x1c, 0x53, 0x55, 0xf6, 0x86, 0x40, 0xeb, 0x84, 0x4b, 0x55,
+	0x24, 0x6e, 0x7e, 0xeb, 0x14, 0x5e, 0xa2, 0x90, 0x8c, 0xa7, 0xc6, 0x45, 0x37, 0x28, 0x49, 0x72,
+	0x0d, 0x36, 0x72, 0x89, 0x42, 0x57, 0xea, 0x1a, 0xc9, 0x25, 0x4d, 0x8e, 0x23, 0xff, 0x29, 0x5c,
+	0x99, 0xa0, 0xd4, 0x3a, 0x01, 0xa6, 0xf8, 0xaa, 0xf4, 0xfe, 0x39, 0xdc, 0x4c, 0x68, 0x4a, 0xe7,
+	0x98, 0x60, 0xaa, 0xa6, 0x12, 0xc5, 0x4b, 0x14, 0xd3, 0x8c, 0xc7, 0xf1, 0x54, 0xf1, 0x53, 0x4c,
+	0x8b, 0xa8, 0xd7, 0xcf, 0x74, 0x26, 0x46, 0xe5, 0x80, 0xc7, 0xf1, 0xa1, 0x56, 0xf0, 0x3f, 0x85,
+	0x9d, 0xba, 0x5f, 0x99, 0xf1, 0x54, 0xa2, 0xee, 0xba, 0xc4, 0x50, 0xa0, 0x9a, 0x9e, 0xe2, 0xa2,
+	0xec, 0xba, 0xe5, 0x7c, 0x8b, 0x0b, 0x7f, 0x04, 0xff, 0x5f, 0xa9, 0xb6, 0xb0, 0xbb, 0x0e, 0x1d,
+	0xaa, 0x19, 0x67, 0xb3, 0xda, 0x30, 0xf4, 0x38, 0xf2, 0x3f, 0x02, 0xcf, 0xe8, 0xea, 0xe0, 0x65,
+	0xfe, 0x6b, 0xd4, 0xc7, 0xd0, 0x35, 0xea, 0x66, 0x12, 0x3d, 0x68, 0x2e, 0x35, 0x9a, 0x2c, 0xd2,
+	0x5d, 0x4d, 0x69, 0x82, 0x45, 0xfb, 0xcc, 0xef, 0x6a, 0x57, 0xdd, 0x5a, 0x57, 0xfd, 0x3f, 0x1d,
+	0xd8, 0x32, 0xbe, 0x1e, 0x5b, 0xd8, 0xbc, 0x0d, 0x53, 0x23, 0x68, 0xa9, 0x45, 0x66, 0xbd, 0xf7,
+	0x46, 0xb7, 0xeb, 0x98, 0xaa, 0x3a, 0x3a, 0x5c, 0x64, 0x18, 0x18, 0x5d, 0xed, 0x52, 0x51, 0x79,
+	0x5a, 0xf4, 0xdd, 0x26, 0xd0, 0xd5, 0x1c, 0xd3, 0xe7, 0x2a, 0xea, 0x5a, 0x75, 0xd4, 0x7d, 0x02,
+	0x37, 0xbe, 0x63, 0x52, 0x3d, 0x62, 0x02, 0x43, 0xc5, 0xc5, 0xa2, 0x70, 0xfd, 0xd0, 0x8a, 0x75,
+	0xa5, 0x19, 0x55, 0x27, 0x25, 0x7e, 0xf4, 0x6f, 0xff, 0x0f, 0x07, 0x86, 0x1a, 0xa9, 0x47, 0x59,
+	0xcc, 0x69, 0xf4, 0x88, 0xbf, 0x4a, 0xf5, 0xdf, 0x15, 0xc3, 0x5b, 0x00, 0x02, 0x13, 0xae, 0x70,
+	0x9a, 0x8b, 0xb8, 0xac, 0xd1, 0x72, 0x8e, 0x44, 0x4c, 0xee, 0x43, 0xeb, 0x27, 0x3e, 0x93, 0xfd,
+	0xe6, 0xd0, 0xdd, 0xdd, 0x1c, 0xbd, 0x57, 0xaf, 0xb1, 0xee, 0xf8, 0x1b, 0x3e, 0x0b, 0x8c, 0xb2,
+	0x1e, 0x57, 0x42, 0x5f, 0x4f, 0x0d, 0xf8, 0x5d, 0x03, 0xfe, 0x8d, 0x84, 0xbe, 0x9e, 0x68, 0xfc,
+	0x7f, 0x0f, 0x97, 0xdf, 0xb0, 0x22, 0x3b, 0xd0, 0x3e, 0x66, 0x31, 0xca, 0xbe, 0x33, 0x74, 0x77,
+	0xbb, 0x81, 0x25, 0xc8, 0xc7, 0xb0, 0x53, 0x04, 0x2a, 0x11, 0x6b, 0x9b, 0x66, 0x87, 0x49, 0x0a,
+	0x99, 0x45, 0xaa, 0x45, 0xe9, 0xef, 0x0e, 0x78, 0xcb, 0x06, 0x55, 0x0a, 0x5c, 0x37, 0xc4, 0xb2,
+	0x71, 0xcd, 0xb3, 0xc6, 0x91, 0x0f, 0xa1, 0xcd, 0x14, 0x26, 0xb2, 0xef, 0x9a, 0xaa, 0xaf, 0xbe,
+	0xb9, 0x2d, 0xc6, 0x0a, 0x93, 0xc0, 0x2a, 0x91, 0x1b, 0xd0, 0x45, 0x21, 0xb8, 0x98, 0x26, 0x72,
+	0x6e, 0xa6, 0xd6, 0x0d, 0x3a, 0x86, 0xf1, 0x58, 0xce, 0xfd, 0xdf, 0x9a, 0xd0, 0x3b, 0x10, 0x7c,
+	0x2e, 0x50, 0xca, 0xa3, 0x2c, 0xa2, 0xca, 0x00, 0x30, 0xcc, 0x85, 0xd0, 0x33, 0xb6, 0xfb, 0xa2,
+	0x24, 0x75, 0x1f, 0x14, 0x57, 0x34, 0x2e, 0x36, 0x86, 0x25, 0xc8, 0x03, 0x68, 0x4b, 0x45, 0x95,
+	0x6d, 0x65, 0x6f, 0x74, 0xb7, 0x9e, 0x4d, 0xdd, 0xf9, 0x92, 0x9c, 0x68, 0x8b, 0xc0, 0x1a, 0xea,
+	0x88, 0x45, 0xc1, 0x45, 0x7e, 0x25, 0xa9, 0x17, 0x89, 0x81, 0x23, 0x8b, 0xfa, 0x6d, 0xbb, 0x48,
+	0x34, 0x39, 0x8e, 0xfc, 0x67, 0xb0, 0x5d, 0x73, 0x45, 0x7a, 0x00, 0x4f, 0xb8, 0x9a, 0x28, 0x2a,
+	0x14, 0x46, 0x5e, 0x83, 0x74, 0xa1, 0xbd, 0xaf, 0x8b, 0xf4, 0x1c, 0x2d, 0x1a, 0xa7, 0xa5, 0xb6,
+	0xd7, 0x24, 0xdb, 0xd0, 0x7d, 0xc8, 0x93, 0x2c, 0x46, 0xad, 0xe9, 0x92, 0x2d, 0xe8, 0xec, 0xa7,
+	0x2f, 0x72, 0xcc, 0x31, 0xf2, 0x5a, 0xfe, 0x06, 0xb4, 0xf7, 0x93, 0x4c, 0x2d, 0xfc, 0x5f, 0x1d,
+	0xe8, 0x94, 0xad, 0x3c, 0x0f, 0xbe, 0xe7, 0xad, 0x4f, 0x72, 0x07, 0xb6, 0x98, 0x9c, 0x46, 0xe5,
+	0x8c, 0x4d, 0x4b, 0x3a, 0xc1, 0x26, 0x93, 0xcb, 0xb1, 0x6b, 0xf0, 0x85, 0x34, 0x9d, 0x0a, 0xa4,
+	0x91, 0xa9, 0xb6, 0x13, 0x6c, 0x84, 0x34, 0x0d, 0x90, 0x46, 0x7a, 0x52, 0x5a, 0xf4, 0x4a, 0x30,
+	0x85, 0xa6, 0xde, 0x4e, 0xa0, 0x75, 0x9f, 0x69, 0xda, 0xff, 0xcb, 0x81, 0x2b, 0x75, 0x68, 0xda,
+	0x4f, 0xb2, 0xb2, 0x6b, 0x9d, 0xea, 0xae, 0xad, 0x2d, 0xa5, 0x66, 0x6d, 0x29, 0x2d, 0xcb, 0x71,
+	0x2b, 0xe5, 0x3c, 0x80, 0xcd, 0x0c, 0x45, 0xc2, 0xcc, 0x16, 0x95, 0xfd, 0xd6, 0xd0, 0x3d, 0x67,
+	0x69, 0x84, 0x21, 0x4a, 0x79, 0x60, 0xd4, 0x98, 0xe4, 0x69, 0x50, 0x35, 0xf1, 0x17, 0x30, 0xb0,
+	0x5b, 0x65, 0x65, 0x4d, 0xdb, 0x3c, 0x2f, 0xde, 0x91, 0xab, 0xa1, 0x9b, 0xef, 0x1e, 0xfa, 0x17,
+	0xe8, 0x1e, 0x2e, 0x97, 0x54, 0x05, 0x34, 0x4e, 0x15, 0x34, 0xd5, 0x56, 0x35, 0x6b, 0xad, 0x5a,
+	0x49, 0xc0, 0x7d, 0xf7, 0x04, 0x3e, 0x80, 0xde, 0x91, 0x2c, 0xae, 0xc8, 0xfa, 0xb9, 0xdc, 0x7d,
+	0x5a, 0x1c, 0x90, 0xca, 0xf2, 0xd5, 0x90, 0x7c, 0xc2, 0x0b, 0x86, 0xd7, 0x20, 0x97, 0x61, 0xbb,
+	0xb6, 0x4c, 0x2d, 0x88, 0xed, 0xf4, 0x35, 0x26, 0xbd, 0x26, 0xf1, 0x60, 0xab, 0xc4, 0x81, 0xe1,
+	0xb8, 0x77, 0x73, 0xf0, 0x56, 0x73, 0x24, 0xff, 0x83, 0xcd, 0x89, 0xcd, 0x5f, 0x03, 0xcc, 0x6b,
+	0x68, 0xb3, 0x82, 0x61, 0x50, 0xe5, 0x39, 0x96, 0x43, 0x55, 0x5e, 0x7c, 0xa1, 0xf6, 0xfb, 0x28,
+	0xae, 0x21, 0xd5, 0xdf, 0x47, 0x0f, 0xc0, 0x90, 0xd6, 0xa0, 0xb5, 0x14, 0xeb, 0x03, 0xe8, 0xb5,
+	0x47, 0x7f, 0x3b, 0xd0, 0x9b, 0x9c, 0xed, 0x3a, 0x16, 0x22, 0xf9, 0xba, 0x9a, 0x2b, 0xb9, 0x76,
+	0xc1, 0x63, 0x66, 0x70, 0xfb, 0x02, 0x41, 0x71, 0x55, 0xfd, 0x06, 0x19, 0xd7, 0x8b, 0x24, 0x6f,
+	0xb1, 0x18, 0x5c, 0x14, 0xca, 0x6f, 0x8c, 0xfe, 0x71, 0x8b, 0xe3, 0x59, 0x26, 0xf9, 0x1c, 0xb6,
+	0x6b, 0xb7, 0x9f, 0xf8, 0x75, 0xe3, 0xf3, 0x9e, 0x41, 0x83, 0xf7, 0xd7, 0xea, 0xd8, 0xc7, 0x83,
+	0xdf, 0x20, 0x3f, 0xc0, 0x65, 0xf3, 0x0e, 0x29, 0x02, 0x1a, 0x8c, 0x90, 0x3b, 0x75, 0xdb, 0x73,
+	0xde, 0x41, 0x03, 0x7f, 0x9d, 0xca, 0xd2, 0xfb, 0x23, 0x68, 0xe9, 0xde, 0x93, 0xf3, 0x2e, 0x7a,
+	0xe5, 0x55, 0x32, 0x18, 0x5c, 0x7c, 0xf1, 0xfd, 0x06, 0x39, 0x80, 0x6b, 0x07, 0xf9, 0x2c, 0x66,
+	0xf2, 0xe4, 0x8d, 0x93, 0xb4, 0xe2, 0x78, 0x55, 0x3e, 0xb8, 0x52, 0x97, 0xdb, 0x7d, 0xd9, 0x20,
+	0xfb, 0xd0, 0xb3, 0x18, 0x2a, 0x77, 0x2d, 0xb9, 0xb9, 0xee, 0x16, 0x5c, 0xe0, 0xe6, 0xcb, 0xf9,
+	0x73, 0x9c, 0x33, 0x75, 0x92, 0xcf, 0xee, 0x85, 0x3c, 0xd9, 0x3b, 0x3c, 0xc1, 0x43, 0x14, 0x82,
+	0xcd, 0xf4, 0x28, 0x59, 0x1c, 0xd9, 0xa7, 0xfd, 0x94, 0x66, 0x59, 0x16, 0xb3, 0x90, 0x2a, 0xc6,
+	0xd3, 0x69, 0xc6, 0x85, 0xa2, 0xf1, 0x99, 0xa4, 0x14, 0xc8, 0x82, 0x55, 0x44, 0xd8, 0x63, 0xa9,
+	0x42, 0x91, 0xd2, 0x78, 0x2f, 0xe1, 0x11, 0xc6, 0xb3, 0x4b, 0xe6, 0x1f, 0x83, 0xfb, 0xff, 0x06,
+	0x00, 0x00, 0xff, 0xff, 0x10, 0xd8, 0xc2, 0xcd, 0x34, 0x0c, 0x00, 0x00,
 }

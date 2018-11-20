@@ -19,7 +19,7 @@ type ListDirectoryHandler struct {
 func (handler ListDirectoryHandler) HandleMessage() error {
 	listDirectoryMessage := &cldstrg.ListDirectoryMessageContent{}
 	proto.Unmarshal(handler.message.Content, listDirectoryMessage)
-	path := listDirectoryMessage.Path
+	path := filepath.Clean(listDirectoryMessage.Path)
 
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
@@ -30,7 +30,7 @@ func (handler ListDirectoryHandler) HandleMessage() error {
 
 	for _, f := range files {
 		filepath.Join(path, f.Name())
-		directoryContents = append(directoryContents, &cldstrg.FileItem{Path:filepath.Join(path, f.Name()), IsDirectory:f.IsDir(), Size:f.Size()})
+		directoryContents = append(directoryContents, &cldstrg.FileItem{Path:filepath.Clean(filepath.Join(path, f.Name())), IsDirectory:f.IsDir(), Size:f.Size()})
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30 * time.Second)
