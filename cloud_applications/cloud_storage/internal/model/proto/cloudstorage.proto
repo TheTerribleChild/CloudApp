@@ -11,11 +11,11 @@ package cloudstorage;
 //==============================Storage Service============================
 
 service StorageService{
-    rpc UploadFile(FileChunk) returns (FileChunkRequest) {};
-    rpc DownloadFile(FileChunkRequest) returns (FileChunk) {};
+    rpc UploadFile(stream FileChunk) returns (Empty) {};
+    rpc DownloadFile(FileAccessRequest) returns (stream FileChunk) {};
 }
 
-message FileChunkRequest{
+message FileAccessRequest{
     string message_id = 1;
     FileChunkInfo info = 2;
 }
@@ -111,6 +111,7 @@ message ProgressUpdate{
     ProgressState state = 3;
     string message = 4;
     string task_id = 5;
+    int32 last_update_time = 6;
     enum ProgressState{
         NotStarted = 0;
         Error = 1;

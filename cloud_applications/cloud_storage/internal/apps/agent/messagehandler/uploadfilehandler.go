@@ -31,26 +31,31 @@ func (handler UploadFileHandler) HandleMessage() error {
 	proto.Unmarshal(handler.message.Content, fileUploadDownloadMessageContent)
 	jobs := fileUploadDownloadMessageContent.Jobs
 	storageServerAddress := fileUploadDownloadMessageContent.RemoteUrl
+	sscConn, err := grpc.Dial(storageServerAddress, grpc.WithInsecure())
+	if err != nil {
+		return err
+	}
+	handler.ssc = cldstrg.NewStorageServiceClient(sscConn)
+	defer sscConn.Close()
 
 	for _, job := range jobs {
 		files, err := fileutil.GetAllFileInDirectoryRecursively(job.Files, "")
 		if err != nil {
 			return err
 		}
-
-		sscConn, err := grpc.Dial(storageServerAddress, grpc.WithInsecure())
-		if err != nil {
-			return err
-		}
-		handler.ssc = cldstrg.NewStorageServiceClient(sscConn)
-		defer sscConn.Close()
 		
 		handler.handlerWrapper.updateProgressAsync(cldstrg.ProgressUpdate_InProgress, 0, 1, "Compressing files.")
 		err = fileutil.ZipFiles(files, "upload.zip")
 		if err != nil {
 			return err
 		}
-		err = handler.uploadFile("upload.zip")
+		
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
+		defer cancel()
+		client, err := handler.ssc.UploadFile(ctx)
+		
+		err = handler.uploadFile("upload.zip", client)
+		client.CloseSend()
 		if err != nil {
 			return err
 		}
@@ -60,32 +65,24 @@ func (handler UploadFileHandler) HandleMessage() error {
 }
 
 
-func (handler UploadFileHandler) uploadFile(file string) error {
+func (handler UploadFileHandler) uploadFile(file string, client cldstrg.StorageService_UploadFileClient) error {
 	log.Println("Uploading " + file)
 	uploadFile, err := os.Open(file)
 	if err != nil {
 		return err
 	}
-	offset, bufferSize, err := handler.uploadChunk(0, 0, nil)
-	if err != nil {
-		return err
-	}
+	
 	stat, err := uploadFile.Stat()
 	totalSize := stat.Size()
 	
 	handler.handlerWrapper.updateProgressAsync(cldstrg.ProgressUpdate_InProgress, 0, totalSize, "Uploading.")
-	byteBuffer := make([]byte, bufferSize)
+	byteBuffer := make([]byte, 1024*1024)
+	
 	for {
-		if size, err := uploadFile.ReadAt(byteBuffer, offset); size > 0 {
-			handler.handlerWrapper.updateProgressAsync(cldstrg.ProgressUpdate_InProgress, offset + int64(size), totalSize, "Uploading.")
-			if nextOffset, nextSize, err := handler.uploadChunk(offset, int64(size), byteBuffer); err != nil {
+		if size, err := uploadFile.Read(byteBuffer); size > 0 {
+			//handler.handlerWrapper.updateProgressAsync(cldstrg.ProgressUpdate_InProgress, offset + int64(size), totalSize, "Uploading.")
+			if err := client.Send(&cldstrg.FileChunk{Content:byteBuffer[0:size]}); err != nil {
 				return err
-			} else {
-				offset = nextOffset
-				if nextSize != bufferSize {
-					bufferSize = nextSize
-					byteBuffer = make([]byte, bufferSize)
-				}
 			}
 		} else if err == io.EOF {
 			break;
@@ -96,23 +93,4 @@ func (handler UploadFileHandler) uploadFile(file string) error {
 	log.Println("Finish uploading " + file)
 	handler.handlerWrapper.updateProgressAsync(cldstrg.ProgressUpdate_InProgress, 1, 1, "Upload completed.")
 	return nil
-}
-
-
-func (handler UploadFileHandler) uploadChunk(offset int64, size int64, data []byte) (nextOffset int64, nextSize int64, err error) {
-	//log.Printf("Uploading %d bytes\n", size)
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-	
-	fileChunkInfo := &cldstrg.FileChunkInfo{Offset:offset, Size:size}
-	nextRequest, err := handler.ssc.UploadFile(ctx, &cldstrg.FileChunk{Content: data[0:size], Info:fileChunkInfo})
-	if err != nil {
-		return 0, 0, err
-	}
-	if nextRequest.Info == nil {
-		return 
-	}
-	nextOffset = nextRequest.Info.Offset
-	nextSize = nextRequest.Info.Size
-	return
 }
