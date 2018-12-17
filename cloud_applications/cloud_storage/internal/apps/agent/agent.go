@@ -2,7 +2,6 @@ package agent
 
 import(
 	"log"
-	"time"
 
 	cldstrg "github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/cloud_storage/internal/model"
 	msghdlr "github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/cloud_storage/internal/apps/agent/messagehandler"
@@ -39,16 +38,16 @@ func(agent *Agent) Run(){
 	defer ascConn.Close()
 
 	log.Println("Agent has started.")
-	for true {
-		agent.poll()
+	ctx := context.Background()
+	client, err := agent.asc.Poll(ctx, &cldstrg.AgentPollRequest{AgentId:"abc"})
+	for {
+		agent.poll(client)
 	}
 }
 
-func(agent *Agent) poll(){
-	log.Println("Polling for message.")
-	ctx, cancel := context.WithTimeout(context.Background(), 30 * time.Second)
-	defer cancel()
-	message, err := agent.asc.Poll(ctx, &cldstrg.AgentPollRequest{AgentId:"abc"})
+func(agent *Agent) poll(client cldstrg.AgentService_PollClient){
+	
+	message, err := client.Recv()
 	if err != nil {
 		if statusCode, ok := status.FromError(err); ok && statusCode.Code() == codes.NotFound{
 			return

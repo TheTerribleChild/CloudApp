@@ -1,21 +1,16 @@
 package agentmessagehandler
 
 import (
-	//"bytes"
 	"log"
 	"os"
-	//"compress/gzip"
-	//"archive/zip"
-	//"fmt"
 	"io"
-	"time"
 
 	//"google.golang.org/grpc/metadata"
 	cldstrg "github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/cloud_storage/internal/model"
 	//auth "github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/cloud_storage/internal/common/auth"
 	fileutil "github.com/TheTerribleChild/cloud_appplication_portal/commons/utils/fileutil"
+	contextbuilder "github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/cloud_storage/internal/common/util/contextbuilder"
 	"github.com/golang/protobuf/proto"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
 
@@ -37,7 +32,6 @@ func (handler UploadFileHandler) HandleMessage() error {
 	}
 	handler.ssc = cldstrg.NewStorageServiceClient(sscConn)
 	defer sscConn.Close()
-
 	for _, job := range jobs {
 		files, err := fileutil.GetAllFileInDirectoryRecursively(job.Files, "")
 		if err != nil {
@@ -49,13 +43,11 @@ func (handler UploadFileHandler) HandleMessage() error {
 		if err != nil {
 			return err
 		}
-		
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
+		ctx, cancel := contextbuilder.BuildStorageServerContext(job.StorageServerToken)
 		defer cancel()
 		client, err := handler.ssc.UploadFile(ctx)
-		
 		err = handler.uploadFile("upload.zip", client)
-		client.CloseSend()
+		client.CloseAndRecv()
 		if err != nil {
 			return err
 		}
@@ -80,7 +72,7 @@ func (handler UploadFileHandler) uploadFile(file string, client cldstrg.StorageS
 	
 	for {
 		if size, err := uploadFile.Read(byteBuffer); size > 0 {
-			//handler.handlerWrapper.updateProgressAsync(cldstrg.ProgressUpdate_InProgress, offset + int64(size), totalSize, "Uploading.")
+			//handler.handlerWrapper.updateProgrressAsync(cldstrg.ProgressUpdate_InProgress, offset + int64(size), totalSize, "Uploading.")
 			if err := client.Send(&cldstrg.FileChunk{Content:byteBuffer[0:size]}); err != nil {
 				return err
 			}
@@ -90,6 +82,8 @@ func (handler UploadFileHandler) uploadFile(file string, client cldstrg.StorageS
 			return err
 		}
 	}
+	client.Send(&cldstrg.FileChunk{})
+	
 	log.Println("Finish uploading " + file)
 	handler.handlerWrapper.updateProgressAsync(cldstrg.ProgressUpdate_InProgress, 1, 1, "Upload completed.")
 	return nil

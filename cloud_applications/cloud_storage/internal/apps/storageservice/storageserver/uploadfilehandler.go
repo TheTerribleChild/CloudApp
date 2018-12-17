@@ -2,33 +2,63 @@ package storageserver
 
 import(
 	cldstrg "github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/cloud_storage/internal/model"
+	auth "github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/cloud_storage/internal/common/auth"
 	"os"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/grpc/metadata"
+	"context"
 	"log"
 )
 
 func (instance *StorageServer) UploadFile(stream cldstrg.StorageService_UploadFileServer) error {
-	log.Println("Request to upload file")
+
 	writeFile, err := os.Create("upload.zip")
 	if err != nil {
 		log.Println(err.Error())
 		return err
 	}
 	defer writeFile.Close()
-	
 	for {
 		chunk, err := stream.Recv()
-		//log.Println(len(chunk.Content))
 		if err != nil {
+			log.Println("error: " + err.Error())
 			if statusCode, ok := status.FromError(err); ok && (statusCode.Code() == codes.OK || statusCode.Code() == codes.Canceled){
 				return nil
 			}
 			log.Println("Error uploading file: " + err.Error())
 			return err
 		}
-		writeFile.Write(chunk.Content)
+		if len(chunk.Content) > 0 {
+			writeFile.Write(chunk.Content)
+		}else{
+			stream.SendAndClose(&cldstrg.Empty{})
+			break;
+		}
+		
 	}
-	log.Println("Completed uploading file")
 	return nil
+}
+
+func (instance *StorageServer) authenticateToken(ctx context.Context) error {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return status.Error(codes.Unauthenticated, "Missing permission.") 
+	}
+	str := md.Get("authentication")
+	if len(str) != 1 {
+		return status.Error(codes.Unauthenticated, "Invalid permission.")
+	}
+	token := str[0]
+	accessToken, err := auth.DecodeStorageServerToken("123", token)
+	if err != nil {
+		log.Println("Invalid authentication token.")
+		return status.Error(codes.Unauthenticated, "Invalid authentication token.")
+	}
+	for _, permission := range accessToken.Permissions {
+		if permission == cldstrg.AccessPermisison_StorageWrite {
+			return nil
+		}
+	}
+	return status.Error(codes.Unauthenticated, "Missing permission.")
 }

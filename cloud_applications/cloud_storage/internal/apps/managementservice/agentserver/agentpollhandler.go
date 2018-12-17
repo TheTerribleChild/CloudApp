@@ -2,34 +2,26 @@ package agentserver
 
 import(
 	"log"
-	"time"
-	"github.com/go-stomp/stomp"
-	"github.com/golang/protobuf/proto"
-	"golang.org/x/net/context"
-	"google.golang.org/grpc/status"
-	"google.golang.org/grpc/codes"
 	cldstrg "github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/cloud_storage/internal/model"
 )
 
-func (instance *AgentServer) Poll(ctx context.Context, request *cldstrg.AgentPollRequest) (*cldstrg.AgentMessage, error) {
-	//agent_id := request.AgentId
-	queueSubscription, err := instance.queueConnection.Subscribe("/queue/AgentMessage", stomp.AckClient, stomp.SubscribeOpt.Header("selector", "selector='agent'"))
-	defer queueSubscription.Unsubscribe()
-	if err != nil {
-		log.Println("Sub error: %s", err)
-	}
-	log.Println("Polling for message")
-	agentMessageContent := &cldstrg.AgentMessage{}
-	select {
-	case message, _ := <-queueSubscription.C:
-		if message.ShouldAck() {
-			instance.queueConnection.Ack(message)
+func (instance *AgentServer) Poll(request *cldstrg.AgentPollRequest, stream cldstrg.AgentService_PollServer) error {
+	agentId := request.AgentId
+	session, _ := instance.agentSessionManager.createSession(agentId)
+	pollChan := make(chan *cldstrg.AgentMessage)
+	instance.queueConsumer.AddSubscriber(agentId, pollChan)
+	for{
+		select {
+		case message := <- session.pollChan:
+			log.Println("Received message " + message.MessageId + " " + message.Type.String())
+			stream.Send(message)
+			break
+		case <-stream.Context().Done():
+			instance.queueConsumer.RemoveSubscriber(agentId)
+			instance.agentSessionManager.endSession(agentId)
+			return nil
+		case <- session.forceCloseChan:
+			return nil
 		}
-		proto.Unmarshal(message.Body, agentMessageContent)
-		log.Println("Received message " + agentMessageContent.MessageId + " " + agentMessageContent.Type.String())
-		return agentMessageContent, err
-	case <-time.After(25 * time.Second):
-		log.Println("No messages received.")
-		return agentMessageContent, status.Error(codes.NotFound, "No content.")
 	}
 }

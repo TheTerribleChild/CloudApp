@@ -36,7 +36,7 @@ message FileChunkInfo{
 service AgentService{
     rpc RegisterAgent (RegisterAgentRequest) returns (RegisterAgentResponse) {};
     rpc RenewAgentSession (SessionRenewRequest) returns (SessionRenewResponse) {};
-    rpc Poll (AgentPollRequest) returns (AgentMessage) {};
+    rpc Poll (AgentPollRequest) returns (stream AgentMessage) {};
     rpc PublishDirectoryContent (DirectoryContent) returns (Empty) {};
     rpc UpdateProgress (ProgressUpdate) returns (Empty) {}
 }
@@ -152,7 +152,7 @@ message AgentManagementServerToken{
 }
 
 //Created by Management Server using Agent's secret during session initialization. Passed to agent to access agent resources.
-message TaskToken{
+message TaskToken{ 
     string task_id = 1;
     string user_id = 2;
     repeated AccessPermisison permissions = 3;
