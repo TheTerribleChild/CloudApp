@@ -34,13 +34,6 @@ func (instance *AgentServer) InitializeServer() {
 	queueConsumer = QueueConsumer{}
 	queueConsumer.initialize()
 	go queueConsumer.run()
-	
-	// conn, err := stomp.Dial("tcp", "192.168.1.71:61613", stomp.ConnOpt.HeartBeat(0*time.Second, 0*time.Second), stomp.ConnOpt.ReadChannelCapacity(1))
-	// instance.queueConnection = conn
-
-	// if err != nil {
-	// 	log.Fatalf(err.Error())
-	// }
 
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {

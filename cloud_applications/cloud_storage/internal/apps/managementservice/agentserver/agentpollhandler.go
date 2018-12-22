@@ -7,9 +7,7 @@ import(
 
 func (instance *AgentServer) Poll(request *cldstrg.AgentPollRequest, stream cldstrg.AgentService_PollServer) error {
 	agentId := request.AgentId
-	session, _ := instance.agentSessionManager.createSession(agentId)
-	pollChan := make(chan *cldstrg.AgentMessage)
-	instance.queueConsumer.AddSubscriber(agentId, pollChan)
+	session, _ := agentSessionManager.createSession(agentId)
 	for{
 		select {
 		case message := <- session.pollChan:
@@ -17,8 +15,7 @@ func (instance *AgentServer) Poll(request *cldstrg.AgentPollRequest, stream clds
 			stream.Send(message)
 			break
 		case <-stream.Context().Done():
-			instance.queueConsumer.RemoveSubscriber(agentId)
-			instance.agentSessionManager.endSession(agentId)
+			agentSessionManager.endSession(agentId)
 			return nil
 		case <- session.forceCloseChan:
 			return nil

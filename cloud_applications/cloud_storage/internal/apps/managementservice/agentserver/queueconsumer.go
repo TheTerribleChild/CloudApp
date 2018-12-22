@@ -2,79 +2,53 @@ package	agentserver
 
 import (
 	cldstrg "github.com/TheTerribleChild/cloud_appplication_portal/cloud_applications/cloud_storage/internal/model"
-	"sync"
-	"github.com/go-stomp/stomp"
+	queueutil "github.com/TheTerribleChild/cloud_appplication_portal/commons/utils/queueutil"
 	"github.com/golang/protobuf/proto"
-	//"github.com/streadway/amqp"
-	"time"
+	"github.com/streadway/amqp"
 	"log"
 )
 
 type QueueConsumer struct{
-	subsriberChannelMap map[string]chan *cldstrg.AgentMessage
-	rwmutex sync.RWMutex
-	
-	queueConnection *stomp.Conn
-	agentPollingQueueSubscription *stomp.Subscription
+	queueConnection *amqp.Connection
+	queueChannel *amqp.Channel
+	queue amqp.Queue
 }
 
 func(instance *QueueConsumer) initialize(){
-	instance.rwmutex = sync.RWMutex{}
-	instance.subsriberChannelMap = make(map[string]chan *cldstrg.AgentMessage)
-	conn, err := stomp.Dial("tcp", "192.168.1.71:61613", stomp.ConnOpt.HeartBeat(0*time.Second, 0*time.Second))
+	conn, channel, queue, err := queueutil.GetAMQPQueueBuilder("virgo", "guest", "guest", "AgentMessage").Build()
 	if err != nil {
-		log.Fatalf(err.Error())
+		log.Fatalf("Fail to connect to queue. " + err.Error())
 	}
 	instance.queueConnection = conn
-	sub, err := instance.queueConnection.Subscribe("/queue/AgentMessage", stomp.AckClient)
-	if err != nil {
-		log.Fatalf(err.Error())
-	}
-	instance.agentPollingQueueSubscription = sub
+	instance.queueChannel = channel
+	instance.queue = queue
 }
 
 func(instance *QueueConsumer) run(){
-	for{
-		message, _ := <- instance.agentPollingQueueSubscription.C
-		go instance.handleMessage(message)
+	messages, _ := instance.queueChannel.Consume(instance.queue.Name, "", true, false, false, false, nil)
+
+	for delivery := range messages{
+		go instance.handleMessage(delivery)
 	}
 }
 
-func(instance *QueueConsumer) handleMessage(message *stomp.Message){
-	instance.queueConnection.Ack(message)
-	agentId := message.Header.Get("agentId")
+func(instance *QueueConsumer) handleMessage(delivery amqp.Delivery){
+	agentId := delivery.Headers["agentId"].(string)
 	if len(agentId) == 0 {
 		log.Println("Received bad agent message. No agentId found.")
 		return
 	}
-	if instance.subsriberChannelMap[agentId] == nil {
+	session, found := agentSessionManager.getSession(agentId)
+	if !found {
 		log.Printf("No subscription for agent %s found.", agentId)
 		return
 	}
+	
 	agentMessageContent := &cldstrg.AgentMessage{}
-	if err := proto.Unmarshal(message.Body, agentMessageContent); err != nil {
+	if err := proto.Unmarshal(delivery.Body, agentMessageContent); err != nil {
 		log.Printf("Unable to unmarshal message content for agent: %s", agentId)
 		return
 	}
-	instance.rwmutex.RLock()
-	instance.subsriberChannelMap[agentId] <- agentMessageContent
-	instance.rwmutex.RUnlock()
+	session.pollChan <- agentMessageContent
 	
-}
-
-func(instance *QueueConsumer) AddSubscriber(agentId string, pollChan chan *cldstrg.AgentMessage) {
-	if(len(agentId) == 0 || pollChan == nil){
-		return
-	}
-	instance.rwmutex.Lock()
-	instance.subsriberChannelMap[agentId] = pollChan
-	instance.rwmutex.Unlock()
-	log.Printf("Added subscription for agent %s", agentId)
-}
-
-func(instance *QueueConsumer) RemoveSubscriber(agentId string){
-	instance.rwmutex.Lock()
-	delete(instance.subsriberChannelMap, agentId)
-	instance.rwmutex.Unlock()
-	log.Printf("Removed subscription for agent %s", agentId)
 }
