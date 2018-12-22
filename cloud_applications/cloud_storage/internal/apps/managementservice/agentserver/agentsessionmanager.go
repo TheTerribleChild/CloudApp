@@ -31,11 +31,18 @@ func(instance *AgentSessionManager) createSession(agentId string) (AgentSession,
 	newSession.pollChan = make(chan *cldstrg.AgentMessage)
 	newSession.forceCloseChan = make(chan bool)
 	instance.sessionMap.Store(agentId, newSession)
-	
 	//need to publish to redis.
 	return newSession, nil
 }
 
 func(instance *AgentSessionManager) endSession(agentId string){
 	instance.sessionMap.Delete(agentId)
+}
+
+func(instance *AgentSessionManager) getSession(agentId string)(AgentSession, bool){
+	rtn, ok := instance.sessionMap.Load(agentId)
+	if ok {
+		return rtn.(AgentSession), true
+	}
+	return AgentSession{}, false
 }
