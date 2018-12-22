@@ -1,0 +1,26 @@
+syntax = "proto3";
+option go_package="github.com/TheTerribleChild/CloudApp/cloud_appplication_portal/cloud_applications/novel_application/internal/apps/connectorservice/service";
+import "model.proto";
+package connectorservice;
+
+service Connector{
+    rpc GetNovelData (NovelDownloadRequest) returns (NovelDownloadReply) {}
+    rpc GetChapterData (ChapterDownloadRequest) returns (ChapterDownloadReply) {}
+}
+
+message NovelDownloadRequest {
+    string source_id = 1;
+    string novel_id = 2;
+}
+
+message NovelDownloadReply {
+    model.NovelSourceData novel_data = 1;
+}
+
+message ChapterDownloadRequest {
+    model.ChapterSourceMetadata chapter_metadata = 1;
+}
+
+message ChapterDownloadReply {
+    model.ChapterSourceData chapter_data = 1;
+}

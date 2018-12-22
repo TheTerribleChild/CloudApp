@@ -1,0 +1,172 @@
+syntax = "proto3";
+option go_package="github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model";
+package cloudstorage;
+
+
+
+
+//==============================Management Service=========================
+
+
+//==============================Storage Service============================
+
+service StorageService{
+    rpc UploadFile(stream FileChunk) returns (Empty) {};
+    rpc DownloadFile(FileAccessRequest) returns (stream FileChunk) {};
+}
+
+message FileAccessRequest{
+    string message_id = 1;
+    FileChunkInfo info = 2;
+}
+
+message FileChunk{
+    string message_id = 1;
+    FileChunkInfo info = 2;
+    bytes content = 3;
+}
+
+message FileChunkInfo{
+    int64 offset = 1;
+    int64 size = 2;
+}
+
+//==============================Agent Service==============================
+
+service AgentService{
+    rpc RegisterAgent (RegisterAgentRequest) returns (RegisterAgentResponse) {};
+    rpc RenewAgentSession (SessionRenewRequest) returns (SessionRenewResponse) {};
+    rpc Poll (AgentPollRequest) returns (stream AgentMessage) {};
+    rpc PublishDirectoryContent (DirectoryContent) returns (Empty) {};
+    rpc UpdateProgress (ProgressUpdate) returns (Empty) {}
+}
+
+message RegisterAgentRequest{
+    string host = 1;
+    string version = 2;
+    string user_id = 3;
+}
+
+message SessionRenewRequest{
+    string management_server_poll_token = 1;
+}
+
+message SessionRenewResponse{
+    string secret_key = 1;
+}
+
+message RegisterAgentResponse{
+    string agent_id = 1;
+}
+
+message AgentPollRequest{
+    string agent_id = 1; //test
+}
+
+message AgentInfo{
+    string id = 1;
+    string name = 2;
+    string version = 3;
+}
+
+enum AgentMessageType {
+    NoMessage = 0;
+    ListDirectory = 1;
+    UploadFile = 2;
+    DownloadFile = 3;
+}
+
+message AgentMessage{
+    string message_id = 1;
+    AgentMessageType type = 2;
+    string task_token = 3;
+    bytes content = 4;
+}
+
+message ListDirectoryMessageContent{
+    string path = 1;
+}
+
+message FileUploadDownloadMessageContent{
+    string remote_url = 1;
+    repeated UploadDownloadJob jobs = 2;
+    int64 max_size = 3;
+}
+
+message UploadDownloadJob{
+    repeated string files = 1;
+    string storage_server_token = 2;
+}
+
+message DirectoryContent{
+    string message_id = 1;
+    string path = 2;
+    repeated FileItem items = 3;
+    string error_msg = 4;
+}
+
+message ProgressUpdate{
+    int64 current = 1;
+    int64 total = 2;
+    ProgressState state = 3;
+    string message = 4;
+    string task_id = 5;
+    int32 last_update_time = 6;
+    enum ProgressState{
+        NotStarted = 0;
+        Error = 1;
+        InProgress = 2;
+        Completed = 3;
+        Enqueued = 4;
+    }
+}
+
+//==============================Common Object==============================
+
+message Empty {}
+
+message FileItem{
+    string path = 1;
+    int64 size = 2;
+    bool is_directory = 3;
+    bool can_read = 4;
+    bool can_write = 5;
+    
+    
+}
+
+//==============================Token======================================
+
+//Created by Management Server. Passed to agent to be used to access Storage Server.
+message UploadDownloadToken{
+    string user_id = 1;
+    string agent_id = 2;
+    string path = 3;
+    repeated AccessPermisison permissions = 4;
+}
+
+//Created by Management Server. Passed to agent to access Management Server.
+message AgentManagementServerToken{
+    string agent_id = 1;
+    repeated AccessPermisison permissions = 2;
+}
+
+//Created by Management Server using Agent's secret during session initialization. Passed to agent to access agent resources.
+message TaskToken{ 
+    string task_id = 1;
+    string user_id = 2;
+    repeated AccessPermisison permissions = 3;
+}
+
+message UserAgentToken{
+    string user_id = 1;
+}
+
+enum AccessPermisison{
+    StorageRead = 0;
+    StorageWrite = 1;
+    StatusUpdate = 2;
+    AgentRead = 3;
+    AgentWrite = 4;
+    AgentPoll = 5;
+}
