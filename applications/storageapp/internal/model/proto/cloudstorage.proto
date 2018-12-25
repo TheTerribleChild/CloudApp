@@ -131,8 +131,6 @@ message FileItem{
     bool is_directory = 3;
     bool can_read = 4;
     bool can_write = 5;
-    
-    
 }
 
 //==============================Token======================================

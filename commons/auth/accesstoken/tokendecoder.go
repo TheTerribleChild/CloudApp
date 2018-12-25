@@ -25,7 +25,7 @@ func(instance TokenDecoder) DecodeToAccessToken(jwtString string, accessToken in
 	if token == nil {
 		return invalidTokenError
 	}
-	claim, _ := token.Claims.(*JWTTokenClaim)
+	claim := token.Claims.(*JWTTokenClaim)
 	marshalError := json.Unmarshal(claim.Payload, accessToken)
 	if invalidTokenError != nil {
 		return invalidTokenError

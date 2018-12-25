@@ -17,3 +17,9 @@ func BuildDownloadTokenAuthentiactor(secret string) AccessTokenAuthenticator {
 	authenticator := accesstoken.BuildTokenAuthenticator(secret, []accesstoken.Permission{CloudStorage_StorageRead})
 	return AccessTokenAuthenticator{TokenAuthenticator: authenticator}
 }
+
+func BuildAgentPollTokenAuthentiactor(secret string) AccessTokenAuthenticator {
+	authenticator := accesstoken.BuildTokenAuthenticator(secret, []accesstoken.Permission{CloudStorage_AgentPoll})
+	return AccessTokenAuthenticator{TokenAuthenticator: authenticator}
+}
+

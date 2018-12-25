@@ -5,7 +5,8 @@ import (
 
 	msghdlr "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/apps/agent/messagehandler"
 	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
-	"golang.org/x/net/context"
+	accesstoken "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/common/auth/accesstoken"
+	contextutil "github.com/TheTerribleChild/CloudApp/commons/utils/contextutil"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -37,7 +38,8 @@ func (agent *Agent) Run() {
 	defer ascConn.Close()
 
 	log.Println("Agent has started.")
-	ctx := context.Background()
+	pollTokenString, _ := accesstoken.CreateAccessTokenBuilder("abc", "").BuildAgentServerPollTokenString("uid", "aid")
+	ctx, _ := contextutil.GetContextBuilder().SetAuth(pollTokenString).Build()
 	client, err := agent.asc.Poll(ctx, &cldstrg.AgentPollRequest{AgentId: "abc"})
 	for {
 		agent.poll(client)

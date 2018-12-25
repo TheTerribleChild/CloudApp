@@ -5,12 +5,14 @@ import (
 )
 
 type UploadDownloadToken struct {
+	accesstoken.AccessToken
 	UserId      string
 	AgentId     string
 	Path        string
-	Permissions []accesstoken.Permission
 }
 
-func (instance UploadDownloadToken) GetPermissions() []accesstoken.Permission {
-	return instance.Permissions
+type AgentPollToken struct {
+	accesstoken.AccessToken
+	UserId      string
+	AgentId     string
 }

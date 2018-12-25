@@ -7,6 +7,7 @@ import (
 
 	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
 	contextutil "github.com/TheTerribleChild/CloudApp/commons/utils/contextutil"
+	accesstoken "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/common/auth/accesstoken"
 
 	//"github.com/golang/protobuf/proto"
 	// "golang.org/x/net/netutil"
@@ -17,6 +18,8 @@ import (
 	"net"
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type StorageServer struct{}
@@ -38,7 +41,35 @@ func (instance *StorageServer) InitializeServer() {
 
 func (instance *StorageServer) StorageServerStreamAuthInterceptor(srv interface{}, stream grpc.ServerStream,
 	info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-	handler(srv, stream)
+	requestContext := stream.Context()
+	jwtStr, err := contextutil.GetAuth(requestContext)
+	if len(jwtStr) == 0 || err != nil {
+		log.Println("Missing authorization header.")
+		return status.Error(codes.PermissionDenied, "Missing authorization header")
+	}
+	switch info.FullMethod{
+	case "/cloudstorage.StorageServer/DownloadFile":
+		downloadToken := accesstoken.UploadDownloadToken{}
+		err = accesstoken.BuildAgentPollTokenAuthentiactor("abc").TokenAuthenticator.AuthenticateAndDecodeJWTString(jwtStr, &downloadToken)
+		requestContext = contextutil.SetUserId(requestContext, downloadToken.UserId)
+		requestContext = contextutil.SetAgentId(requestContext, downloadToken.AgentId)
+		break
+	case "/cloudstorage.StorageServer/UploadFile":
+		uploadToken := accesstoken.UploadDownloadToken{}
+		err = accesstoken.BuildAgentPollTokenAuthentiactor("abc").TokenAuthenticator.AuthenticateAndDecodeJWTString(jwtStr, &uploadToken)
+		requestContext = contextutil.SetUserId(requestContext, uploadToken.UserId)
+		requestContext = contextutil.SetAgentId(requestContext, uploadToken.AgentId)
+		break
+	default:
+		return status.Error(codes.InvalidArgument, "Invalid request.")
+	}
+	if err != nil {
+		log.Println("Unauthorized request." + err.Error())
+		return status.Error(codes.PermissionDenied, "Unauthorized request.")
+	}
+	newStream := grpc_middleware.WrapServerStream(stream)
+   	newStream.WrappedContext = requestContext
+	handler(srv, newStream)
 	return nil
 }
 

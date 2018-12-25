@@ -1,8 +1,8 @@
 package accesstoken
 
 
-type AccessToken interface{
-	GetPermissions() []Permission
+type AccessToken struct{
+	Permissions []Permission
 }
 
 type Permission string

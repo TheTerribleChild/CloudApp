@@ -5,16 +5,17 @@ import (
 	// "encoding/json"
 
 	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
-
-	// "golang.org/x/net/netutil"
+	accesstoken "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/common/auth/accesstoken"
+	grpcutil "github.com/TheTerribleChild/CloudApp/commons/utils/grpcutil"
 	"google.golang.org/grpc"
 
 	//"google.golang.org/grpc/codes"
 	"log"
 	"net"
-	"github.com/grpc-ecosystem/go-grpc-middleware"
 	contextutil "github.com/TheTerribleChild/CloudApp/commons/utils/contextutil"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type AgentServer struct {
@@ -22,8 +23,10 @@ type AgentServer struct {
 	agentSessionManager AgentSessionManager
 }
 
-var queueConsumer QueueConsumer
-var agentSessionManager AgentSessionManager
+var(
+	queueConsumer QueueConsumer
+	agentSessionManager AgentSessionManager
+)
 
 func (instance *AgentServer) InitializeServer() {
 
@@ -37,7 +40,7 @@ func (instance *AgentServer) InitializeServer() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	chainstream := grpc_middleware.ChainStreamServer(instance.AgentServerStreamLogInterceptor, instance.AgentServerStreamAuthInterceptor)
+	chainstream := grpcutil.GetChainStreamInterceptorBuilder().AddLogInterceptor().AddAuthInterceptor(instance.authenticateRequest).Build()
 	s := grpc.NewServer(grpc.MaxConcurrentStreams(10000), grpc.StreamInterceptor(chainstream))
 	cldstrg.RegisterAgentServiceServer(s, instance)
 	reflection.Register(s)
@@ -46,18 +49,15 @@ func (instance *AgentServer) InitializeServer() {
 	}
 }
 
-func (instance *AgentServer) AgentServerStreamAuthInterceptor(srv interface{}, stream grpc.ServerStream,
-	info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-	handler(srv, stream)
-	return nil
-}
-
-func (instance *AgentServer) AgentServerStreamLogInterceptor(srv interface{}, stream grpc.ServerStream,
-	info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-	start := time.Now()
-	toe, _ := contextutil.GetToe(stream.Context())
-	log.Printf("[toe=%s]Request to: %s", toe, info.FullMethod)
-	handler(srv, stream)
-	log.Printf("[toe=%s]Request completed. Took: %dms", toe, time.Since(start)/time.Millisecond)
-	return nil
+func (instance *AgentServer) authenticateRequest(method string, jwtStr string) error {
+	log.Println("agent auth")
+	var tokenAuthenticator accesstoken.AccessTokenAuthenticator
+	switch method{
+	case "/cloudstorage.AgentService/Poll":
+		tokenAuthenticator = accesstoken.BuildAgentPollTokenAuthentiactor("abc")
+		break
+	default:
+		return status.Error(codes.InvalidArgument, "Invalid request.")
+	}
+	return tokenAuthenticator.TokenAuthenticator.AuthenticateJWTStringWithPermission(jwtStr)
 }
