@@ -9,7 +9,7 @@ import (
 	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
 	//auth "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/common/auth"
 	contextbuilder "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/common/util/contextbuilder"
-	fileutil "github.com/TheTerribleChild/CloudApp/commons/utils/fileutil"
+	fileutil "github.com/TheTerribleChild/CloudApp/commons/utils/file"
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc"
 )

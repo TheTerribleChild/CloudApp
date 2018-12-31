@@ -1,13 +1,11 @@
 package storageserver
 
 import (
-	"time"
-	// "encoding/json"
-	//"fmt"
-
 	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
-	contextutil "github.com/TheTerribleChild/CloudApp/commons/utils/contextutil"
+	//contextutil "github.com/TheTerribleChild/CloudApp/commons/utils/contextutil"
 	accesstoken "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/common/auth/accesstoken"
+	auth "github.com/TheTerribleChild/CloudApp/commons/auth/accesstoken"
+	grpcutil "github.com/TheTerribleChild/CloudApp/commons/utils/grpc"
 
 	//"github.com/golang/protobuf/proto"
 	// "golang.org/x/net/netutil"
@@ -16,9 +14,9 @@ import (
 	//"google.golang.org/grpc/codes"
 	"log"
 	"net"
-	"github.com/grpc-ecosystem/go-grpc-middleware"
-	"google.golang.org/grpc/reflection"
+
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 )
 
@@ -29,7 +27,8 @@ func (instance *StorageServer) InitializeServer() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	chainstream := grpc_middleware.ChainStreamServer(instance.StorageServerStreamLogInterceptor, instance.StorageServerStreamAuthInterceptor)
+	chainstream := grpcutil.GetChainStreamInterceptorBuilder().AddLogInterceptor().AddAuthInterceptor(instance.authenticateRequest).Build()
+	//chainstream := grpc_middleware.ChainStreamServer(instance.StorageServerStreamLogInterceptor, instance.StorageServerStreamAuthInterceptor)
 	s := grpc.NewServer(grpc.MaxRecvMsgSize(11*1024*1024), grpc.StreamInterceptor(chainstream))
 	cldstrg.RegisterStorageServiceServer(s, instance)
 	log.Println("Initializing Storage Server.")
@@ -39,46 +38,18 @@ func (instance *StorageServer) InitializeServer() {
 	}
 }
 
-func (instance *StorageServer) StorageServerStreamAuthInterceptor(srv interface{}, stream grpc.ServerStream,
-	info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-	requestContext := stream.Context()
-	jwtStr, err := contextutil.GetAuth(requestContext)
-	if len(jwtStr) == 0 || err != nil {
-		log.Println("Missing authorization header.")
-		return status.Error(codes.PermissionDenied, "Missing authorization header")
-	}
-	switch info.FullMethod{
+func (instance *StorageServer) authenticateRequest(method string, jwtStr string) error {
+	log.Println("agent auth")
+	var tokenAuthenticator auth.TokenAuthenticator
+	switch method {
 	case "/cloudstorage.StorageServer/DownloadFile":
-		downloadToken := accesstoken.UploadDownloadToken{}
-		err = accesstoken.BuildAgentPollTokenAuthentiactor("abc").TokenAuthenticator.AuthenticateAndDecodeJWTString(jwtStr, &downloadToken)
-		requestContext = contextutil.SetUserId(requestContext, downloadToken.UserId)
-		requestContext = contextutil.SetAgentId(requestContext, downloadToken.AgentId)
+		tokenAuthenticator = accesstoken.BuildDownloadTokenAuthentiactor("abc")
 		break
 	case "/cloudstorage.StorageServer/UploadFile":
-		uploadToken := accesstoken.UploadDownloadToken{}
-		err = accesstoken.BuildAgentPollTokenAuthentiactor("abc").TokenAuthenticator.AuthenticateAndDecodeJWTString(jwtStr, &uploadToken)
-		requestContext = contextutil.SetUserId(requestContext, uploadToken.UserId)
-		requestContext = contextutil.SetAgentId(requestContext, uploadToken.AgentId)
+		tokenAuthenticator = accesstoken.BuildUploadTokenAuthentiactor("abc")
 		break
 	default:
 		return status.Error(codes.InvalidArgument, "Invalid request.")
 	}
-	if err != nil {
-		log.Println("Unauthorized request." + err.Error())
-		return status.Error(codes.PermissionDenied, "Unauthorized request.")
-	}
-	newStream := grpc_middleware.WrapServerStream(stream)
-   	newStream.WrappedContext = requestContext
-	handler(srv, newStream)
-	return nil
-}
-
-func (instance *StorageServer) StorageServerStreamLogInterceptor(srv interface{}, stream grpc.ServerStream,
-	info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-	start := time.Now()
-	toe, _ := contextutil.GetToe(stream.Context())
-	log.Printf("[toe=%s]Request to: %s", toe, info.FullMethod)
-	handler(srv, stream)
-	log.Printf("[toe=%s]Request completed. Took: %dms", toe, time.Since(start)/time.Millisecond)
-	return nil
+	return tokenAuthenticator.AuthenticateJWTStringWithPermission(jwtStr)
 }

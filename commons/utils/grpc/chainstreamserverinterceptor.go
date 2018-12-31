@@ -1,7 +1,7 @@
 package grpcutil
 
 import (
-	contextutil "github.com/TheTerribleChild/CloudApp/commons/utils/contextutil"
+	contextutil "github.com/TheTerribleChild/CloudApp/commons/utils/context"
 	"google.golang.org/grpc"
 	"log"
 	"time"
@@ -34,13 +34,12 @@ func (instance *StreamServerInterceptorBuilder) Build() grpc.StreamServerInterce
 }
 
 func StreamLogInterceptor(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-	log.Println("generic log")
 	start := time.Now()
 	toe, _ := contextutil.GetToe(stream.Context())
 	log.Printf("[toe=%s]Request to: %s", toe, info.FullMethod)
-	handler(srv, stream)
+	err := handler(srv, stream)
 	log.Printf("[toe=%s]Request completed. Took: %dms", toe, time.Since(start)/time.Millisecond)
-	return nil
+	return err
 }
 
 func (instance *InterceptorFunction) ServerStreamAuthInterceptor(srv interface{}, stream grpc.ServerStream,
@@ -61,6 +60,6 @@ func (instance *InterceptorFunction) ServerStreamAuthInterceptor(srv interface{}
 			return status.Error(codes.PermissionDenied, "Unauthorized request.")
 		}
 	}
-	handler(srv, stream)
-	return nil
+	err := handler(srv, stream)
+	return err
 }

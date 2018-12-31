@@ -1,18 +1,20 @@
 package agentserver
 
 import (
-	"time"
+	"github.com/google/uuid"
 	// "encoding/json"
 
 	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
 	accesstoken "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/common/auth/accesstoken"
-	grpcutil "github.com/TheTerribleChild/CloudApp/commons/utils/grpcutil"
+	auth "github.com/TheTerribleChild/CloudApp/commons/auth/accesstoken"
+	grpcutil "github.com/TheTerribleChild/CloudApp/commons/utils/grpc"
+	redisutil "github.com/TheTerribleChild/CloudApp/commons/utils/redis"
 	"google.golang.org/grpc"
 
 	//"google.golang.org/grpc/codes"
 	"log"
+	"time"
 	"net"
-	contextutil "github.com/TheTerribleChild/CloudApp/commons/utils/contextutil"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -26,10 +28,17 @@ type AgentServer struct {
 var(
 	queueConsumer QueueConsumer
 	agentSessionManager AgentSessionManager
+	redisClient *redisutil.RedisClient
+	serverId string
+
+	//config
+	refreshDuration time.Duration
 )
 
 func (instance *AgentServer) InitializeServer() {
-
+	serverId = uuid.New().String()
+	refreshDuration = time.Minute * 2
+	redisClient, _ = redisutil.GetRedisClientBuilder("virgo").Build()
 	agentSessionManager = AgentSessionManager{}
 	agentSessionManager.initialize()
 	queueConsumer = QueueConsumer{}
@@ -51,7 +60,7 @@ func (instance *AgentServer) InitializeServer() {
 
 func (instance *AgentServer) authenticateRequest(method string, jwtStr string) error {
 	log.Println("agent auth")
-	var tokenAuthenticator accesstoken.AccessTokenAuthenticator
+	var tokenAuthenticator auth.TokenAuthenticator
 	switch method{
 	case "/cloudstorage.AgentService/Poll":
 		tokenAuthenticator = accesstoken.BuildAgentPollTokenAuthentiactor("abc")
@@ -59,5 +68,5 @@ func (instance *AgentServer) authenticateRequest(method string, jwtStr string) e
 	default:
 		return status.Error(codes.InvalidArgument, "Invalid request.")
 	}
-	return tokenAuthenticator.TokenAuthenticator.AuthenticateJWTStringWithPermission(jwtStr)
+	return tokenAuthenticator.AuthenticateJWTStringWithPermission(jwtStr)
 }

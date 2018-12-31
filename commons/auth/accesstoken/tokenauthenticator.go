@@ -5,14 +5,14 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type TokenAuthenticator struct{
-	tokenDecoder TokenDecoder
+type TokenAuthenticator struct {
+	tokenDecoder        TokenDecoder
 	requiredPermissions []Permission
 }
 
 func BuildTokenAuthenticator(secret string, requiredPermissions []Permission) TokenAuthenticator {
-	decoder := TokenDecoder{secretKey:secret}
-	return TokenAuthenticator{tokenDecoder:decoder, requiredPermissions:requiredPermissions}
+	decoder := TokenDecoder{secretKey: secret}
+	return TokenAuthenticator{tokenDecoder: decoder, requiredPermissions: requiredPermissions}
 }
 
 func (instance TokenAuthenticator) TokenDecoder() TokenDecoder {
@@ -32,7 +32,7 @@ func (instance TokenAuthenticator) AuthenticateJWTString(jwtString string) error
 	if err != nil {
 		return err
 	}
-	
+
 	return nil
 }
 
@@ -43,7 +43,7 @@ func (instance TokenAuthenticator) AuthenticateJWTStringWithPermission(jwtString
 
 func (instance TokenAuthenticator) AuthenticateAndDecodeJWTString(jwtString string, accessToken interface{}) error {
 	instance.tokenDecoder.DecodeToAccessToken(jwtString, accessToken)
-	if err:= instance.AuthenticateJWTString(jwtString); err != nil {
+	if err := instance.AuthenticateJWTString(jwtString); err != nil {
 		return err
 	}
 	return instance.AuthenticateAccessToken(accessToken)
@@ -51,12 +51,12 @@ func (instance TokenAuthenticator) AuthenticateAndDecodeJWTString(jwtString stri
 
 func (instance TokenAuthenticator) AuthenticateAccessToken(tokenInterface interface{}) error {
 	var containsPermission []Permission
-	
+
 	if token, ok := tokenInterface.(*AccessToken); ok {
 		containsPermission = token.Permissions
 	} else if token, ok := tokenInterface.(AccessToken); ok {
 		containsPermission = token.Permissions
-	}else{
+	} else {
 		return status.Error(codes.Internal, "Bad access token.")
 	}
 	permissonMap := make(map[Permission]bool)

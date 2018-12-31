@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	contextutil "github.com/TheTerribleChild/CloudApp/commons/utils/contextutil"
+	contextutil "github.com/TheTerribleChild/CloudApp/commons/utils/context"
 )
 
 func BuildStorageServerContext(token string) (ctx context.Context, CancelFunc func()) {

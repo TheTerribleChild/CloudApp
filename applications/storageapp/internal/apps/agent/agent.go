@@ -3,10 +3,13 @@ package agent
 import (
 	"log"
 
+	"io"
+	"time"
+
 	msghdlr "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/apps/agent/messagehandler"
-	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
 	accesstoken "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/common/auth/accesstoken"
-	contextutil "github.com/TheTerribleChild/CloudApp/commons/utils/contextutil"
+	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
+	contextutil "github.com/TheTerribleChild/CloudApp/commons/utils/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -41,26 +44,40 @@ func (agent *Agent) Run() {
 	pollTokenString, _ := accesstoken.CreateAccessTokenBuilder("abc", "").BuildAgentServerPollTokenString("uid", "aid")
 	ctx, _ := contextutil.GetContextBuilder().SetAuth(pollTokenString).Build()
 	client, err := agent.asc.Poll(ctx, &cldstrg.AgentPollRequest{AgentId: "abc"})
+	if err != nil {
+		if errorStatus, ok := status.FromError(err); ok {
+			log.Println(errorStatus)
+		}
+		log.Fatalln(err)
+	}
 	for {
-		agent.poll(client)
+		if err = agent.poll(client); err != nil {
+			if err == io.EOF {
+				log.Println(err)
+				break
+			}
+			if errorStatus, ok := status.FromError(err); ok {
+				log.Printf("Unable to retrieve message: %s ", errorStatus.Message())
+				if errorStatus.Code() == codes.AlreadyExists || errorStatus.Code() == codes.Unavailable {
+					break
+				}
+				time.Sleep(5 * time.Second)
+			}
+		}
 	}
 }
 
-func (agent *Agent) poll(client cldstrg.AgentService_PollClient) {
-
+func (agent *Agent) poll(client cldstrg.AgentService_PollClient) error {
 	message, err := client.Recv()
 	if err != nil {
-		if statusCode, ok := status.FromError(err); ok && statusCode.Code() == codes.NotFound {
-			return
-		}
-		log.Println("Polling error: " + err.Error())
-		return
+		return err
 	}
 	if message == nil {
-		return
+		return nil
 	}
 	log.Println("Received message: " + message.MessageId + "  Type: " + message.Type.String())
 	messageHandlerFactory := msghdlr.MessageHandlerFactory{Asc: agent.asc, Message: message, Jm: agent.jm}
 	messageHandlerWrapper := messageHandlerFactory.GetMessageHandlerWrapper()
 	agent.jm.AddJobForHandler(messageHandlerWrapper)
+	return nil
 }

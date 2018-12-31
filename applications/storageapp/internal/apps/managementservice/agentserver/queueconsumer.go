@@ -4,7 +4,7 @@ import (
 	"log"
 
 	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
-	queueutil "github.com/TheTerribleChild/CloudApp/commons/utils/queueutil"
+	queueutil "github.com/TheTerribleChild/CloudApp/commons/utils/queue"
 	"github.com/golang/protobuf/proto"
 	"github.com/streadway/amqp"
 )
