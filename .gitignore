@@ -1,4 +1,4 @@
-/.project
-/cloud_applications/cloud_storage/tester
+.project
 bin/
 tester/
+configs/

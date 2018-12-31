@@ -4,16 +4,19 @@ import (
 	"time"
 	// "encoding/json"
 	"fmt"
-	cs "github.com/TheTerribleChild/CloudApp/cloud_appplication_portal/cloud_applications/novel_application/internal/apps/connectorservice/service"
+
+	cs "github.com/TheTerribleChild/CloudApp/cloud_appplication_portal/cloud_applications/novel_application/internal/app/connectorservice/service"
 	"github.com/golang/protobuf/proto"
 	"golang.org/x/net/context"
+
 	// "golang.org/x/net/netutil"
+	"log"
+	"net"
+
 	"github.com/go-stomp/stomp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
-	"log"
-	"net"
 	// "time"
 )
 

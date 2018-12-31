@@ -6,15 +6,23 @@ GOGET=$(GOCMD) get
 
 all: test build
 
+get:
+	go get github.com/spf13/viper
+
 proto: 
 	@echo Generating proto file
 	protoc -I internal/model/ internal/model/proto/*.proto --go_out=plugins=grpc:${GOPATH}/src
 
+config:
+	cp configs/agent/config bin/Agent/
+	cp configs/agentservice/config bin/AgentService/
+	cp configs/storageservice/config bin/StorageService/
+
 build: proto
 
 	@echo Building Management Service
-	go build -o bin/ManagementService/ManagementService cmd/managementservice/*.go
-	mkdir -p bin/ManagementService/logs
+	go build -o bin/AgentService/AgentService cmd/agentservice/*.go
+	mkdir -p bin/AgentService/logs
 
 	@echo Building Storage Service
 	go build -o bin/StorageService/StorageService cmd/storageservice/*.go

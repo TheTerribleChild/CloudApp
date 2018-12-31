@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/apps/agent"
+	"github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/app/agent"
 )
 
 func main() {

@@ -1,5 +1,5 @@
 syntax = "proto3";
-option go_package = "github.com/TheTerribleChild/CloudApp/cloud_appplication_portal/cloud_applications/novel_application/internal/apps/novelapplication/service";
+option go_package = "github.com/TheTerribleChild/CloudApp/cloud_appplication_portal/cloud_applications/novel_application/internal/app/novelapplication/service";
 import "model.proto";
 package novelapplicationservice;
 

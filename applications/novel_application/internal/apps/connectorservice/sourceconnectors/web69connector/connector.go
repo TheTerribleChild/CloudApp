@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	model "github.com/TheTerribleChild/CloudApp/cloud_appplication_portal/cloud_applications/novel_application/internal/model"
-	"github.com/TheTerribleChild/CloudApp/commons/utils/webutil"
+	"github.com/TheTerribleChild/CloudApp/tools/utils/webutil"
 	"golang.org/x/net/html"
 )
 

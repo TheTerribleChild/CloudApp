@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"plugin"
 
-	connectorservice "github.com/TheTerribleChild/CloudApp/cloud_appplication_portal/cloud_applications/novel_application/internal/apps/connectorservice/service"
-	"github.com/TheTerribleChild/CloudApp/commons/utils/fileutil"
+	connectorservice "github.com/TheTerribleChild/CloudApp/cloud_appplication_portal/cloud_applications/novel_application/internal/app/connectorservice/service"
+	"github.com/TheTerribleChild/CloudApp/tools/utils/fileutil"
 )
 
 //Connector Used to connect to various sources

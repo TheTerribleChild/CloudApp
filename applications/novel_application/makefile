@@ -8,12 +8,12 @@ all: test build
 
 build:
 	@echo Generating proto file
-	protoc -I internal/model -I internal/apps/connectorservice/proto internal/apps/connectorservice/proto/*.proto --go_out=plugins=grpc:${GOPATH}/src
-	protoc -I internal/model -I internal/apps/novelapplication/proto internal/apps/novelapplication/proto/*.proto --go_out=plugins=grpc:${GOPATH}/src
+	protoc -I internal/model -I internal/app/connectorservice/proto internal/app/connectorservice/proto/*.proto --go_out=plugins=grpc:${GOPATH}/src
+	protoc -I internal/model -I internal/app/novelapplication/proto internal/app/novelapplication/proto/*.proto --go_out=plugins=grpc:${GOPATH}/src
 	protoc -I internal/model internal/model/*.proto --go_out=${GOPATH}/src
 
 	@echo Building connector
-	go build -ldflags=-w -buildmode=plugin -o bin/sourceconnectors/web69connector.so internal/apps/connectorservice/sourceconnectors/web69connector/connector.go
+	go build -ldflags=-w -buildmode=plugin -o bin/sourceconnectors/web69connector.so internal/app/connectorservice/sourceconnectors/web69connector/connector.go
 	go build -o bin/connectorservice cmd/connectorservice/*.go
 	
 	@echo Building novelapplication
