@@ -7,63 +7,29 @@ import (
 )
 
 type AmqpQueueBuilder struct{
-	host string
-	user string
-	password string
-	port int
-	queueName string
-	durable bool
-	autoDelete bool
-	exclusive bool
-	noWait bool
-	args map[string]interface{}
-	passiveDeclare bool
-}
-
-func GetAMQPQueueBuilder(host string, user string, password string, queueName string) *AmqpQueueBuilder {
-	return &AmqpQueueBuilder{host:host, user:user, password:password, queueName: queueName}
-}
-
-func(instance *AmqpQueueBuilder) SetPort(port int) *AmqpQueueBuilder{
-	instance.port = port
-	return instance
-}
-
-func(instance *AmqpQueueBuilder) SetDurable(durable bool) *AmqpQueueBuilder{
-	instance.durable = durable
-	return instance
-}
-
-func(instance *AmqpQueueBuilder) SetAutoDelete(autoDelete bool) *AmqpQueueBuilder{
-	instance.autoDelete = autoDelete
-	return instance
-}
-
-func(instance *AmqpQueueBuilder) SetNoWait(noWait bool) *AmqpQueueBuilder{
-	instance.noWait = noWait
-	return instance
-}
-
-func(instance *AmqpQueueBuilder) SetDeclarePassive(passiveDeclare bool) *AmqpQueueBuilder{
-	instance.passiveDeclare = passiveDeclare
-	return instance
-}
-
-func(instance *AmqpQueueBuilder) SetArguements(args map[string]interface{}) *AmqpQueueBuilder{
-	instance.args = args
-	return instance
+	Host string
+	User string
+	Password string
+	Port int
+	QueueName string
+	Durable bool
+	AutoDelete bool
+	Exclusive bool
+	NoWait bool
+	Args map[string]interface{}
+	PassiveDeclare bool
 }
 
 func(instance *AmqpQueueBuilder) Build() (*amqp.Connection, *amqp.Channel, amqp.Queue, error){
-	if len(instance.host) == 0 || len(instance.user) == 0 || len(instance.password) == 0 || len(instance.queueName) == 0 {
+	if len(instance.Host) == 0 || len(instance.User) == 0 || len(instance.Password) == 0 || len(instance.QueueName) == 0 {
 		return nil, nil, amqp.Queue{}, errors.New("missing required arguements")
 	}
-	if instance.port == 0 {
-		instance.port = 5672
-	} else if instance.port < 0 || instance.port > 65535 {
-		return nil, nil, amqp.Queue{}, errors.New("invalid amqp port number")
+	if instance.Port == 0 {
+		instance.Port = 5672
+	} else if instance.Port < 0 || instance.Port > 65535 {
+		return nil, nil, amqp.Queue{}, errors.New("invalid amqp Port number")
 	}
-	connectionString := fmt.Sprintf("amqp://%s:%s@%s:%d/", instance.user, instance.password, instance.host, instance.port)
+	connectionString := fmt.Sprintf("amqp://%s:%s@%s:%d/", instance.User, instance.Password, instance.Host, instance.Port)
 	connection, err := amqp.Dial(connectionString)
 	if err != nil {
 		return nil, nil, amqp.Queue{}, err
@@ -73,23 +39,23 @@ func(instance *AmqpQueueBuilder) Build() (*amqp.Connection, *amqp.Channel, amqp.
 		return nil, nil, amqp.Queue{}, err
 	}
 	var queue amqp.Queue
-	if instance.passiveDeclare {
+	if instance.PassiveDeclare {
 		queue , err = channel.QueueDeclarePassive(
-			instance.queueName, 
-			instance.durable, 
-			instance.autoDelete, 
-			instance.exclusive, 
-			instance.noWait, 
-			instance.args,
+			instance.QueueName, 
+			instance.Durable, 
+			instance.AutoDelete, 
+			instance.Exclusive, 
+			instance.NoWait, 
+			instance.Args,
 		)
 	}else{
 		queue, err = channel.QueueDeclare(
-			instance.queueName, 
-			instance.durable, 
-			instance.autoDelete, 
-			instance.exclusive, 
-			instance.noWait, 
-			instance.args,
+			instance.QueueName, 
+			instance.Durable, 
+			instance.AutoDelete, 
+			instance.Exclusive, 
+			instance.NoWait, 
+			instance.Args,
 		)
 	}
 	return connection, channel, queue, err

@@ -1,4 +1,4 @@
 .project
 bin/
 tester/
-configs/
+credentials

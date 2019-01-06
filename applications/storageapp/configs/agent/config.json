@@ -1,0 +1,8 @@
+{
+    "agentServer" : {
+        "url" : ""
+    },
+    "agentId" : "",
+    "maxUploadWorker" : "5",
+    "maxDownloadWorker" : "10"
+}

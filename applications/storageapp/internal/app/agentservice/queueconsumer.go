@@ -6,6 +6,7 @@ import (
 	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
 	queueutil "github.com/TheTerribleChild/CloudApp/tools/utils/queue"
 	"github.com/golang/protobuf/proto"
+	"github.com/spf13/viper"
 	"github.com/streadway/amqp"
 )
 
@@ -16,7 +17,14 @@ type QueueConsumer struct {
 }
 
 func (instance *QueueConsumer) initialize() {
-	conn, channel, queue, err := queueutil.GetAMQPQueueBuilder("virgo", "guest", "guest", "AgentMessage").Build()
+	queueBuilder := queueutil.AmqpQueueBuilder{
+		Host:      viper.GetString("externalService.queue.host"),
+		Port:      viper.GetInt("externalService.queue.port"),
+		User:      viper.GetString("externalService.queue.user"),
+		Password:  viper.GetString("externalService.queue.password"),
+		QueueName: viper.GetString("externalService.queue.queueName"),
+	}
+	conn, channel, queue, err := queueBuilder.Build()
 	if err != nil {
 		log.Fatalf("Fail to connect to queue. " + err.Error())
 	}
@@ -42,7 +50,7 @@ func (instance *QueueConsumer) handleMessage(delivery amqp.Delivery) {
 	session, found := agentSessionManager.getSession(agentId)
 	if !found {
 		log.Printf("No subscription for agent %s found.", agentId)
-		agentSessionManager.deleteSession(agentId)
+		agentSessionManager.endSession(agentId)
 		return
 	}
 

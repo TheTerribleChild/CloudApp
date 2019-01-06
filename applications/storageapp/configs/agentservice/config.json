@@ -1,0 +1,24 @@
+{
+    "refreshDuration": "120s",
+    "agentServer": {
+        "accept": "",
+        "port": "50051",
+        "maxConcurrentStream": "10000"
+    },
+    "externalService": {
+        "cache": {
+            "host": "localhost",
+            "port": "6379",
+            "password": "",
+            "maxActiveConnection": "1000",
+            "maxIdleConnection": "10"
+        },
+        "queue": {
+            "host": "localhost",
+            "port": "5672",
+            "user": "",
+            "password": "",
+            "queueName": "AgentMessage"
+        }
+    }
+}

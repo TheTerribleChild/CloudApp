@@ -16,6 +16,9 @@ func GetAllFileInDirectoryRecursively(roots []string, ext string) ([]string, err
 	var err error
 	for _, root := range roots {
 		err = filepath.Walk(root, func(path string, f os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
 			if f.Mode().IsRegular() {
 				if (len(ext) != 0 && filepath.Ext(path) == ext) || len(ext) == 0 {
 					fileList = append(fileList, path)

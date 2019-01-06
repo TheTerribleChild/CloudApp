@@ -1,12 +1,13 @@
 package agentmessagehandler
 
 import (
-	"context"
+	//"context"
 	"io"
 	"log"
 	"os"
-	"time"
+	//"time"
 
+	contextbuilder "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/tools/utils/contextbuilder"
 	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc"
@@ -32,12 +33,11 @@ func (handler DownloadFileHandler) HandleMessage() error {
 	}
 	handler.ssc = cldstrg.NewStorageServiceClient(sscConn)
 	defer sscConn.Close()
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
-	defer cancel()
 	for _, job := range jobs {
 		log.Println(job.Files)
 		job.GetStorageServerToken()
 		req := &cldstrg.FileAccessRequest{}
+		ctx, _ := contextbuilder.BuildStorageServerContext(job.StorageServerToken)
 		client, err := handler.ssc.DownloadFile(ctx, req)
 		if err != nil {
 			return err

@@ -3,6 +3,7 @@ package accesstoken
 import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"log"
 )
 
 type TokenAuthenticator struct {
@@ -46,6 +47,7 @@ func (instance TokenAuthenticator) AuthenticateAndDecodeJWTString(jwtString stri
 	if err := instance.AuthenticateJWTString(jwtString); err != nil {
 		return err
 	}
+	log.Println(accessToken)
 	return instance.AuthenticateAccessToken(accessToken)
 }
 
@@ -66,6 +68,7 @@ func (instance TokenAuthenticator) AuthenticateAccessToken(tokenInterface interf
 	for _, permission := range containsPermission {
 		permissonMap[permission] = true
 	}
+	log.Println(tokenInterface)
 	for _, permission := range instance.requiredPermissions {
 		if !permissonMap[permission] {
 			return status.Error(codes.Unauthenticated, "Missing permission.")

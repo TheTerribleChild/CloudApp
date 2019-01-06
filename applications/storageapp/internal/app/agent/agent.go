@@ -9,12 +9,17 @@ import (
 	msghdlr "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/app/agent/messagehandler"
 	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
 	accesstoken "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/tools/auth/accesstoken"
+	auth "github.com/TheTerribleChild/CloudApp/tools/auth/accesstoken"
 	contextutil "github.com/TheTerribleChild/CloudApp/tools/utils/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"github.com/spf13/viper"
 )
 
+var (
+	agentTokenAuthenticator auth.TokenAuthenticator
+)
 type Agent struct {
 	agentInfo cldstrg.AgentInfo
 
@@ -30,6 +35,8 @@ func (agent *Agent) Initialize() {
 }
 
 func (agent *Agent) Run() {
+	agentTokenAuthenticator = accesstoken.
+	agent.agentInfo = cldstrg.AgentInfo{Id : viper.GetString("agentId")}
 	agent.jm = msghdlr.JobManager{}
 	agent.jm.Initialize()
 	ascConn, err := grpc.Dial(agent.ManagementServerAddress, grpc.WithInsecure())
@@ -40,10 +47,10 @@ func (agent *Agent) Run() {
 
 	defer ascConn.Close()
 
-	log.Println("Agent has started.")
+	log.Printf("Agent '%s' has started.", agent.agentInfo.Id)
 	pollTokenString, _ := accesstoken.CreateAccessTokenBuilder("abc", "").BuildAgentServerPollTokenString("uid", "aid")
 	ctx, _ := contextutil.GetContextBuilder().SetAuth(pollTokenString).Build()
-	client, err := agent.asc.Poll(ctx, &cldstrg.AgentPollRequest{AgentId: "abc"})
+	client, err := agent.asc.Poll(ctx, &cldstrg.AgentPollRequest{AgentId: agent.agentInfo.Id})
 	if err != nil {
 		if errorStatus, ok := status.FromError(err); ok {
 			log.Println(errorStatus)

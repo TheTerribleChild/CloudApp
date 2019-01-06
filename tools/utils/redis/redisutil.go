@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"time"
+
 	"github.com/gomodule/redigo/redis"
 )
 
@@ -22,51 +24,34 @@ type RedisClient struct {
 }
 
 type RedisClientBuilder struct {
-	url                 string
-	password            string
-	maxActiveConnection int
-	maxIdleConnection   int
-}
-
-func GetRedisClientBuilder(url string) *RedisClientBuilder {
-	return &RedisClientBuilder{url: url}
-}
-
-func (instance *RedisClientBuilder) SetPassword(password string) *RedisClientBuilder {
-	instance.password = password
-	return instance
-}
-
-func (instance *RedisClientBuilder) SetMaxActiveConnection(maxActiveConnection int) *RedisClientBuilder {
-	instance.maxActiveConnection = maxActiveConnection
-	return instance
-}
-
-func (instance *RedisClientBuilder) SetMaxIdleConnection(maxIdleConnection int) *RedisClientBuilder {
-	instance.maxIdleConnection = maxIdleConnection
-	return instance
+	Host                string
+	Password            string
+	Port                int
+	MaxActiveConnection int
+	MaxIdleConnection   int
 }
 
 func (instance *RedisClientBuilder) Build() (*RedisClient, error) {
 	options := make([]redis.DialOption, 0)
-	if len(instance.url) == 0 {
-		instance.url = ":6379"
+	if instance.Port == 0 {
+		instance.Port = 6379
 	}
-	if len(instance.password) > 0 {
-		options = append(options, redis.DialPassword(instance.password))
+	connectionString := fmt.Sprintf("%s:%d", instance.Host, instance.Port)
+	if len(instance.Password) > 0 {
+		options = append(options, redis.DialPassword(instance.Password))
 	}
-	if instance.maxActiveConnection == 0 {
-		instance.maxActiveConnection = 1000
+	if instance.MaxActiveConnection == 0 {
+		instance.MaxActiveConnection = 1000
 	}
-	if instance.maxIdleConnection == 0 {
-		instance.maxIdleConnection = 10
+	if instance.MaxIdleConnection == 0 {
+		instance.MaxIdleConnection = 10
 	}
 
 	pool := &redis.Pool{
-		MaxActive: instance.maxActiveConnection,
-		MaxIdle:   instance.maxIdleConnection,
+		MaxActive: instance.MaxActiveConnection,
+		MaxIdle:   instance.MaxIdleConnection,
 		Dial: func() (redis.Conn, error) {
-			c, err := redis.Dial("tcp", instance.url, options...)
+			c, err := redis.Dial("tcp", connectionString, options...)
 			if err != nil {
 				return c, err
 			}
@@ -190,7 +175,7 @@ func GetJsonDecompress(conn redis.Conn, key string, item interface{}) error {
 	return nil
 }
 
-func GetCurrentTime(conn redis.Conn) (time.Time, error){
+func GetCurrentTime(conn redis.Conn) (time.Time, error) {
 	times, err := redis.Int64s(conn.Do(TIME))
 	if err != nil {
 		return time.Time{}, err

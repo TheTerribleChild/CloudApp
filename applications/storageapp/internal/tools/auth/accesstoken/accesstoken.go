@@ -16,3 +16,9 @@ type AgentPollToken struct {
 	UserId  string
 	AgentId string
 }
+
+type AgentExecuteToken struct {
+	accesstoken.AccessToken
+	UserId string
+	TaskId string
+}

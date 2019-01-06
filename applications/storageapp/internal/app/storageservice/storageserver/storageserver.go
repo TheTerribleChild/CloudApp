@@ -28,7 +28,6 @@ func (instance *StorageServer) InitializeServer() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	chainstream := grpcutil.GetChainStreamInterceptorBuilder().AddLogInterceptor().AddAuthInterceptor(instance.authenticateRequest).Build()
-	//chainstream := grpc_middleware.ChainStreamServer(instance.StorageServerStreamLogInterceptor, instance.StorageServerStreamAuthInterceptor)
 	s := grpc.NewServer(grpc.MaxRecvMsgSize(11*1024*1024), grpc.StreamInterceptor(chainstream))
 	cldstrg.RegisterStorageServiceServer(s, instance)
 	log.Println("Initializing Storage Server.")
@@ -39,13 +38,14 @@ func (instance *StorageServer) InitializeServer() {
 }
 
 func (instance *StorageServer) authenticateRequest(method string, jwtStr string) error {
-	log.Println("agent auth")
+	log.Println("agent auth: " + method)
+	log.Println(jwtStr)
 	var tokenAuthenticator auth.TokenAuthenticator
 	switch method {
-	case "/cloudstorage.StorageServer/DownloadFile":
+	case "/cloudstorage.StorageService/DownloadFile":
 		tokenAuthenticator = accesstoken.BuildDownloadTokenAuthentiactor("abc")
 		break
-	case "/cloudstorage.StorageServer/UploadFile":
+	case "/cloudstorage.StorageService/UploadFile":
 		tokenAuthenticator = accesstoken.BuildUploadTokenAuthentiactor("abc")
 		break
 	default:

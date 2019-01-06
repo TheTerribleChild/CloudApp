@@ -37,16 +37,18 @@ func (handler UploadFileHandler) HandleMessage() error {
 		if err != nil {
 			return err
 		}
-
+		log.Println(job.StorageServerToken)
+		tempFileName := handler.message.MessageId + ".temp"
 		handler.handlerWrapper.updateProgressAsync(cldstrg.ProgressUpdate_InProgress, 0, 1, "Compressing files.")
-		err = fileutil.ZipFiles(files, "upload.zip")
+		err = fileutil.ZipFiles(files, tempFileName)
 		if err != nil {
 			return err
 		}
 		ctx, cancel := contextbuilder.BuildStorageServerContext(job.StorageServerToken)
 		defer cancel()
 		client, err := handler.ssc.UploadFile(ctx)
-		err = handler.uploadFile("upload.zip", client)
+		err = handler.uploadFile(tempFileName, client)
+		os.Remove(tempFileName)
 		client.CloseAndRecv()
 		if err != nil {
 			return err

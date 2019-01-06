@@ -26,3 +26,13 @@ func (instance AccessTokenBuilder) BuildAgentServerPollTokenString(userId string
 	token := AgentPollToken{accesstoken.AccessToken{[]accesstoken.Permission{CloudStorage_AgentPoll}}, userId, agentId}
 	return instance.tokenFactory.GetSignedString(token)
 }
+
+func (instance AccessTokenBuilder) BuildAgentDownloadTokenString(userId string, taskId string) (string, error) {
+	token := AgentExecuteToken{accesstoken.AccessToken{[]accesstoken.Permission{CloudStorage_AgentWrite}}, userId, taskId}
+	return instance.tokenFactory.GetSignedString(token)
+}
+
+func (instance AccessTokenBuilder) BuildAgentUploadTokenString(userId string, taskId string) (string, error) {
+	token := AgentExecuteToken{accesstoken.AccessToken{[]accesstoken.Permission{CloudStorage_AgentRead}}, userId, taskId}
+	return instance.tokenFactory.GetSignedString(token)
+}

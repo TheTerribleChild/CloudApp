@@ -12,10 +12,12 @@ import (
 	"google.golang.org/grpc"
 
 	//"google.golang.org/grpc/codes"
+	"fmt"
 	"log"
 	"net"
 	"time"
 
+	"github.com/spf13/viper"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
@@ -36,22 +38,35 @@ var (
 	refreshDuration time.Duration
 )
 
+func initializeConfig() {
+	viper.SetDefault("refreshduration", 120)
+}
+
 func (instance *AgentServer) InitializeServer() {
 	serverId = uuid.New().String()
-	refreshDuration = time.Minute * 2
-	redisClient, _ = redisutil.GetRedisClientBuilder("virgo:6379").Build()
+	refreshDuration, _ = time.ParseDuration(viper.GetString("refreshDuration"))
+	redisClientBuilder := redisutil.RedisClientBuilder{
+		Host:                viper.GetString("externalService.cache.host"),
+		Port:                viper.GetInt("externalService.cache.host"),
+		Password:            viper.GetString("externalService.cache.password"),
+		MaxActiveConnection: viper.GetInt("externalService.cache.maxActiveConnection"),
+		MaxIdleConnection:   viper.GetInt("externalService.cache.maxIdleConnection"),
+	}
+	redisClient, _ = redisClientBuilder.Build()
 	agentSessionManager = AgentSessionManager{}
 	agentSessionManager.initialize()
 	queueConsumer = QueueConsumer{}
 	queueConsumer.initialize()
 	go queueConsumer.run()
 
-	lis, err := net.Listen("tcp", ":50051")
+	grpcURL := fmt.Sprintf("%s:%d", viper.GetString("agentServer.accept"), viper.GetInt("agentServer.port"))
+	log.Println(grpcURL)
+	lis, err := net.Listen("tcp", grpcURL)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	chainstream := grpcutil.GetChainStreamInterceptorBuilder().AddLogInterceptor().AddAuthInterceptor(instance.authenticateRequest).Build()
-	s := grpc.NewServer(grpc.MaxConcurrentStreams(10000), grpc.StreamInterceptor(chainstream))
+	s := grpc.NewServer(grpc.MaxConcurrentStreams(uint32(viper.GetInt("agentServer.maxConcurrentStream"))), grpc.StreamInterceptor(chainstream))
 	cldstrg.RegisterAgentServiceServer(s, instance)
 	reflection.Register(s)
 	if err := s.Serve(lis); err != nil {

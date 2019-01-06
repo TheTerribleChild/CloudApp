@@ -5,6 +5,7 @@ import (
 	"log"
 	"sync"
 	"time"
+	"github.com/spf13/viper"
 
 	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
 )
@@ -27,8 +28,8 @@ type JobManager struct {
 
 func (instance *JobManager) Initialize() {
 
-	MaxUploadWorker := 1
-	MaxDownloadWorker := 2
+	MaxUploadWorker := viper.GetInt("maxUploadWorker")
+	MaxDownloadWorker := viper.GetInt("maxDownloadWorker")
 
 	instance.uploadWorkerChan = make(chan Job, MaxUploadWorker)
 	instance.downloadWorkerChan = make(chan Job, MaxDownloadWorker)
@@ -55,7 +56,6 @@ func (instance *JobManager) Initialize() {
 		workerName := fmt.Sprintf("DownloadWorker-%d", i)
 		go doJob(workerName, instance.downloadWorkerChan, downloadWorkerResultChan)
 	}
-
 }
 
 func (instance *JobManager) jobDistributor(uploadWorkerResultChan <-chan bool, downloadWorkerResultChan <-chan bool) {

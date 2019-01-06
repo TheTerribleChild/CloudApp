@@ -14,11 +14,11 @@ proto:
 	protoc -I internal/model/ internal/model/proto/*.proto --go_out=plugins=grpc:${GOPATH}/src
 
 config:
-	cp configs/agent/config bin/Agent/
-	cp configs/agentservice/config bin/AgentService/
-	cp configs/storageservice/config bin/StorageService/
+	cp configs/agent/* bin/Agent/
+	cp configs/agentservice/* bin/AgentService/
+	cp configs/storageservice/* bin/StorageService/
 
-build: proto
+build: proto config
 
 	@echo Building Management Service
 	go build -o bin/AgentService/AgentService cmd/agentservice/*.go

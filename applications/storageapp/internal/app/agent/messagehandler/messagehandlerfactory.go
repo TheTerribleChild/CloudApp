@@ -22,7 +22,6 @@ type MessageHandlerFactory struct {
 func (instance *MessageHandlerFactory) GetMessageHandlerWrapper() MessageHandlerWrapper {
 
 	token, _ := auth.DecodeTaskToken("123", instance.Message.TaskToken)
-
 	handlerWrapper := MessageHandlerWrapper{asc: instance.Asc, jobManager: instance.Jm, taskId: token.TaskId}
 
 	switch instance.Message.Type {

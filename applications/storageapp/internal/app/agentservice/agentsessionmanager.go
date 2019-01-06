@@ -71,8 +71,13 @@ func (instance *AgentSessionManager) createSession(agentId string) (newSession A
 
 func (instance *AgentSessionManager) endSession(agentId string) {
 	instance.sessionMap.Delete(agentId)
-	redisClient.Delete(agentId)
-	log.Printf("Ended session for Agent '%s'", agentId)
+	if count, err := redisClient.Delete(agentId); err != nil {
+		log.Printf("Fail to delete session for agent '%s'", agentId)
+	} else if count == 0 {
+		log.Printf("Unable to find session for agent '%s' to delete")
+	} else{
+		log.Printf("Ended session for Agent '%s'", agentId)
+	}
 }
 
 func (instance *AgentSessionManager) getSession(agentId string) (AgentSession, bool) {
@@ -91,13 +96,4 @@ func (instance *AgentSessionManager) renewSession(agentId string) error {
 	session := rtn.(AgentSession)
 	session.LastActiveTime = time.Now()
 	return redisClient.SetJsonCompress(agentId, session)
-}
-
-func (instance *AgentSessionManager) deleteSession(agentId string) {
-	instance.sessionMap.Delete(agentId)
-	if count, err := redisClient.Delete(agentId); err != nil {
-		log.Printf("Fail to delete session for agent '%s'", agentId)
-	} else if count == 0 {
-		log.Printf("Unable to find session for agent '%s' to delete")
-	}
 }
