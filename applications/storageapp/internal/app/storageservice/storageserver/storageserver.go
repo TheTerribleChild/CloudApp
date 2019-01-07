@@ -6,6 +6,7 @@ import (
 	accesstoken "theterriblechild/CloudApp/applications/storageapp/internal/tools/auth/accesstoken"
 	auth "theterriblechild/CloudApp/tools/auth/accesstoken"
 	grpcutil "theterriblechild/CloudApp/tools/utils/grpc"
+	"github.com/spf13/viper"
 
 	//"github.com/golang/protobuf/proto"
 	// "golang.org/x/net/netutil"
@@ -14,7 +15,8 @@ import (
 	//"google.golang.org/grpc/codes"
 	"log"
 	"net"
-
+	"fmt"
+	"os"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
@@ -22,15 +24,36 @@ import (
 
 type StorageServer struct{}
 
+var (
+	storageLocation string
+)
+
 func (instance *StorageServer) InitializeServer() {
-	lis, err := net.Listen("tcp", ":50052")
+	storageLocation = viper.GetString("storagePath")
+	grpcURL := fmt.Sprintf("%s:%d", viper.GetString("storageServer.accept"), viper.GetInt("storageServer.port"))
+	maxRecvMsgSize := viper.GetInt("storageServer.maxMessageSize")
+	if len(storageLocation) == 0 {
+		log.Fatal("Storage Path missing")
+	}
+	stat, err := os.Stat(storageLocation)
+	if err != nil && os.IsNotExist(err) {
+		os.Mkdir(storageLocation, os.ModePerm)
+	} else if err != nil {
+		log.Fatalf("%s is not a valid storage location.", storageLocation)
+	} else if stat != nil {
+		if !stat.IsDir() {
+			log.Fatalf("%s is not a directory", storageLocation)
+		}
+	}
+	
+	lis, err := net.Listen("tcp", grpcURL)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	chainstream := grpcutil.GetChainStreamInterceptorBuilder().AddLogInterceptor().AddAuthInterceptor(instance.authenticateRequest).Build()
-	s := grpc.NewServer(grpc.MaxRecvMsgSize(11*1024*1024), grpc.StreamInterceptor(chainstream))
+	s := grpc.NewServer(grpc.MaxRecvMsgSize(maxRecvMsgSize), grpc.StreamInterceptor(chainstream))
 	cldstrg.RegisterStorageServiceServer(s, instance)
-	log.Println("Initializing Storage Server.")
+	log.Printf("Initializing Storage Server. Listening on '%s'", grpcURL)
 	reflection.Register(s)
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)

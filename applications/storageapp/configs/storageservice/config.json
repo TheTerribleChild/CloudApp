@@ -1,0 +1,9 @@
+{
+    "storagePath" : "./storage",
+    "storageServer": {
+        "accept": "",
+        "port": "80",
+        "maxConcurrentStream": "10000",
+        "maxMessageSize" : "10485760"
+    }
+}

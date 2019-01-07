@@ -2,7 +2,7 @@
     "refreshDuration": "120s",
     "agentServer": {
         "accept": "",
-        "port": "50051",
+        "port": "80",
         "maxConcurrentStream": "10000"
     },
     "externalService": {
