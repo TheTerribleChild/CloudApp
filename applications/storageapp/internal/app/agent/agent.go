@@ -6,11 +6,11 @@ import (
 	"io"
 	"time"
 
-	msghdlr "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/app/agent/messagehandler"
-	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
-	accesstoken "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/tools/auth/accesstoken"
-	auth "github.com/TheTerribleChild/CloudApp/tools/auth/accesstoken"
-	contextutil "github.com/TheTerribleChild/CloudApp/tools/utils/context"
+	msghdlr "theterriblechild/CloudApp/applications/storageapp/internal/app/agent/messagehandler"
+	cldstrg "theterriblechild/CloudApp/applications/storageapp/internal/model"
+	accesstoken "theterriblechild/CloudApp/applications/storageapp/internal/tools/auth/accesstoken"
+	auth "theterriblechild/CloudApp/tools/auth/accesstoken"
+	contextutil "theterriblechild/CloudApp/tools/utils/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -35,7 +35,7 @@ func (agent *Agent) Initialize() {
 }
 
 func (agent *Agent) Run() {
-	agentTokenAuthenticator = accesstoken.
+	//agentTokenAuthenticator = accesstoken.
 	agent.agentInfo = cldstrg.AgentInfo{Id : viper.GetString("agentId")}
 	agent.jm = msghdlr.JobManager{}
 	agent.jm.Initialize()

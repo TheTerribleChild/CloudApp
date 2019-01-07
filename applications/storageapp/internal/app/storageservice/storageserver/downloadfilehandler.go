@@ -3,7 +3,8 @@ package storageserver
 import (
 	"os"
 
-	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
+	cldstrg "theterriblechild/CloudApp/applications/storageapp/internal/model"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 

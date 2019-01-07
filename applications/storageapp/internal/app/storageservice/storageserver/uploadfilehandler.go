@@ -5,8 +5,9 @@ import (
 	"log"
 	"os"
 
-	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
-	auth "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/tools/auth"
+	cldstrg "theterriblechild/CloudApp/applications/storageapp/internal/model"
+	auth "theterriblechild/CloudApp/applications/storageapp/internal/tools/auth"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"

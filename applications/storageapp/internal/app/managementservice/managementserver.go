@@ -4,7 +4,7 @@ package managementserver
 // "encoding/json"
 //"fmt"
 
-// cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
+// cldstrg "theterriblechild/CloudApp/applications/storageapp/internal/model"
 
 // //"github.com/golang/protobuf/proto"
 // "golang.org/x/net/context"

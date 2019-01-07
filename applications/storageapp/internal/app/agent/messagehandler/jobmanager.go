@@ -5,9 +5,10 @@ import (
 	"log"
 	"sync"
 	"time"
+
 	"github.com/spf13/viper"
 
-	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
+	cldstrg "theterriblechild/CloudApp/applications/storageapp/internal/model"
 )
 
 type JobManager struct {

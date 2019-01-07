@@ -3,8 +3,9 @@ package agentserver
 import (
 	"log"
 
-	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
-	queueutil "github.com/TheTerribleChild/CloudApp/tools/utils/queue"
+	cldstrg "theterriblechild/CloudApp/applications/storageapp/internal/model"
+	queueutil "theterriblechild/CloudApp/tools/utils/queue"
+
 	"github.com/golang/protobuf/proto"
 	"github.com/spf13/viper"
 	"github.com/streadway/amqp"

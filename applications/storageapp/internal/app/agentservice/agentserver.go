@@ -4,11 +4,12 @@ import (
 	"github.com/google/uuid"
 	// "encoding/json"
 
-	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
-	accesstoken "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/tools/auth/accesstoken"
-	auth "github.com/TheTerribleChild/CloudApp/tools/auth/accesstoken"
-	grpcutil "github.com/TheTerribleChild/CloudApp/tools/utils/grpc"
-	redisutil "github.com/TheTerribleChild/CloudApp/tools/utils/redis"
+	cldstrg "theterriblechild/CloudApp/applications/storageapp/internal/model"
+	accesstoken "theterriblechild/CloudApp/applications/storageapp/internal/tools/auth/accesstoken"
+	auth "theterriblechild/CloudApp/tools/auth/accesstoken"
+	grpcutil "theterriblechild/CloudApp/tools/utils/grpc"
+	redisutil "theterriblechild/CloudApp/tools/utils/redis"
+
 	"google.golang.org/grpc"
 
 	//"google.golang.org/grpc/codes"

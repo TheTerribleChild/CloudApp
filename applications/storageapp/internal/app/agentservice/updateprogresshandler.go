@@ -1,7 +1,7 @@
 package agentserver
 
 import (
-	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
+	cldstrg "theterriblechild/CloudApp/applications/storageapp/internal/model"
 	//"os"
 	//"github.com/golang/protobuf/proto"
 	"log"

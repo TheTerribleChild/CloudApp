@@ -1,7 +1,7 @@
 package accesstoken
 
 import (
-	accesstoken "github.com/TheTerribleChild/CloudApp/tools/auth/accesstoken"
+	accesstoken "theterriblechild/CloudApp/tools/auth/accesstoken"
 )
 
 func BuildUploadTokenAuthentiactor(secret string) accesstoken.TokenAuthenticator {

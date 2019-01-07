@@ -6,10 +6,11 @@ import (
 	"os"
 
 	//"google.golang.org/grpc/metadata"
-	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
-	//auth "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/tools/auth"
-	contextbuilder "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/tools/utils/contextbuilder"
-	fileutil "github.com/TheTerribleChild/CloudApp/tools/utils/file"
+	cldstrg "theterriblechild/CloudApp/applications/storageapp/internal/model"
+	//auth "theterriblechild/CloudApp/applications/storageapp/internal/tools/auth"
+	contextbuilder "theterriblechild/CloudApp/applications/storageapp/internal/tools/utils/contextbuilder"
+	fileutil "theterriblechild/CloudApp/tools/utils/file"
+
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc"
 )

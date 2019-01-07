@@ -4,8 +4,8 @@ import (
 	"log"
 	"time"
 
-	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
-	contextutil "github.com/TheTerribleChild/CloudApp/tools/utils/context"
+	cldstrg "theterriblechild/CloudApp/applications/storageapp/internal/model"
+	contextutil "theterriblechild/CloudApp/tools/utils/context"
 	//"google.golang.org/grpc/codes"
 	//"google.golang.org/grpc/status"
 )

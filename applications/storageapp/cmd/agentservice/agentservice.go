@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/app/agentservice"
-	"github.com/spf13/viper"
 	"fmt"
 	"os"
+	"theterriblechild/CloudApp/applications/storageapp/internal/app/agentservice"
+	"github.com/spf13/viper"
 )
 
 func main() {
@@ -22,7 +22,7 @@ func main() {
 			panic(fmt.Errorf("Fatal error config file: %s \n", err))
 		}
 	}
-	
+
 	agentServer := agentserver.AgentServer{}
 	agentServer.InitializeServer()
 }

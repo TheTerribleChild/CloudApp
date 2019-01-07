@@ -5,7 +5,8 @@ import (
 	// "encoding/json"
 	"fmt"
 
-	cs "github.com/TheTerribleChild/CloudApp/cloud_appplication_portal/cloud_applications/novel_application/internal/app/connectorservice/service"
+	cs "theterriblechild/CloudApp/cloud_appplication_portal/cloud_applications/novel_application/internal/app/connectorservice/service"
+
 	"github.com/golang/protobuf/proto"
 	"golang.org/x/net/context"
 

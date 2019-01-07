@@ -4,7 +4,8 @@ import (
 	"log"
 	"path/filepath"
 
-	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
+	cldstrg "theterriblechild/CloudApp/applications/storageapp/internal/model"
+
 	"golang.org/x/net/context"
 )
 

@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
-	contextutil "github.com/TheTerribleChild/CloudApp/tools/utils/context"
+	contextutil "theterriblechild/CloudApp/tools/utils/context"
 )
 
 func BuildStorageServerContext(token string) (ctx context.Context, CancelFunc func()) {
 	builder := contextutil.ContextBuilder{}
-	return builder.SetTimeout(2*time.Hour).SetAuth(token).Build()
+	return builder.SetTimeout(2 * time.Hour).SetAuth(token).Build()
 }

@@ -4,8 +4,9 @@ import (
 	"log"
 	"time"
 
-	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
-	auth "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/tools/auth"
+	cldstrg "theterriblechild/CloudApp/applications/storageapp/internal/model"
+	auth "theterriblechild/CloudApp/applications/storageapp/internal/tools/auth"
+
 	"golang.org/x/net/context"
 )
 

@@ -1,11 +1,11 @@
 package storageserver
 
 import (
-	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
-	//contextutil "github.com/TheTerribleChild/CloudApp/tools/utils/contextutil"
-	accesstoken "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/tools/auth/accesstoken"
-	auth "github.com/TheTerribleChild/CloudApp/tools/auth/accesstoken"
-	grpcutil "github.com/TheTerribleChild/CloudApp/tools/utils/grpc"
+	cldstrg "theterriblechild/CloudApp/applications/storageapp/internal/model"
+	//contextutil "theterriblechild/CloudApp/tools/utils/contextutil"
+	accesstoken "theterriblechild/CloudApp/applications/storageapp/internal/tools/auth/accesstoken"
+	auth "theterriblechild/CloudApp/tools/auth/accesstoken"
+	grpcutil "theterriblechild/CloudApp/tools/utils/grpc"
 
 	//"github.com/golang/protobuf/proto"
 	// "golang.org/x/net/netutil"

@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"log"
 
-	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
+	cldstrg "theterriblechild/CloudApp/applications/storageapp/internal/model"
+
 	jwt "github.com/dgrijalva/jwt-go"
 )
 

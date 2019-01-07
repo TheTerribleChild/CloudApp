@@ -1,8 +1,8 @@
 package novelapplicationmapper
 
 import (
-	cs "github.com/TheTerribleChild/CloudApp/cloud_appplication_portal/cloud_applications/novel_application/internal/app/connectorservice/service"
-	nas "github.com/TheTerribleChild/CloudApp/cloud_appplication_portal/cloud_applications/novel_application/internal/app/novelapplication/service"
+	cs "theterriblechild/CloudApp/cloud_appplication_portal/cloud_applications/novel_application/internal/app/connectorservice/service"
+	nas "theterriblechild/CloudApp/cloud_appplication_portal/cloud_applications/novel_application/internal/app/novelapplication/service"
 )
 
 type Mapper interface {

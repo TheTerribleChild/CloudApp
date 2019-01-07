@@ -1,11 +1,12 @@
 package agentserver
 
 import (
-	"sync"
-	"time"
-	"log"
 	"fmt"
-	cldstrg "github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/model"
+	"log"
+	"sync"
+	cldstrg "theterriblechild/CloudApp/applications/storageapp/internal/model"
+	"time"
+
 	"github.com/gomodule/redigo/redis"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
@@ -62,7 +63,7 @@ func (instance *AgentSessionManager) createSession(agentId string) (newSession A
 	if err = redisClient.SetJsonCompress(agentId, newSession); err != nil {
 		log.Println("Unable to store new session: " + err.Error())
 		err = status.Error(codes.Internal, "Unable to retrieve message")
-		return 
+		return
 	}
 	instance.sessionMap.Store(agentId, newSession)
 	log.Printf("Created session for Agent '%s'", agentId)
@@ -75,7 +76,7 @@ func (instance *AgentSessionManager) endSession(agentId string) {
 		log.Printf("Fail to delete session for agent '%s'", agentId)
 	} else if count == 0 {
 		log.Printf("Unable to find session for agent '%s' to delete")
-	} else{
+	} else {
 		log.Printf("Ended session for Agent '%s'", agentId)
 	}
 }

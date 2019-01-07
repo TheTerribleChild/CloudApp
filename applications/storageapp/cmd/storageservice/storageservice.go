@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/TheTerribleChild/CloudApp/applications/storageapp/internal/app/storageservice/storageserver"
+	"theterriblechild/CloudApp/applications/storageapp/internal/app/storageservice/storageserver"
 )
 
 func main() {
