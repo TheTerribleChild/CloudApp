@@ -7,12 +7,16 @@ package cloudstorage;
 
 //==============================Management Service=========================
 
-
+service ManagementService{
+    rpc PublishDirectoryContent (DirectoryContent) returns (Empty) {};
+    rpc UpdateProgress (ProgressUpdate) returns (Empty) {}
+}
 //==============================Storage Service============================
 
 service StorageService{
     rpc UploadFile(stream FileChunk) returns (Empty) {};
     rpc DownloadFile(FileAccessRequest) returns (stream FileChunk) {};
+    rpc Ping(Empty) returns (Empty) {};
 }
 
 message FileAccessRequest{
@@ -78,9 +82,7 @@ enum AgentMessageType {
 
 message AgentMessage{
     string message_id = 1;
-    AgentMessageType type = 2;
-    string task_token = 3;
-    bytes content = 4;
+    string agent_execute_token = 2;
 }
 
 message ListDirectoryMessageContent{
@@ -89,13 +91,8 @@ message ListDirectoryMessageContent{
 
 message FileUploadDownloadMessageContent{
     string remote_url = 1;
-    repeated UploadDownloadJob jobs = 2;
-    int64 max_size = 3;
-}
-
-message UploadDownloadJob{
-    repeated string files = 1;
-    string storage_server_token = 2;
+    string file_read_token = 2;
+    string file_write_token = 3;
 }
 
 message DirectoryContent{

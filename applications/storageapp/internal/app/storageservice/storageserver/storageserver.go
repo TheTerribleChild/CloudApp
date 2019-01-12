@@ -15,6 +15,7 @@ import (
 	//"google.golang.org/grpc/codes"
 	"log"
 	"net"
+	"context"
 	"fmt"
 	"os"
 	"google.golang.org/grpc/codes"
@@ -22,27 +23,31 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type StorageServer struct{}
+type StorageServer struct{
+	StorageLocation string
+	SecretKey string
+}
 
 var (
-	storageLocation string
+	
 )
 
 func (instance *StorageServer) InitializeServer() {
-	storageLocation = viper.GetString("storagePath")
+	instance.StorageLocation = viper.GetString("storagePath")
 	grpcURL := fmt.Sprintf("%s:%d", viper.GetString("storageServer.accept"), viper.GetInt("storageServer.port"))
 	maxRecvMsgSize := viper.GetInt("storageServer.maxMessageSize")
-	if len(storageLocation) == 0 {
+	instance.SecretKey = "abc"
+	if len(instance.StorageLocation) == 0 {
 		log.Fatal("Storage Path missing")
 	}
-	stat, err := os.Stat(storageLocation)
+	stat, err := os.Stat(instance.StorageLocation)
 	if err != nil && os.IsNotExist(err) {
-		os.Mkdir(storageLocation, os.ModePerm)
+		os.Mkdir(instance.StorageLocation, os.ModePerm)
 	} else if err != nil {
-		log.Fatalf("%s is not a valid storage location.", storageLocation)
+		log.Fatalf("%s is not a valid storage location.", instance.StorageLocation)
 	} else if stat != nil {
 		if !stat.IsDir() {
-			log.Fatalf("%s is not a directory", storageLocation)
+			log.Fatalf("%s is not a directory", instance.StorageLocation)
 		}
 	}
 	
@@ -60,17 +65,24 @@ func (instance *StorageServer) InitializeServer() {
 	}
 }
 
+func (instance *StorageServer) Ping(ctx context.Context, msg *cldstrg.Empty) (*cldstrg.Empty, error) {
+	log.Println("Request to ping")
+	return &cldstrg.Empty{}, nil
+}
+
 func (instance *StorageServer) authenticateRequest(method string, jwtStr string) error {
 	log.Println("agent auth: " + method)
 	log.Println(jwtStr)
 	var tokenAuthenticator auth.TokenAuthenticator
 	switch method {
 	case "/cloudstorage.StorageService/DownloadFile":
-		tokenAuthenticator = accesstoken.BuildDownloadTokenAuthentiactor("abc")
+		tokenAuthenticator = accesstoken.BuildFileReadTokenAuthentiactor(instance.SecretKey)
 		break
 	case "/cloudstorage.StorageService/UploadFile":
-		tokenAuthenticator = accesstoken.BuildUploadTokenAuthentiactor("abc")
+		tokenAuthenticator = accesstoken.BuildFileWriteTokenAuthentiactor(instance.SecretKey)
 		break
+	case "/cloudstorage.StorageService/Ping":
+		return nil
 	default:
 		return status.Error(codes.InvalidArgument, "Invalid request.")
 	}

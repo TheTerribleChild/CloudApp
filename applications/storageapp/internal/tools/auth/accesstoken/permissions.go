@@ -5,10 +5,9 @@ import (
 )
 
 const (
-	CloudStorage_StorageRead  accesstoken.Permission = "CloudStorage_StorageRead"
-	CloudStorage_StorageWrite accesstoken.Permission = "CloudStorage_StorageWrite"
 	CloudStorage_StatusUpdate accesstoken.Permission = "CloudStorage_StatusUpdate"
-	CloudStorage_AgentRead    accesstoken.Permission = "CloudStorage_AgentRead"
-	CloudStorage_AgentWrite   accesstoken.Permission = "CloudStorage_AgentWrite"
+	CloudStorage_FileRead     accesstoken.Permission = "CloudStorage_FileRead"
+	CloudStorage_FileWrite    accesstoken.Permission = "CloudStorage_FileWrite"
 	CloudStorage_AgentPoll    accesstoken.Permission = "CloudStorage_AgentPoll"
+	CloudStorage_AgentExecute accesstoken.Permission = "CloudStorage_AgentExecute"
 )

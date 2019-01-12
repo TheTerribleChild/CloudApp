@@ -16,8 +16,8 @@ const(
 	Toe = "toe"
 	Auth = "authentication"
 	UserName = "username"
-	UserId = "userid"
-	AgentId = "agentid"
+	UserID = "userid"
+	AgentID = "agentid"
 )
 
 func GetContextBuilder() *ContextBuilder {
@@ -106,28 +106,28 @@ func SetUserName(ctx context.Context, userName string) (context.Context) {
 	return ctx
 }
 
-func GetUserId(ctx context.Context) (str string, ok bool) {
-	str, ok = ctx.Value(UserId).(string)
+func GetUserID(ctx context.Context) (str string, ok bool) {
+	str, ok = ctx.Value(UserID).(string)
 	return
 }
 
-func SetUserId(ctx context.Context, userId string) (context.Context) {
+func SetUserID(ctx context.Context, userID string) (context.Context) {
 	if ctx == nil {
 		return ctx
 	}
-	ctx = context.WithValue(ctx, UserId, userId)
+	ctx = context.WithValue(ctx, UserID, userID)
 	return ctx
 }
 
-func GetAgentId(ctx context.Context) (str string, ok bool) {
-	str, ok = ctx.Value(AgentId).(string)
+func GetAgentID(ctx context.Context) (str string, ok bool) {
+	str, ok = ctx.Value(AgentID).(string)
 	return
 }
 
-func SetAgentId(ctx context.Context, agentId string) (context.Context) {
+func SetAgentID(ctx context.Context, agentID string) (context.Context) {
 	if ctx == nil {
 		return ctx
 	}
-	ctx = context.WithValue(ctx, AgentId, agentId)
+	ctx = context.WithValue(ctx, AgentID, agentID)
 	return ctx
 }

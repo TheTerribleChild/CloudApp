@@ -33,7 +33,7 @@ var (
 	queueConsumer       QueueConsumer
 	agentSessionManager AgentSessionManager
 	redisClient         *redisutil.RedisClient
-	serverId            string
+	serverID            string
 
 	//config
 	refreshDuration time.Duration
@@ -44,7 +44,7 @@ func initializeConfig() {
 }
 
 func (instance *AgentServer) InitializeServer() {
-	serverId = uuid.New().String()
+	serverID = uuid.New().String()
 	refreshDuration, _ = time.ParseDuration(viper.GetString("refreshDuration"))
 	redisClientBuilder := redisutil.RedisClientBuilder{
 		Host:                viper.GetString("externalService.cache.host"),

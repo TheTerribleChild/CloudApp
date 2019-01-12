@@ -43,21 +43,21 @@ func (instance *QueueConsumer) run() {
 }
 
 func (instance *QueueConsumer) handleMessage(delivery amqp.Delivery) {
-	agentId := delivery.Headers["agentId"].(string)
-	if len(agentId) == 0 {
-		log.Println("Received bad agent message. No agentId found.")
+	agentID := delivery.Headers["agentID"].(string)
+	if len(agentID) == 0 {
+		log.Println("Received bad agent message. No agentID found.")
 		return
 	}
-	session, found := agentSessionManager.getSession(agentId)
+	session, found := agentSessionManager.getSession(agentID)
 	if !found {
-		log.Printf("No subscription for agent %s found.", agentId)
-		agentSessionManager.endSession(agentId)
+		log.Printf("No subscription for agent %s found.", agentID)
+		agentSessionManager.endSession(agentID)
 		return
 	}
 
 	agentMessageContent := &cldstrg.AgentMessage{}
 	if err := proto.Unmarshal(delivery.Body, agentMessageContent); err != nil {
-		log.Printf("Unable to unmarshal message content for agent: %s", agentId)
+		log.Printf("Unable to unmarshal message content for agent: %s", agentID)
 		return
 	}
 	session.pollChan <- agentMessageContent

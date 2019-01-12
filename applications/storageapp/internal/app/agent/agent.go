@@ -36,7 +36,7 @@ func (agent *Agent) Initialize() {
 
 func (agent *Agent) Run() {
 	//agentTokenAuthenticator = accesstoken.
-	agent.agentInfo = cldstrg.AgentInfo{Id : viper.GetString("agentId")}
+	agent.agentInfo = cldstrg.AgentInfo{Id : viper.GetString("agentID")}
 	agent.jm = msghdlr.JobManager{}
 	agent.jm.Initialize()
 	ascConn, err := grpc.Dial(agent.ManagementServerAddress, grpc.WithInsecure())
