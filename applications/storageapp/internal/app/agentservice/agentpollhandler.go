@@ -24,7 +24,7 @@ func (instance *AgentServer) Poll(request *cldstrg.AgentPollRequest, stream clds
 	for {
 		select {
 		case message := <-session.pollChan:
-			log.Println("Received message " + message.MessageId + " " + message.Type.String())
+			log.Println("Received message " + message.MessageId);
 			stream.Send(message)
 			break
 		case <-stream.Context().Done():

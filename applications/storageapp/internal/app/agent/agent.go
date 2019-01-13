@@ -35,7 +35,8 @@ func (agent *Agent) Initialize() {
 }
 
 func (agent *Agent) Run() {
-	//agentTokenAuthenticator = accesstoken.
+	tokenAuthBuilder := accesstoken.TokenAutenticatorBuilder{"abc"}
+	agentTokenAuthenticator = tokenAuthBuilder.BuildAgentExecuteTokenAuthenticator()
 	agent.agentInfo = cldstrg.AgentInfo{Id : viper.GetString("agentID")}
 	agent.jm = msghdlr.JobManager{}
 	agent.jm.Initialize()
@@ -82,9 +83,14 @@ func (agent *Agent) poll(client cldstrg.AgentService_PollClient) error {
 	if message == nil {
 		return nil
 	}
+	agentCommand := cldstrg.AgentCommand{}
+	agentTokenAuthenticator.AuthenticateAndDecodeJWTString(message.AgentExecuteToken, &agentCommand)
 	log.Println("Received message: " + message.MessageId + "  Type: " + message.Type.String())
-	messageHandlerFactory := msghdlr.MessageHandlerFactory{Asc: agent.asc, Message: message, Jm: agent.jm}
-	messageHandlerWrapper := messageHandlerFactory.GetMessageHandlerWrapper()
+	messageHandlerFactory := msghdlr.MessageHandlerFactory{Asc: agent.asc, Message: message, Jm: agent.jm, CommandMessage: agentCommand}
+	messageHandlerWrapper, err := messageHandlerFactory.GetMessageHandlerWrapper()
+	if err != nil {
+		return nil
+	}
 	agent.jm.AddJobForHandler(messageHandlerWrapper)
 	return nil
 }

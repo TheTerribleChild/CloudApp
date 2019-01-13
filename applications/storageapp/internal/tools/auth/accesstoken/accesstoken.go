@@ -1,8 +1,8 @@
 package accesstoken
 
 import (
-	accesstoken "theterriblechild/CloudApp/tools/auth/accesstoken"
 	"theterriblechild/CloudApp/applications/storageapp/internal/model"
+	accesstoken "theterriblechild/CloudApp/tools/auth/accesstoken"
 )
 
 type UploadDownloadToken struct {
@@ -25,14 +25,14 @@ type AgentExecuteToken struct {
 
 type TaskToken struct {
 	accesstoken.AccessToken
-	TaskID string
+	TaskID   string
 	UserName string
 }
 
 type FileReadToken struct {
 	accesstoken.AccessToken
 	TaskToken string
-	FileRead model.FileRead
+	FileRead  model.FileRead
 }
 
 type FileWriteToken struct {

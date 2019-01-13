@@ -13,7 +13,7 @@ type UploadFileCommand struct {
 	AgentCommand
 	RemoteURL string
 	FileWriteToken string
-	FileRead FileRead
+	FileRead []FileRead
 }
 
 type DownloadFileCommand struct {

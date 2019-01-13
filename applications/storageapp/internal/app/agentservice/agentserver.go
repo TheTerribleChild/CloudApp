@@ -37,6 +37,7 @@ var (
 
 	//config
 	refreshDuration time.Duration
+	tokenAuthenticatorBuilder accesstoken.TokenAutenticatorBuilder
 )
 
 func initializeConfig() {
@@ -45,6 +46,7 @@ func initializeConfig() {
 
 func (instance *AgentServer) InitializeServer() {
 	serverID = uuid.New().String()
+	tokenAuthenticatorBuilder = accesstoken.TokenAutenticatorBuilder{Secret : "abc"}
 	refreshDuration, _ = time.ParseDuration(viper.GetString("refreshDuration"))
 	redisClientBuilder := redisutil.RedisClientBuilder{
 		Host:                viper.GetString("externalService.cache.host"),
@@ -80,7 +82,7 @@ func (instance *AgentServer) authenticateRequest(method string, jwtStr string) e
 	var tokenAuthenticator auth.TokenAuthenticator
 	switch method {
 	case "/cloudstorage.AgentService/Poll":
-		tokenAuthenticator = accesstoken.BuildAgentPollTokenAuthentiactor("abc")
+		tokenAuthenticator = tokenAuthenticatorBuilder.BuildAgentPollTokenAuthenticator()
 		break
 	default:
 		return status.Error(codes.InvalidArgument, "Invalid request.")

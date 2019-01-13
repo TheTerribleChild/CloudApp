@@ -15,6 +15,7 @@ import (
 type ListDirectoryHandler struct {
 	asc            cldstrg.AgentServiceClient
 	message        *cldstrg.AgentMessage
+	command cldstrg.ListDirectoryCommand
 	handlerWrapper *MessageHandlerWrapper
 }
 

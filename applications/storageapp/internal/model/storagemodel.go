@@ -1,8 +1,16 @@
 package model
 
+type MergeMode uint8
+
+const (
+	OVERWRITE MergeMode = 0
+	RENAME    MergeMode = 1
+	SKIP      MergeMode = 2
+)
+
 type FileStat struct {
 	FilePath string
-	Size int64
+	Size     int64
 }
 
 type FileRead struct {
@@ -10,7 +18,8 @@ type FileRead struct {
 }
 
 type FileWrite struct {
-	WriteRoot string
-	Files []FileStat
-	Decompress bool
+	WriteLocation   string
+	Files           []FileStat
+	Decompress      bool
+	ConflictResolve MergeMode
 }

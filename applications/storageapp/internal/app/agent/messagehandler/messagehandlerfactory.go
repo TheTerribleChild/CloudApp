@@ -3,10 +3,10 @@ package agentmessagehandler
 import (
 	"log"
 	"time"
-
+	"fmt"
 	cldstrg "theterriblechild/CloudApp/applications/storageapp/internal/model"
+	
 	auth "theterriblechild/CloudApp/applications/storageapp/internal/tools/auth"
-
 	"golang.org/x/net/context"
 )
 
@@ -16,28 +16,34 @@ type MessageHandler interface {
 
 type MessageHandlerFactory struct {
 	Asc     cldstrg.AgentServiceClient
-	Message *cldstrg.AgentMessage
+	Command interface{}
 	Jm      JobManager
 }
 
-func (instance *MessageHandlerFactory) GetMessageHandlerWrapper() MessageHandlerWrapper {
+func (instance *MessageHandlerFactory) GetMessageHandlerWrapper() (MessageHandlerWrapper, error) {
 
-	token, _ := auth.DecodeTaskToken("123", instance.Message.TaskToken)
-	handlerWrapper := MessageHandlerWrapper{asc: instance.Asc, jobManager: instance.Jm, taskId: token.TaskId}
+	agentCommand := instance.Command.(cldstrg.AgentCommand)
+	taskToken, _ := auth.DecodeTaskToken("", agentCommand.TaskToken)
+	handlerWrapper := MessageHandlerWrapper{asc: instance.Asc, jobManager: instance.Jm, taskId: taskToken.TaskId}
 
-	switch instance.Message.Type {
-	case cldstrg.AgentMessageType_ListDirectory:
-		handlerWrapper.messageHandler = ListDirectoryHandler{asc: instance.Asc, message: instance.Message, handlerWrapper: &handlerWrapper}
+	if len(taskToken.TaskId) == 0 {
+		log.Println("Invalid command")
+		return handlerWrapper, fmt.Errorf("Invalid command");
+	}
+
+	switch instance.Command.(type) {
+	case cldstrg.ListDirectoryCommand:
+		handlerWrapper.messageHandler = ListDirectoryHandler{asc: instance.Asc, command: instance.Command.(cldstrg.ListDirectoryCommand), handlerWrapper: &handlerWrapper}
 		break
-	case cldstrg.AgentMessageType_DownloadFile:
-		handlerWrapper.messageHandler = DownloadFileHandler{asc: instance.Asc, message: instance.Message, handlerWrapper: &handlerWrapper}
+	case cldstrg.DownloadFileCommand:
+		handlerWrapper.messageHandler = DownloadFileHandler{asc: instance.Asc, command: instance.Command.(cldstrg.DownloadFileCommand), handlerWrapper: &handlerWrapper}
 		break
-	case cldstrg.AgentMessageType_UploadFile:
-		handlerWrapper.messageHandler = UploadFileHandler{asc: instance.Asc, message: instance.Message, handlerWrapper: &handlerWrapper}
+	case cldstrg.UploadFileCommand:
+		handlerWrapper.messageHandler = UploadFileHandler{asc: instance.Asc, command: instance.Command.(cldstrg.UploadFileCommand), handlerWrapper: &handlerWrapper}
 		break
 	default:
 	}
-	return handlerWrapper
+	return handlerWrapper, nil
 }
 
 type MessageHandlerWrapper struct {

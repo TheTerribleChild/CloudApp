@@ -21,24 +21,26 @@ type DownloadFileHandler struct {
 	asc            cldstrg.AgentServiceClient
 	ssc            cldstrg.StorageServiceClient
 	message        *cldstrg.AgentMessage
+	command        cldstrg.DownloadFileCommand
 	handlerWrapper *MessageHandlerWrapper
 }
 
-func (handler DownloadFileHandler) HandleMessage() error {
-	fileUploadDownloadMessageContent := &cldstrg.FileUploadDownloadMessageContent{}
-	proto.Unmarshal(handler.message.Content, fileUploadDownloadMessageContent)
-	jobs := fileUploadDownloadMessageContent.Jobs
-	storageServerAddress := fileUploadDownloadMessageContent.RemoteUrl
+func (instance DownloadFileHandler) HandleMessage() error {
+	storageServerAddress := instance.command.RemoteURL
 	sscConn, err := grpc.Dial(storageServerAddress, grpc.WithInsecure())
 	if err != nil {
 		return err
 	}
-	handler.ssc = cldstrg.NewStorageServiceClient(sscConn)
+	instance.ssc = cldstrg.NewStorageServiceClient(sscConn)
 	defer sscConn.Close()
-	for _, job := range jobs {
+	ctx, _ := contextbuilder.BuildStorageServerContext(instance.command.FileReadToken)
+	req := &cldstrg.FileAccessRequest{}
+	instance.ssc.DownloadFile(ctx, )
+
+	for _, job := range instance.command. {
 		log.Println(job.Files)
 		job.GetStorageServerToken()
-		req := &cldstrg.FileAccessRequest{}
+		
 		ctx, _ := contextbuilder.BuildStorageServerContext(job.StorageServerToken)
 		client, err := handler.ssc.DownloadFile(ctx, req)
 		if err != nil {

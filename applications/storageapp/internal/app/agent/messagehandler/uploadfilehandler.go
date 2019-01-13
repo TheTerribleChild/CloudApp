@@ -19,6 +19,7 @@ type UploadFileHandler struct {
 	asc            cldstrg.AgentServiceClient
 	ssc            cldstrg.StorageServiceClient
 	message        *cldstrg.AgentMessage
+	command        cldstrg.UploadFileCommand
 	handlerWrapper *MessageHandlerWrapper
 }
 
