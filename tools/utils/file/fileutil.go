@@ -218,22 +218,14 @@ func EncryptFile(src string, dest string, key []byte) error {
 	}
 	defer inFile.Close()
 
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		return err
-	}
-
-	var iv [aes.BlockSize]byte
-	stream := cipher.NewOFB(block, iv[:])
-
 	outFile, err := os.OpenFile(dest, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		return err
 	}
 	defer outFile.Close()
 
-	writer := &cipher.StreamWriter{S: stream, W: outFile}
-	if _, err := io.Copy(writer, inFile); err != nil {
+	cipherWriter, err := GetAESEncryptionWriter(outFile, key)
+	if _, err := io.Copy(cipherWriter, inFile); err != nil {
 		return err
 	}
 	os.Chmod(dest, stat.Mode())
@@ -251,22 +243,14 @@ func DecryptFile(src string, dest string, key []byte) error {
 	}
 	defer inFile.Close()
 
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		return err
-	}
-
-	var iv [aes.BlockSize]byte
-	stream := cipher.NewOFB(block, iv[:])
-
 	outFile, err := os.OpenFile(dest, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		return err
 	}
 	defer outFile.Close()
 
-	reader := &cipher.StreamReader{S: stream, R: inFile}
-	if _, err := io.Copy(outFile, reader); err != nil {
+	cipherReader, err := GetAESEncryptionReader(inFile, key)
+	if _, err := io.Copy(outFile, cipherReader); err != nil {
 		return err
 	}
 	os.Chmod(dest, stat.Mode())
@@ -301,14 +285,10 @@ func CompressAndEncryptFile(src string, dest string, key []byte) error {
 	}
 	defer outFile.Close()
 
-	block, err := aes.NewCipher(key)
+	cipherWriter, err := GetAESEncryptionWriter(outFile, key)
 	if err != nil {
 		return err
 	}
-	var iv [aes.BlockSize]byte
-	stream := cipher.NewOFB(block, iv[:])
-
-	cipherWriter := &cipher.StreamWriter{S: stream, W: outFile}
 	defer cipherWriter.Close()
 	gzipWriter := gzip.NewWriter(cipherWriter)
 	defer gzipWriter.Close()
@@ -336,14 +316,11 @@ func DecompressAndDecryptFile(src string, dest string, key []byte) error {
 	}
 	defer outFile.Close()
 
-	block, err := aes.NewCipher(key)
+	cipherReader, err := GetAESEncryptionReader(inFile, key)
 	if err != nil {
 		return err
 	}
-	var iv [aes.BlockSize]byte
-	stream := cipher.NewOFB(block, iv[:])
-
-	cipherReader := &cipher.StreamReader{S: stream, R: inFile}
+	
 	gzipReader, err := gzip.NewReader(cipherReader)
 	if err != nil {
 		return err
@@ -356,6 +333,21 @@ func DecompressAndDecryptFile(src string, dest string, key []byte) error {
 	return nil
 }
 
+func GetAESEncryptionWriter(inputWriter io.Writer, key []byte) (*cipher.StreamWriter, error){
+	block, err := aes.NewCipher(key)
+	var iv [aes.BlockSize]byte
+	stream := cipher.NewOFB(block, iv[:])
+	cipherWriter := &cipher.StreamWriter{S: stream, W: inputWriter}
+	return cipherWriter, err
+}
+
+func GetAESEncryptionReader(inputReader io.Reader, key []byte) (*cipher.StreamReader, error){
+	block, err := aes.NewCipher(key)
+	var iv [aes.BlockSize]byte
+	stream := cipher.NewOFB(block, iv[:])
+	cipherReader := &cipher.StreamReader{S: stream, R: inputReader}
+	return cipherReader, err	
+}
 // func getUnixPermissionIntFromFileMode(fileMode os.FileMode) uint32 {
 // 	total := 0
 
