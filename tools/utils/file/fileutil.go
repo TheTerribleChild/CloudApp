@@ -14,8 +14,12 @@ import (
 	"strings"
 )
 
+type MergeMode uint8
 const (
 	BlockSize int64 = 1024 * 1024
+	OVERWRITE MergeMode = 0
+	RENAME    MergeMode = 1
+	SKIP      MergeMode = 2
 )
 
 //GetAllFileInDirectoryRecursively Gets all regular file with extension in root directory recursively

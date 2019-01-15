@@ -1,11 +1,7 @@
 package model
 
-type MergeMode uint8
-
-const (
-	OVERWRITE MergeMode = 0
-	RENAME    MergeMode = 1
-	SKIP      MergeMode = 2
+import (
+	fileutil "theterriblechild/CloudApp/tools/utils/file"
 )
 
 type FileStat struct {
@@ -21,5 +17,5 @@ type FileWrite struct {
 	WriteLocation   string
 	Files           []FileStat
 	Decompress      bool
-	ConflictResolve MergeMode
+	ConflictResolve fileutil.MergeMode
 }

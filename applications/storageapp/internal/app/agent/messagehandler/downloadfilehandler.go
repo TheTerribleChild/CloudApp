@@ -35,8 +35,7 @@ func (instance DownloadFileHandler) HandleMessage() error {
 	defer sscConn.Close()
 	ctx, _ := contextbuilder.BuildStorageServerContext(instance.command.FileReadToken)
 	req := &cldstrg.FileAccessRequest{}
-	instance.ssc.DownloadFile(ctx, )
-
+	client, err := instance.ssc.DownloadFile(ctx, req)
 	for _, job := range instance.command. {
 		log.Println(job.Files)
 		job.GetStorageServerToken()
@@ -51,7 +50,7 @@ func (instance DownloadFileHandler) HandleMessage() error {
 	return nil
 }
 
-func (handler DownloadFileHandler) downloadFile(path string, client cldstrg.StorageService_DownloadFileClient) error {
+func (instance DownloadFileHandler) downloadFile(path string, client cldstrg.StorageService_DownloadFileClient) error {
 	writeFile, err := os.Create(path)
 	if err != nil {
 		return err
