@@ -11,7 +11,7 @@ import (
 	cldstrg "theterriblechild/CloudApp/applications/storageapp/internal/model"
 	contextbuilder "theterriblechild/CloudApp/applications/storageapp/internal/tools/utils/contextbuilder"
 
-	"github.com/golang/protobuf/proto"
+	//"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -36,17 +36,8 @@ func (instance DownloadFileHandler) HandleMessage() error {
 	ctx, _ := contextbuilder.BuildStorageServerContext(instance.command.FileReadToken)
 	req := &cldstrg.FileAccessRequest{}
 	client, err := instance.ssc.DownloadFile(ctx, req)
-	for _, job := range instance.command. {
-		log.Println(job.Files)
-		job.GetStorageServerToken()
-		
-		ctx, _ := contextbuilder.BuildStorageServerContext(job.StorageServerToken)
-		client, err := handler.ssc.DownloadFile(ctx, req)
-		if err != nil {
-			return err
-		}
-		handler.downloadFile("download.zip", client)
-	}
+	writeLoc := instance.command.FileWrite.WriteLocation
+	instance.downloadFile(writeLoc, client)
 	return nil
 }
 

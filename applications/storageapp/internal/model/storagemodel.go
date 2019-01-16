@@ -5,8 +5,9 @@ import (
 )
 
 type FileStat struct {
-	FilePath string
-	Size     int64
+	FilePath         string
+	Size             int64
+	LastModifiedTime int
 }
 
 type FileRead struct {

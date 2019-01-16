@@ -1,26 +1,57 @@
 package storageserver
 
 import (
-	"context"
+	//"context"
 	"log"
 	"os"
-
+	"path"
 	cldstrg "theterriblechild/CloudApp/applications/storageapp/internal/model"
-	auth "theterriblechild/CloudApp/applications/storageapp/internal/tools/auth"
-
+	"theterriblechild/CloudApp/tools/utils/context"
+	accesstoken "theterriblechild/CloudApp/applications/storageapp/internal/tools/auth/accesstoken"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
 func (instance *StorageServer) UploadFile(stream cldstrg.StorageService_UploadFileServer) error {
 
-	writeFile, err := os.Create("upload.zip")
-	if err != nil {
-		log.Println(err.Error())
-		return err
+	jwtStr, _ := contextutil.GetAuth(stream.Context())
+	fileWriteToken := accesstoken.FileWriteToken{}
+	taskToken := accesstoken.TaskToken{}
+	instance.tokenAuthenticatorBuilder.BuildFileWriteTokenAuthenticator().AuthenticateAndDecodeJWTString(jwtStr, &fileWriteToken)
+	if len(fileWriteToken.TaskToken) == 0 {
+		return status.Error(codes.InvalidArgument, "Missing task token")
 	}
-	defer writeFile.Close()
+	instance.tokenAuthenticatorBuilder.BuildTaskTokenAuthenticator().AuthenticateAndDecodeJWTString(fileWriteToken.TaskToken, &taskToken)
+	if len(taskToken.TaskID) == 0 {
+		return status.Error(codes.InvalidArgument, "Bad task token")
+	}
+
+	initialChunk, err := stream.Recv()
+	if err != nil {
+		return status.Error(codes.Internal, err.Error())
+	}
+	initialOffset := initialChunk.Info.Offset
+	uploadLocation := path.Join(instance.CacheLocation, taskToken.TaskID)
+
+	var uploadFile *os.File
+	if initialOffset == 0 {
+		uploadFile, err = os.Create(uploadLocation)
+		if err != nil {
+			return status.Error(codes.Internal, err.Error())
+		}
+	} else {
+		if stat, err := os.Stat(uploadLocation); os.IsNotExist(err) {
+			return status.Error(codes.Unavailable, "File does not exist")
+		} else if int64(stat.Size()) < initialOffset {
+			return status.Error(codes.Unavailable, "Invalid offset")
+		}
+		uploadFile, err = os.OpenFile(uploadLocation, os.O_WRONLY, 600)
+		if err != nil {
+			return status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	
 	for {
 		chunk, err := stream.Recv()
 		if err != nil {
@@ -32,35 +63,21 @@ func (instance *StorageServer) UploadFile(stream cldstrg.StorageService_UploadFi
 			return err
 		}
 		if len(chunk.Content) > 0 {
-			writeFile.Write(chunk.Content)
+			if _, err := uploadFile.WriteAt( chunk.Content, chunk.Info.Offset); err != nil {
+				return status.Error(codes.Internal, err.Error())
+			}
 		} else {
 			stream.SendAndClose(&cldstrg.Empty{})
 			break
 		}
 
 	}
+	uploadFile.Close()
+	log.Printf("File uploaded successfully.")
+	go instance.handleUploadedFile(fileWriteToken, taskToken)
 	return nil
 }
 
-func (instance *StorageServer) authenticateToken(ctx context.Context) error {
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		return status.Error(codes.Unauthenticated, "Missing permission.")
-	}
-	str := md.Get("authentication")
-	if len(str) != 1 {
-		return status.Error(codes.Unauthenticated, "Invalid permission.")
-	}
-	token := str[0]
-	accessToken, err := auth.DecodeStorageServerToken("123", token)
-	if err != nil {
-		log.Println("Invalid authentication token.")
-		return status.Error(codes.Unauthenticated, "Invalid authentication token.")
-	}
-	for _, permission := range accessToken.Permissions {
-		if permission == cldstrg.AccessPermisison_StorageWrite {
-			return nil
-		}
-	}
-	return status.Error(codes.Unauthenticated, "Missing permission.")
+func (instance *StorageServer) handleUploadedFile(fileWriteToken accesstoken.FileWriteToken, taskToken accesstoken.TaskToken){
+	fileWriteToken.FileWrite.Decompress
 }

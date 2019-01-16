@@ -1,7 +1,7 @@
 package storageserver
 
 import (
-	"google.golang.org/genproto/googleapis/rpc/code"
+	"io"
 	"os"
 
 	cldstrg "theterriblechild/CloudApp/applications/storageapp/internal/model"
@@ -33,7 +33,7 @@ func (instance *StorageServer) DownloadFile(request *cldstrg.FileAccessRequest, 
 	finalDownloadFile := path.Join(instance.CacheLocation, taskToken.TaskID)
 	decryptionKey := make([]byte, 32)
 	if len(fileReadToken.FileRead.Files) > 1 {
-		tempTaskLocation := path.Join(instance.CacheLocation, "dir-"+taskToken.TaskID)
+		tempTaskLocation := path.Join(instance.CacheLocation, taskToken.TaskID)
 		os.MkdirAll(tempTaskLocation, 600)
 		defer os.RemoveAll(tempTaskLocation)
 		downloadFiles := make([]string, len(fileReadToken.FileRead.Files))
@@ -52,11 +52,15 @@ func (instance *StorageServer) DownloadFile(request *cldstrg.FileAccessRequest, 
 	}
 	defer os.Remove(finalDownloadFile)
 	byteBuffer := make([]byte, 1024*1024)
+	offset := request.Info.Offset
 	for {
-		if size, _ := downloadFile.Read(byteBuffer); size > 0 {
+		if size, err := downloadFile.ReadAt(byteBuffer, offset); size > 0 {
+			offset += int64(size)
 			stream.Send(&cldstrg.FileChunk{Content: byteBuffer[0:size]})
-		} else {
+		} else if err == io.EOF {
 			break
+		} else {
+			return status.Error(codes.Internal, err.Error())
 		}
 	}
 	return status.Error(codes.OK, "End of stream")
