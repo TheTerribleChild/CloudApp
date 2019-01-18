@@ -20,3 +20,4 @@ type FileWrite struct {
 	Decompress      bool
 	ConflictResolve fileutil.MergeMode
 }
+
