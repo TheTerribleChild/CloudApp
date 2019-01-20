@@ -8,6 +8,7 @@ type FileStat struct {
 	FilePath         string
 	Size             int64
 	LastModifiedTime int
+	Hash             uint32
 }
 
 type FileRead struct {
@@ -20,4 +21,3 @@ type FileWrite struct {
 	Decompress      bool
 	ConflictResolve fileutil.MergeMode
 }
-

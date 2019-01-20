@@ -3,7 +3,7 @@ package accesstoken
 import (
 	accesstoken "theterriblechild/CloudApp/tools/auth/accesstoken"
 	"theterriblechild/CloudApp/applications/storageapp/internal/model"
-)
+ )
 
 type AccessTokenBuilder struct {
 	tokenFactory accesstoken.JWTTokenFactory

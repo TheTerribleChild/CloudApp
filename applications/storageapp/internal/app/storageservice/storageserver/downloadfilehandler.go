@@ -41,7 +41,7 @@ func (instance *StorageServer) DownloadFile(request *cldstrg.FileAccessRequest, 
 			downloadFiles[i] = path.Join(tempTaskLocation, fileStat.FilePath)
 			fileutil.DecompressAndDecryptFile(path.Join(userStorageLocation,fileStat.FilePath), downloadFiles[i], decryptionKey)
 		}
-		if err := fileutil.ZipFiles(downloadFiles, finalDownloadFile); err != nil {
+		if err := fileutil.ZipFiles(downloadFiles, finalDownloadFile, false); err != nil {
 			return status.Error(codes.Internal, err.Error())
 		}
 	}

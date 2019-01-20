@@ -12,6 +12,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"theterriblechild/CloudApp/tools/utils/hash"
 )
 
 type MergeMode uint8
@@ -66,13 +67,16 @@ func GetFileSize(path string) (int64, error) {
 	return size, err
 }
 
-func ZipFiles(files []string, dest string) error {
+func ZipFiles(files []string, dest string, useAbsolutePath bool) error {
 	if len(dest) == 0 {
 		return fmt.Errorf("No output file path given.")
 	}
 
-	commonPrefix := GetCommonPrefix(files)
-	removeIdx := len(commonPrefix)
+	var removeIdx int = 0
+	if !useAbsolutePath {
+		commonPrefix := GetCommonPrefix(files)
+		removeIdx = len(commonPrefix)
+	}
 
 	newZipFile, err := os.Create(dest)
 	if err != nil {
@@ -289,22 +293,20 @@ func CompressAndEncryptFile(src string, dest string, key []byte) error {
 	}
 	defer outFile.Close()
 
-	cipherWriter, err := GetAESEncryptionWriter(outFile, key)
+	writer, err := GetGZipAESWriter(outFile, key)
 	if err != nil {
 		return err
 	}
-	defer cipherWriter.Close()
-	gzipWriter := gzip.NewWriter(cipherWriter)
-	defer gzipWriter.Close()
-
-	if _, err := io.Copy(gzipWriter, inFile); err != nil {
+	defer writer.Close()
+	if _, err := io.Copy(writer, inFile); err != nil {
 		return err
 	}
+
 	os.Chmod(dest, stat.Mode())
 	return nil
 }
 
-func DecompressAndDecryptFile(src string, dest string, key []byte) error {
+func DecryptAndDecompressFile(src string, dest string, key []byte) error {
 	stat, err := os.Stat(src)
 	if err != nil {
 		return err
@@ -320,40 +322,55 @@ func DecompressAndDecryptFile(src string, dest string, key []byte) error {
 	}
 	defer outFile.Close()
 
-	cipherReader, err := GetAESEncryptionReader(inFile, key)
+	reader, err := GetGZipAESReader(inFile, key)
 	if err != nil {
 		return err
 	}
-	
-	gzipReader, err := gzip.NewReader(cipherReader)
-	if err != nil {
+	reader.Close()
+	if _, err := io.Copy(outFile, reader); err != nil {
 		return err
 	}
 
-	if _, err := io.Copy(outFile, gzipReader); err != nil {
-		return err
-	}
 	os.Chmod(dest, stat.Mode())
 	return nil
 }
 
-func GetAESEncryptionWriter(inputWriter io.Writer, key []byte) (*cipher.StreamWriter, error){
+func GetAESEncryptionWriter(writer io.Writer, key []byte) (*cipher.StreamWriter, error){
 	block, err := aes.NewCipher(key)
 	var iv [aes.BlockSize]byte
 	stream := cipher.NewOFB(block, iv[:])
-	cipherWriter := &cipher.StreamWriter{S: stream, W: inputWriter}
+	cipherWriter := &cipher.StreamWriter{S: stream, W: writer}
 	return cipherWriter, err
 }
 
-func GetAESEncryptionReader(inputReader io.Reader, key []byte) (*cipher.StreamReader, error){
+func GetAESEncryptionReader(reader io.Reader, key []byte) (*cipher.StreamReader, error){
 	block, err := aes.NewCipher(key)
 	var iv [aes.BlockSize]byte
 	stream := cipher.NewOFB(block, iv[:])
-	cipherReader := &cipher.StreamReader{S: stream, R: inputReader}
+	cipherReader := &cipher.StreamReader{S: stream, R: reader}
 	return cipherReader, err	
 }
-// func getUnixPermissionIntFromFileMode(fileMode os.FileMode) uint32 {
-// 	total := 0
 
-// 	return total
-// }
+func GetGZipAESWriter(writer io.Writer, key []byte) (*gzip.Writer, error) {
+	if cipherWriter, err := GetAESEncryptionWriter(writer, key); err != nil {
+		return nil, err
+	} else {
+		return gzip.NewWriter(cipherWriter), nil
+	}
+}
+
+func GetGZipAESReader(reader io.Reader, key []byte) (*gzip.Reader, error) {
+	if cipherReader, err := GetAESEncryptionReader(reader, key); err != nil {
+		return nil, err
+	} else {
+		return gzip.NewReader(cipherReader)
+	}
+}
+
+func GetFileMetadataHash(file string) (uint32, error) {
+	if stat, err := os.Stat(file); err != nil {
+		return 0, err
+	} else {
+		return hashutil.GetHashInt(stat), nil
+	}
+}

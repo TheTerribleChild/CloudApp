@@ -22,3 +22,11 @@ func GetHashString(obj ...interface{}) string{
 	}
 	return fmt.Sprintf("%x", GetHashInt(obj))
 }
+
+func GetHashForUnorderList(list []interface{}) uint32{
+	var hash uint32 = 0
+	for item, _ := range list {
+		hash += GetHashInt(item)
+	}
+	return hash
+}

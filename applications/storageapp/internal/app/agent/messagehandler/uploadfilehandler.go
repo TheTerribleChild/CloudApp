@@ -8,11 +8,11 @@ import (
 	//"google.golang.org/grpc/metadata"
 	cldstrg "theterriblechild/CloudApp/applications/storageapp/internal/model"
 	//auth "theterriblechild/CloudApp/applications/storageapp/internal/tools/auth"
-	contextbuilder "theterriblechild/CloudApp/applications/storageapp/internal/tools/utils/contextbuilder"
-	fileutil "theterriblechild/CloudApp/tools/utils/file"
+	// contextbuilder "theterriblechild/CloudApp/applications/storageapp/internal/tools/utils/contextbuilder"
+	// fileutil "theterriblechild/CloudApp/tools/utils/file"
 
-	"github.com/golang/protobuf/proto"
-	"google.golang.org/grpc"
+	// "github.com/golang/protobuf/proto"
+	// "google.golang.org/grpc"
 )
 
 type UploadFileHandler struct {
@@ -24,38 +24,38 @@ type UploadFileHandler struct {
 }
 
 func (handler UploadFileHandler) HandleMessage() error {
-	fileUploadDownloadMessageContent := &cldstrg.FileUploadDownloadMessageContent{}
-	proto.Unmarshal(handler.message.Content, fileUploadDownloadMessageContent)
-	jobs := fileUploadDownloadMessageContent.Jobs
-	storageServerAddress := fileUploadDownloadMessageContent.RemoteUrl
-	sscConn, err := grpc.Dial(storageServerAddress, grpc.WithInsecure())
-	if err != nil {
-		return err
-	}
-	handler.ssc = cldstrg.NewStorageServiceClient(sscConn)
-	defer sscConn.Close()
-	for _, job := range jobs {
-		files, err := fileutil.GetAllFileInDirectoryRecursively(job.Files, "")
-		if err != nil {
-			return err
-		}
-		log.Println(job.StorageServerToken)
-		tempFileName := handler.message.MessageId + ".temp"
-		handler.handlerWrapper.updateProgressAsync(cldstrg.ProgressUpdate_InProgress, 0, 1, "Compressing files.")
-		err = fileutil.ZipFiles(files, tempFileName)
-		if err != nil {
-			return err
-		}
-		ctx, cancel := contextbuilder.BuildStorageServerContext(job.StorageServerToken)
-		defer cancel()
-		client, err := handler.ssc.UploadFile(ctx)
-		err = handler.uploadFile(tempFileName, client)
-		os.Remove(tempFileName)
-		client.CloseAndRecv()
-		if err != nil {
-			return err
-		}
-	}
+	//fileUploadDownloadMessageContent := &cldstrg.FileUploadDownloadMessageContent{}
+	// proto.Unmarshal(handler.message.Content, fileUploadDownloadMessageContent)
+	// jobs := fileUploadDownloadMessageContent.Jobs
+	// storageServerAddress := fileUploadDownloadMessageContent.RemoteUrl
+	// sscConn, err := grpc.Dial(storageServerAddress, grpc.WithInsecure())
+	// if err != nil {
+	// 	return err
+	// }
+	// handler.ssc = cldstrg.NewStorageServiceClient(sscConn)
+	// defer sscConn.Close()
+	// for _, job := range jobs {
+	// 	files, err := fileutil.GetAllFileInDirectoryRecursively(job.Files, "")
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	log.Println(job.StorageServerToken)
+	// 	tempFileName := handler.message.MessageId + ".temp"
+	// 	handler.handlerWrapper.updateProgressAsync(cldstrg.ProgressUpdate_InProgress, 0, 1, "Compressing files.")
+	// 	err = fileutil.ZipFiles(files, tempFileName, false)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	ctx, cancel := contextbuilder.BuildStorageServerContext(job.StorageServerToken)
+	// 	defer cancel()
+	// 	client, err := handler.ssc.UploadFile(ctx)
+	// 	err = handler.uploadFile(tempFileName, client)
+	// 	os.Remove(tempFileName)
+	// 	client.CloseAndRecv()
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
 
 	return nil
 }
