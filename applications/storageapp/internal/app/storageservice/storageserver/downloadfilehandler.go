@@ -9,7 +9,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	accesstoken "theterriblechild/CloudApp/applications/storageapp/internal/tools/auth/accesstoken"
-	fileutil "theterriblechild/CloudApp/tools/utils/file"
 	"log"
 	"path"
 )
@@ -29,28 +28,23 @@ func (instance *StorageServer) DownloadFile(request *cldstrg.FileAccessRequest, 
 		return status.Error(codes.InvalidArgument, "Bad task token")
 	}
 	//Move this to util.==========
-	userStorageLocation := "" //retrieved from agent owner storage
 	finalDownloadFile := path.Join(instance.CacheLocation, taskToken.TaskID)
 	decryptionKey := make([]byte, 32)
+	files := make([]string, len(fileReadToken.FileRead.Files))
+	for i, fileStat := range fileReadToken.FileRead.Files {
+		files[i] = fileStat.FilePath
+	}
 	if len(fileReadToken.FileRead.Files) > 1 {
-		tempTaskLocation := path.Join(instance.CacheLocation, taskToken.TaskID)
-		os.MkdirAll(tempTaskLocation, 600)
-		defer os.RemoveAll(tempTaskLocation)
-		downloadFiles := make([]string, len(fileReadToken.FileRead.Files))
-		for i, fileStat := range fileReadToken.FileRead.Files {
-			downloadFiles[i] = path.Join(tempTaskLocation, fileStat.FilePath)
-			fileutil.DecompressAndDecryptFile(path.Join(userStorageLocation,fileStat.FilePath), downloadFiles[i], decryptionKey)
-		}
-		if err := fileutil.ZipFiles(downloadFiles, finalDownloadFile, false); err != nil {
+		if err := DecryptDecompressZip(files, finalDownloadFile, decryptionKey, false); err != nil {
 			return status.Error(codes.Internal, err.Error())
 		}
+		defer os.Remove(finalDownloadFile)
 	}
 	//=============================
 	downloadFile, err := os.Open(finalDownloadFile)
 	if err != nil {
 		return err
 	}
-	defer os.Remove(finalDownloadFile)
 	byteBuffer := make([]byte, 1024*1024)
 	offset := request.Info.Offset
 	for {

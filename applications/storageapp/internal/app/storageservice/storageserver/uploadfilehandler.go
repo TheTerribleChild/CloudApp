@@ -79,5 +79,5 @@ func (instance *StorageServer) UploadFile(stream cldstrg.StorageService_UploadFi
 }
 
 func (instance *StorageServer) handleUploadedFile(fileWriteToken accesstoken.FileWriteToken, taskToken accesstoken.TaskToken){
-	fileWriteToken.FileWrite.Decompress
+	// fileWriteToken.FileWrite.Decompress
 }

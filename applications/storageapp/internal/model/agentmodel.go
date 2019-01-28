@@ -2,6 +2,7 @@ package model
 
 type AgentCommand struct {
 	TaskToken string
+	TaskID    string
 }
 
 type ListDirectoryCommand struct {
@@ -11,14 +12,14 @@ type ListDirectoryCommand struct {
 
 type UploadFileCommand struct {
 	AgentCommand
-	RemoteURL string
+	RemoteURL      string
 	FileWriteToken string
-	FileRead []FileRead
+	FileRead       FileRead
 }
 
 type DownloadFileCommand struct {
 	AgentCommand
-	RemoteURL string
+	RemoteURL     string
 	FileReadToken string
-	FileWrite FileWrite
+	FileWrite     FileWrite
 }

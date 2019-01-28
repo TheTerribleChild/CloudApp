@@ -96,10 +96,9 @@ message FileUploadDownloadMessageContent{
 }
 
 message DirectoryContent{
-    string message_id = 1;
-    string path = 2;
-    repeated FileItem items = 3;
-    string error_msg = 4;
+    string path = 1;
+    repeated FileItem items = 2;
+    string error_msg = 3;
 }
 
 message ProgressUpdate{

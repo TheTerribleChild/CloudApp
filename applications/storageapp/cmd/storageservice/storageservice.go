@@ -22,6 +22,15 @@ func main() {
 			panic(fmt.Errorf("Fatal error config file: %s \n", err))
 		}
 	}
-	st := storageserver.StorageServer{}
+	st := storageserver.StorageServer{
+		StorageLocation : viper.GetString("storagePath"),
+		CacheLocation : viper.GetString("storagePath"),
+		SecretKey : "123456",
+		StorageServerTrustedIP : viper.GetString("storageServer.accept"),
+		StorageServerPort : viper.GetInt("storageServer.port"),
+		MaxRecvMsgSize : viper.GetInt("storageServer.maxMessageSize"),
+		CompressStorage : true,
+		EncryptStorage : true,
+	}
 	st.InitializeServer()
 }

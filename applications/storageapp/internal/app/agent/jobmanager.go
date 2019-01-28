@@ -1,4 +1,4 @@
-package agentmessagehandler
+package agent
 
 import (
 	"fmt"
@@ -26,6 +26,13 @@ type JobManager struct {
 
 	jobMap map[string]Job
 }
+type JobType int
+
+const (
+	JobType_Immediate JobType = 1
+	JobType_Upload    JobType = 2
+	JobType_Download  JobType = 3
+)
 
 func (instance *JobManager) Initialize() {
 
@@ -90,18 +97,18 @@ func (instance *JobManager) jobDistributor(uploadWorkerResultChan <-chan bool, d
 func (instance *JobManager) startUploadDownloadJob() {
 	log.Printf("Upload worker available: %d  Download worker available: %d", instance.availableUploadWorker, instance.availableDownloadWorker)
 	if instance.availableUploadWorker > 0 {
-		if taskId := instance.dequeueUploadJob(); len(taskId) > 0 {
-			if job, ok := instance.jobMap[taskId]; ok {
+		if taskID := instance.dequeueUploadJob(); len(taskID) > 0 {
+			if job, ok := instance.jobMap[taskID]; ok {
 				instance.uploadWorkerChan <- job
-				delete(instance.jobMap, taskId)
+				delete(instance.jobMap, taskID)
 			}
 		}
 	}
 	if instance.availableDownloadWorker > 0 {
-		if taskId := instance.dequeueDownloadJob(); len(taskId) > 0 {
-			if job, ok := instance.jobMap[taskId]; ok {
+		if taskID := instance.dequeueDownloadJob(); len(taskID) > 0 {
+			if job, ok := instance.jobMap[taskID]; ok {
 				instance.downloadWorkerChan <- job
-				delete(instance.jobMap, taskId)
+				delete(instance.jobMap, taskID)
 			}
 		}
 	}
@@ -112,34 +119,30 @@ func (instance *JobManager) updateTaskProgress(newProgress cldstrg.ProgressUpdat
 }
 
 type Job struct {
-	taskId    string
+	taskID    string
 	progress  cldstrg.ProgressUpdate
 	cancelJob chan bool
 	f         func()
 }
 
-func (instance *JobManager) AddJobForHandler(handler MessageHandlerWrapper) {
+func (instance *JobManager) createJobFromHandler(handler CommandHandler) Job {
+	taskID := handler.agentCommand.TaskID
 	cancelJobChan := make(chan bool, 1)
-	taskId := handler.taskId
-	job := Job{taskId: handler.taskId, cancelJob: cancelJobChan, f: handler.HandleMessage, progress: cldstrg.ProgressUpdate{State: cldstrg.ProgressUpdate_NotStarted}}
-	instance.jobMap[taskId] = job
-	switch handler.messageHandler.(type) {
-	case UploadFileHandler:
-		instance.addUploadJob(taskId)
-		break
-	case DownloadFileHandler:
-		instance.addDownloadJob(taskId)
-		break
-	default:
-		instance.immediateWorkerChan <- job
-		break
-	}
+	return Job{taskID: taskID, cancelJob: cancelJobChan, f: handler.handleCommand, progress: cldstrg.ProgressUpdate{State: cldstrg.ProgressUpdate_NotStarted}}
 }
 
-func (instance *JobManager) addUploadJob(id string) {
+func (instance *JobManager) addImmediateJob(handler CommandHandler) {
+	job := instance.createJobFromHandler(handler)
+	instance.immediateWorkerChan <- job
+}
+
+func (instance *JobManager) addUploadJob(handler CommandHandler) {
+	taskID := handler.agentCommand.TaskID
+	job := instance.createJobFromHandler(handler)
+	instance.jobMap[taskID] = job
 	instance.uploadQueueMutex.Lock()
-	log.Println("Enqueuing upload task: " + id)
-	instance.uploadQueue = append(instance.uploadQueue, id)
+	log.Println("Enqueuing upload task: " + taskID)
+	instance.uploadQueue = append(instance.uploadQueue, taskID)
 	instance.uploadQueueMutex.Unlock()
 	instance.notifyNewJobChan <- true
 }
@@ -156,10 +159,13 @@ func (instance *JobManager) dequeueUploadJob() string {
 	return id
 }
 
-func (instance *JobManager) addDownloadJob(id string) {
+func (instance *JobManager) addDownloadJob(handler CommandHandler) {
+	taskID := handler.agentCommand.TaskID
+	job := instance.createJobFromHandler(handler)
+	instance.jobMap[taskID] = job
 	instance.downloadQueueMutex.Lock()
-	log.Println("Enqueuing download task: " + id)
-	instance.downloadQueue = append(instance.downloadQueue, id)
+	log.Println("Enqueuing download task: " + taskID)
+	instance.downloadQueue = append(instance.downloadQueue, taskID)
 	instance.downloadQueueMutex.Unlock()
 	instance.notifyNewJobChan <- true
 }
@@ -181,9 +187,9 @@ func doJob(workerName string, j <-chan Job, result chan bool) {
 		result <- true
 		job := <-j
 		result <- false
-		log.Println(workerName + " starting job " + job.taskId)
+		log.Println(workerName + " starting job " + job.taskID)
 		job.f()
-		log.Println(workerName + " finished job " + job.taskId)
+		log.Println(workerName + " finished job " + job.taskID)
 	}
 
 }
