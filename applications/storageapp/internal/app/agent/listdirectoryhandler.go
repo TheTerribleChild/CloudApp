@@ -40,7 +40,8 @@ import (
 // 	return nil
 // }
 
-func (instance *Agent) handleListDirectory(command cldstrg.ListDirectoryCommand) error {
+func (instance *Agent) handleListDirectory(commandInterface cldstrg.AgentCommandInterface) error {
+	command := commandInterface.(cldstrg.ListDirectoryCommand)
 	path := command.Path
 	
 	files, err := ioutil.ReadDir(path)

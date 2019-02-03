@@ -88,7 +88,6 @@ func (instance *StorageServer) Ping(ctx context.Context, msg *cldstrg.Empty) (*c
 
 func (instance *StorageServer) authenticateRequest(method string, jwtStr string) error {
 	log.Println("agent auth: " + method)
-	log.Println(jwtStr)
 	var tokenAuthenticator auth.TokenAuthenticator
 	switch method {
 	case "/cloudstorage.StorageService/DownloadFile":

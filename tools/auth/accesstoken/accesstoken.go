@@ -5,6 +5,10 @@ type AccessToken struct{
 	Permissions []Permission
 }
 
+type AccessTokenInterface interface {
+	GetAccessToken() AccessToken
+}
+
 type Permission string
 
 const (

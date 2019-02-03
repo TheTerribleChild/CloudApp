@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 	"theterriblechild/CloudApp/tools/utils/hash"
+	"log"
 )
 
 type MergeMode uint8
@@ -71,10 +72,21 @@ func ZipFiles(files []string, dest string, useAbsolutePath bool) error {
 	if len(dest) == 0 {
 		return fmt.Errorf("No output file path given.")
 	}
-
+	var allFiles []string
+	for _, file := range files {
+		file, _ = filepath.Abs(file)
+		if stat, err := os.Stat(file); err == nil {
+			if stat.IsDir() {
+				containFiles, _ := GetAllFileInDirectoryRecursively([]string{file}, "")
+				allFiles = append(allFiles, containFiles...)
+			} else {
+				allFiles = append(allFiles, file)
+			}
+		}
+	}
 	var removeIdx int = 0
 	if !useAbsolutePath {
-		commonPrefix := GetCommonPrefix(files)
+		commonPrefix := GetCommonPrefix(allFiles)
 		removeIdx = len(commonPrefix)
 	}
 
@@ -87,8 +99,7 @@ func ZipFiles(files []string, dest string, useAbsolutePath bool) error {
 	zipWriter := zip.NewWriter(newZipFile)
 	defer zipWriter.Close()
 
-	// Add files to zip
-	for _, file := range files {
+	for _, file := range allFiles {
 
 		zipfile, err := os.Open(file)
 		if err != nil {
@@ -264,18 +275,6 @@ func DecryptFile(src string, dest string, key []byte) error {
 	os.Chmod(dest, stat.Mode())
 	return nil
 }
-
-// func CompressFile(src string, dest string) error {
-// 	if _, err := os.Stat(src); err != nil {
-// 		return err
-// 	}
-// }
-
-// func DecompressFile(src string, dest string) error {
-// 	if _, err := os.Stat(src); err != nil {
-// 		return err
-// 	}
-// }
 
 func CompressAndEncryptFile(src string, dest string, key []byte) error {
 	stat, err := os.Stat(src)

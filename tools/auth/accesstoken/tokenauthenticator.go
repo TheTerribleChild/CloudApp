@@ -52,9 +52,9 @@ func (instance TokenAuthenticator) AuthenticateAndDecodeJWTString(jwtString stri
 func (instance TokenAuthenticator) AuthenticateAccessToken(tokenInterface interface{}) error {
 	var containsPermission []Permission
 
-	if token, ok := tokenInterface.(*AccessToken); ok {
-		containsPermission = token.Permissions
-	} else if token, ok := tokenInterface.(AccessToken); ok {
+	if token, ok := tokenInterface.(AccessTokenInterface); ok {
+		containsPermission = token.GetAccessToken().Permissions
+	} else if token, ok := tokenInterface.(*AccessToken); ok {
 		containsPermission = token.Permissions
 	} else {
 		return status.Error(codes.Internal, "Bad access token.")

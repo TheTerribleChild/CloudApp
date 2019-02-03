@@ -2,7 +2,6 @@ package agent
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"log"
 	cldstrg "theterriblechild/CloudApp/applications/storageapp/internal/model"
@@ -10,7 +9,7 @@ import (
 	auth "theterriblechild/CloudApp/tools/auth/accesstoken"
 	contextutil "theterriblechild/CloudApp/tools/utils/context"
 	"time"
-
+	"encoding/json"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -80,40 +79,45 @@ func (instance *Agent) Run() {
 
 func (instance *Agent) poll(client cldstrg.AgentService_PollClient) error {
 	message, err := client.Recv()
+	//log.Println(message)
 	if err != nil {
 		return err
 	}
 	if message == nil {
 		return nil
 	}
-	agentCommand := cldstrg.AgentCommand{}
-	agentTokenAuthenticator.AuthenticateAndDecodeJWTString(message.AgentExecuteToken, &agentCommand)
-	return instance.handleCommand(agentCommand)
+	agentExecuteToken := accesstoken.AgentExecuteToken{}
+	if err = agentTokenAuthenticator.AuthenticateAndDecodeJWTString(message.AgentExecuteToken, &agentExecuteToken); err != nil {
+		log.Println(err)
+	}
+	return instance.handleMessage(agentExecuteToken)
 }
 
-func (instance *Agent) handleCommand(command interface{}) error {
-
-	agentCommand := command.(cldstrg.AgentCommand)
+func (instance *Agent) handleMessage(executeToken accesstoken.AgentExecuteToken) error {
 	commandHandler := CommandHandler{
 		agent:        instance,
-		agentCommand: agentCommand,
-	}
-	if len(agentCommand.TaskID) == 0 {
-		log.Println("Invalid command")
-		return fmt.Errorf("Invalid command")
 	}
 
-	switch command.(type) {
-	case cldstrg.ListDirectoryCommand:
+	switch executeToken.AgentCommandType {
+	case cldstrg.AgentCommandType_ListDirectory:
 		commandHandler.f = instance.handleListDirectory
+		command := cldstrg.ListDirectoryCommand{}
+		json.Unmarshal(executeToken.AgentCommand, &command)
+		commandHandler.agentCommand = command
 		instance.jobManager.addImmediateJob(commandHandler)
 		break
-	case cldstrg.DownloadFileCommand:
+	case cldstrg.AgentCommandType_DownloadFile:
 		commandHandler.f = instance.handleDownloadFile
+		command := cldstrg.DownloadFileCommand{}
+		json.Unmarshal(executeToken.AgentCommand, &command)
+		commandHandler.agentCommand = command
 		instance.jobManager.addDownloadJob(commandHandler)
 		break
-	case cldstrg.UploadFileCommand:
+	case cldstrg.AgentCommandType_UploadFile:
 		commandHandler.f = instance.handleUploadFile
+		command := cldstrg.UploadFileCommand{}
+		json.Unmarshal(executeToken.AgentCommand, &command)
+		commandHandler.agentCommand = command
 		instance.jobManager.addUploadJob(commandHandler)
 		break
 	default:
@@ -126,9 +130,30 @@ func (instance *Agent) updateProgressAsync(command interface{}, state cldstrg.Pr
 }
 
 func (instance *Agent) updateProgress(command interface{}, state cldstrg.ProgressUpdate_ProgressState, current int64, total int64, msg string) {
-	progress := cldstrg.ProgressUpdate{State: state, Message: msg, Current: current, Total: total, TaskId: command.(cldstrg.AgentCommand).TaskID}
+	progress := cldstrg.ProgressUpdate{State: state, Message: msg, Current: current, Total: total, TaskId: command.(cldstrg.AgentCommandInterface).GetAgentCommand().TaskID}
 	instance.jobManager.updateTaskProgress(progress)
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	instance.agentServiceClient.UpdateProgress(ctx, &progress)
+}
+
+type CommandHandler struct {
+	agent        *Agent
+	agentCommand cldstrg.AgentCommandInterface
+	f            interface{}
+}
+
+func (instance *CommandHandler) handleCommand() {
+	if instance.f == nil {
+		return
+	}
+	instance.agent.updateProgress(instance.agentCommand, cldstrg.ProgressUpdate_InProgress, 0, 1, "Starting")
+	commandHandleFunc := instance.f.(func(cldstrg.AgentCommandInterface) error)
+	err := commandHandleFunc(instance.agentCommand)
+	if err != nil {
+		log.Println("ERROR: " + err.Error())
+		instance.agent.updateProgress(instance.agentCommand, cldstrg.ProgressUpdate_Error, 0, 0, err.Error())
+		return
+	}
+	instance.agent.updateProgress(instance.agentCommand, cldstrg.ProgressUpdate_Completed, 1, 1, "Task completed.")
 }

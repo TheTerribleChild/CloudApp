@@ -13,18 +13,22 @@ import (
 )
 
 func (instance *StorageServer) UploadFile(stream cldstrg.StorageService_UploadFileServer) error {
-
 	jwtStr, _ := contextutil.GetAuth(stream.Context())
 	fileWriteToken := accesstoken.FileWriteToken{}
 	taskToken := accesstoken.TaskToken{}
 	instance.tokenAuthenticatorBuilder.BuildFileWriteTokenAuthenticator().AuthenticateAndDecodeJWTString(jwtStr, &fileWriteToken)
+	log.Println(fileWriteToken)
 	if len(fileWriteToken.TaskToken) == 0 {
 		return status.Error(codes.InvalidArgument, "Missing task token")
 	}
-	instance.tokenAuthenticatorBuilder.BuildTaskTokenAuthenticator().AuthenticateAndDecodeJWTString(fileWriteToken.TaskToken, &taskToken)
+	err := instance.tokenAuthenticatorBuilder.BuildTaskTokenAuthenticator().TokenDecoder().DecodeToAccessToken(fileWriteToken.TaskToken, &taskToken)
+	if err != nil {
+		log.Println(err)
+	}
 	if len(taskToken.TaskID) == 0 {
 		return status.Error(codes.InvalidArgument, "Bad task token")
 	}
+	log.Println(instance.CacheLocation)
 
 	initialChunk, err := stream.Recv()
 	if err != nil {
@@ -51,7 +55,6 @@ func (instance *StorageServer) UploadFile(stream cldstrg.StorageService_UploadFi
 		}
 	}
 
-	
 	for {
 		chunk, err := stream.Recv()
 		if err != nil {

@@ -25,7 +25,8 @@ import (
 // 	handlerWrapper *MessageHandlerWrapper
 // }
 
-func (instance *Agent) handleDownloadFile(command cldstrg.DownloadFileCommand) error {
+func (instance *Agent) handleDownloadFile(commandInterface cldstrg.AgentCommandInterface) error {
+	command := commandInterface.(cldstrg.DownloadFileCommand)
 	storageServerAddress := command.RemoteURL
 	storageServerClientConnection, err := grpc.Dial(storageServerAddress, grpc.WithInsecure())
 	if err != nil {
@@ -37,7 +38,6 @@ func (instance *Agent) handleDownloadFile(command cldstrg.DownloadFileCommand) e
 	req := &cldstrg.FileAccessRequest{}
 	downloadFileClient, err := storageServerClient.DownloadFile(ctx, req)
 	writeLoc := command.FileWrite.WriteLocation
-	//instance.downloadFile(writeLoc, client)
 	writeFile, err := os.Create(writeLoc)
 	if err != nil {
 		return err

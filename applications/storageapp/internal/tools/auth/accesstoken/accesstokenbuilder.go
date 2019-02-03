@@ -3,6 +3,7 @@ package accesstoken
 import (
 	accesstoken "theterriblechild/CloudApp/tools/auth/accesstoken"
 	"theterriblechild/CloudApp/applications/storageapp/internal/model"
+	"encoding/json"
  )
 
 type AccessTokenBuilder struct {
@@ -43,7 +44,15 @@ func (instance AccessTokenBuilder) BuildTaskToken(taskId string, userName string
 	return instance.tokenFactory.GetSignedString(token)
 }
 
-func (instance AccessTokenBuilder) BuildAgentExecuteToken(agentExecuteCommand model.AgentCommand) (string, error) {
-	token := AgentExecuteToken{accesstoken.AccessToken{[]accesstoken.Permission{CloudStorage_AgentExecute}}, agentExecuteCommand}
+func (instance AccessTokenBuilder) BuildAgentExecuteToken(agentExecuteCommand model.AgentCommandInterface) (string, error) {
+	content, err := json.Marshal(agentExecuteCommand)
+	if err != nil {
+		return "", err
+	}
+	token := AgentExecuteToken{accesstoken.AccessToken{
+		[]accesstoken.Permission{CloudStorage_AgentExecute}}, 
+		agentExecuteCommand.GetAgentCommand().Type,
+		content,
+	}
 	return instance.tokenFactory.GetSignedString(token)
 }

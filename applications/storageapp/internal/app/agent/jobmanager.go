@@ -126,7 +126,7 @@ type Job struct {
 }
 
 func (instance *JobManager) createJobFromHandler(handler CommandHandler) Job {
-	taskID := handler.agentCommand.TaskID
+	taskID := handler.agentCommand.GetAgentCommand().TaskID
 	cancelJobChan := make(chan bool, 1)
 	return Job{taskID: taskID, cancelJob: cancelJobChan, f: handler.handleCommand, progress: cldstrg.ProgressUpdate{State: cldstrg.ProgressUpdate_NotStarted}}
 }
@@ -137,7 +137,7 @@ func (instance *JobManager) addImmediateJob(handler CommandHandler) {
 }
 
 func (instance *JobManager) addUploadJob(handler CommandHandler) {
-	taskID := handler.agentCommand.TaskID
+	taskID := handler.agentCommand.GetAgentCommand().TaskID
 	job := instance.createJobFromHandler(handler)
 	instance.jobMap[taskID] = job
 	instance.uploadQueueMutex.Lock()
@@ -160,7 +160,7 @@ func (instance *JobManager) dequeueUploadJob() string {
 }
 
 func (instance *JobManager) addDownloadJob(handler CommandHandler) {
-	taskID := handler.agentCommand.TaskID
+	taskID := handler.agentCommand.GetAgentCommand().TaskID
 	job := instance.createJobFromHandler(handler)
 	instance.jobMap[taskID] = job
 	instance.downloadQueueMutex.Lock()

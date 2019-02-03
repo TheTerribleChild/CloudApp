@@ -7,21 +7,14 @@ import (
 	"path"
 	//"google.golang.org/grpc/metadata"
 	cldstrg "theterriblechild/CloudApp/applications/storageapp/internal/model"
-	//auth "theterriblechild/CloudApp/applications/storageapp/internal/tools/auth"
 	contextbuilder "theterriblechild/CloudApp/applications/storageapp/internal/tools/utils/contextbuilder"
 	fileutil "theterriblechild/CloudApp/tools/utils/file"
 	// "github.com/golang/protobuf/proto"
 	"google.golang.org/grpc"
 )
 
-// type UploadFileHandler struct {
-// 	asc            cldstrg.AgentServiceClient
-// 	message        *cldstrg.AgentMessage
-// 	command        cldstrg.UploadFileCommand
-// 	handlerWrapper *MessageHandlerWrapper
-// }
-
-func (instance *Agent) handleUploadFile(command cldstrg.UploadFileCommand) error {
+func (instance *Agent) handleUploadFile(commandInterface cldstrg.AgentCommandInterface) error {
+	command := commandInterface.(cldstrg.UploadFileCommand)
 	fileRead := command.FileRead
 	
 	files := make([]string, len(fileRead.Files))
@@ -38,15 +31,18 @@ func (instance *Agent) handleUploadFile(command cldstrg.UploadFileCommand) error
 	defer storageServerClientConnection.Close()
 
 	zipLocation := path.Join(tempFileLocation, command.TaskID)
-	if err = fileutil.ZipFiles(files, zipLocation, true); err != nil {
+	if err = fileutil.ZipFiles(files, zipLocation, false); err != nil {
 		return err
 	}
 	defer os.Remove(zipLocation)
 	ctx, cancel := contextbuilder.BuildStorageServerContext(command.FileWriteToken)
+	
 	uploadFileClient, err := storageServerClient.UploadFile(ctx)
-	defer uploadFileClient.CloseAndRecv()
+	if err != nil {
+		//fail to connect to storage service
+		return err
+	}
 	defer cancel()
-
 	uploadFile, err := os.Open(zipLocation)
 	if err != nil {
 		return err
@@ -58,12 +54,17 @@ func (instance *Agent) handleUploadFile(command cldstrg.UploadFileCommand) error
 	instance.updateProgressAsync(command, cldstrg.ProgressUpdate_InProgress, 0, totalSize, "Uploading.")
 	byteBuffer := make([]byte, 1024*1024)
 
+	if err := uploadFileClient.Send(&cldstrg.FileChunk{Info : &cldstrg.FileChunkInfo{Offset:0}}); err != nil {
+		return err
+	}
+	var offset int64 = 0
 	for {
 		if size, err := uploadFile.Read(byteBuffer); size > 0 {
 			//handler.handlerWrapper.updateProgrressAsync(cldstrg.ProgressUpdate_InProgress, offset + int64(size), totalSize, "Uploading.")
-			if err := uploadFileClient.Send(&cldstrg.FileChunk{Content: byteBuffer[0:size]}); err != nil {
+			if err := uploadFileClient.Send(&cldstrg.FileChunk{Content: byteBuffer[0:size], Info : &cldstrg.FileChunkInfo{Offset:offset, Size: int64(size)}}); err != nil {
 				return err
 			}
+			offset += int64(size)
 		} else if err == io.EOF {
 			break
 		} else if err != nil {
@@ -71,41 +72,11 @@ func (instance *Agent) handleUploadFile(command cldstrg.UploadFileCommand) error
 		}
 	}
 	uploadFileClient.Send(&cldstrg.FileChunk{})
+	uploadFileClient.CloseAndRecv()
+
 
 	log.Println("Finish uploading " + zipLocation)
 	instance.updateProgressAsync(command, cldstrg.ProgressUpdate_InProgress, 1, 1, "Upload completed.")
 
 	return nil
 }
-
-// func (instance UploadFileHandler) uploadFile(file string, client cldstrg.StorageService_UploadFileClient) error {
-// 	log.Println("Uploading " + file)
-// 	uploadFile, err := os.Open(file)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	stat, err := uploadFile.Stat()
-// 	totalSize := stat.Size()
-
-// 	instance.handlerWrapper.updateProgressAsync(cldstrg.ProgressUpdate_InProgress, 0, totalSize, "Uploading.")
-// 	byteBuffer := make([]byte, 1024*1024)
-
-// 	for {
-// 		if size, err := uploadFile.Read(byteBuffer); size > 0 {
-// 			//handler.handlerWrapper.updateProgrressAsync(cldstrg.ProgressUpdate_InProgress, offset + int64(size), totalSize, "Uploading.")
-// 			if err := client.Send(&cldstrg.FileChunk{Content: byteBuffer[0:size]}); err != nil {
-// 				return err
-// 			}
-// 		} else if err == io.EOF {
-// 			break
-// 		} else if err != nil {
-// 			return err
-// 		}
-// 	}
-// 	client.Send(&cldstrg.FileChunk{})
-
-// 	log.Println("Finish uploading " + file)
-// 	instance.handlerWrapper.updateProgressAsync(cldstrg.ProgressUpdate_InProgress, 1, 1, "Upload completed.")
-// 	return nil
-// }
