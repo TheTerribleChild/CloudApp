@@ -13,7 +13,6 @@ import (
 	"path/filepath"
 	"strings"
 	"theterriblechild/CloudApp/tools/utils/hash"
-	"log"
 )
 
 type MergeMode uint8

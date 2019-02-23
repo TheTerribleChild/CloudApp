@@ -8,7 +8,13 @@ type FileStat struct {
 	FilePath         string
 	Size             int64
 	LastModifiedTime int
-	Hash             uint32
+	Hash             string
+}
+
+type FileHash struct {
+	FilePath         string
+	Size             int64
+	LastModifiedTime int64
 }
 
 type FileRead struct {

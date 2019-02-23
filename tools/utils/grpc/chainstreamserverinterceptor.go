@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"context"
 )
 
 type StreamServerInterceptorBuilder struct {
@@ -20,9 +21,15 @@ func GetChainStreamInterceptorBuilder() *StreamServerInterceptorBuilder {
 	return &StreamServerInterceptorBuilder{interceptors: make([]grpc.StreamServerInterceptor, 0)}
 }
 
-func (instance *StreamServerInterceptorBuilder) AddAuthInterceptor(f func(string, string) error) *StreamServerInterceptorBuilder {
+func (instance *StreamServerInterceptorBuilder) AddAuthInterceptor(f func(method string, jwt string) error) *StreamServerInterceptorBuilder {
 	function := InterceptorFunction{f: f}
 	instance.interceptors = append(instance.interceptors, function.ServerStreamAuthInterceptor)
+	return instance
+}
+
+func (instance *StreamServerInterceptorBuilder) AddContextInjector(f func(method string, streamContext *context.Context) error) *StreamServerInterceptorBuilder {
+	function := InterceptorFunction{f: f}
+	instance.interceptors = append(instance.interceptors, function.ServerStreamContextInjectorInterceptor)
 	return instance
 }
 
@@ -44,18 +51,38 @@ func StreamLogInterceptor(srv interface{}, stream grpc.ServerStream, info *grpc.
 	return err
 }
 
-func (instance *InterceptorFunction) ServerStreamAuthInterceptor(srv interface{}, stream grpc.ServerStream,
-	info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+func (instance *InterceptorFunction) ServerStreamContextInjectorInterceptor(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+	if instance.f != nil {
+		getContextFunc, ok := instance.f.(func(method string, ctx *context.Context) error)
+		if !ok {
+			return status.Error(codes.Internal, "")
+		}
+		requestContext := stream.Context()
+		err := getContextFunc(info.FullMethod, &requestContext)
+		if err != nil {
+			return status.Error(codes.Internal, "")
+		}
+		wrappedStream := grpc_middleware.WrapServerStream(stream)
+		wrappedStream.WrappedContext = requestContext
+		err = handler(srv, wrappedStream)
+		return err
+	}
+	return status.Error(codes.Internal, "")
+}
+
+func (instance *InterceptorFunction) ServerStreamAuthInterceptor(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 
 	if instance.f != nil {
+		authFunc, ok := instance.f.(func(string, string) error)
+		if !ok {
+			return status.Error(codes.Internal, "");
+		}
 		requestContext := stream.Context()
 		jwtStr, err := contextutil.GetAuth(requestContext)
 		if len(jwtStr) == 0 || err != nil {
 			log.Println("Missing authorization header.")
 			return status.Error(codes.PermissionDenied, "Missing authorization header")
 		}
-
-		authFunc := instance.f.(func(string, string) error)
 		err = authFunc(info.FullMethod, jwtStr)
 		if err != nil {
 			log.Println("Unauthorized request." + err.Error())

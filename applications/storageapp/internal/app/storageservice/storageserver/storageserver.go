@@ -71,7 +71,7 @@ func (instance *StorageServer) InitializeServer() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	chainstream := grpcutil.GetChainStreamInterceptorBuilder().AddLogInterceptor().AddAuthInterceptor(instance.authenticateRequest).Build()
+	chainstream := grpcutil.GetChainStreamInterceptorBuilder().AddLogInterceptor().AddAuthInterceptor(instance.authenticateRequest).AddContextInjector(instance.injectContext).Build()
 	s := grpc.NewServer(grpc.MaxRecvMsgSize(instance.MaxRecvMsgSize), grpc.StreamInterceptor(chainstream))
 	cldstrg.RegisterStorageServiceServer(s, instance)
 	log.Printf("Initializing Storage Server. Listening on '%s'", grpcURL)
@@ -102,4 +102,19 @@ func (instance *StorageServer) authenticateRequest(method string, jwtStr string)
 		return status.Error(codes.InvalidArgument, "Invalid request.")
 	}
 	return tokenAuthenticator.AuthenticateJWTStringWithPermission(jwtStr)
+}
+
+func (instance *StorageServer) injectContext(method string, streamContext *context.Context) error {
+
+	switch method {
+	case "/cloudstorage.StorageService/DownloadFile":
+		break
+	case "/cloudstorage.StorageService/UploadFile":
+		break
+	case "/cloudstorage.StorageService/Ping":
+		return nil
+	default:
+		return status.Error(codes.InvalidArgument, "Invalid request.")
+	}
+	return nil
 }

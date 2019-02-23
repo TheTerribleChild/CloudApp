@@ -8,6 +8,12 @@ const (
 	AgentCommandType_DownloadFile  AgentCommandType = "DOWNLOADFILE"
 )
 
+type Agent struct {
+	ID string
+	OwnerID string
+	Name string
+}
+
 type AgentCommand struct {
 	TaskToken string
 	TaskID    string
@@ -21,6 +27,11 @@ type AgentCommandInterface interface {
 type ListDirectoryCommand struct {
 	AgentCommand
 	Path string
+}
+
+type GetFileMetadataCommand struct {
+	AgentCommand
+	Files []string
 }
 
 func (instance ListDirectoryCommand) GetAgentCommand() AgentCommand {
@@ -46,5 +57,9 @@ type DownloadFileCommand struct {
 }
 
 func (instance DownloadFileCommand) GetAgentCommand() AgentCommand {
+	return instance.AgentCommand
+}
+
+func (instance GetFileMetadataCommand) GetAgentCommand() AgentCommand {
 	return instance.AgentCommand
 }
