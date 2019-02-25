@@ -33,12 +33,12 @@ type StorageServer struct {
 	MaxRecvMsgSize            int
 	CompressStorage           bool
 	EncryptStorage            bool
-	tokenAuthenticatorBuilder accesstoken.TokenAutenticatorBuilder
+	tokenAuthenticatorBuilder accesstoken.TokenAuthenticatorBuilder
 }
 
 func (instance *StorageServer) InitializeServer() {
 	grpcURL := fmt.Sprintf("%s:%d", instance.StorageServerTrustedIP, instance.StorageServerPort)
-	instance.tokenAuthenticatorBuilder = accesstoken.TokenAutenticatorBuilder{Secret: instance.SecretKey}
+	instance.tokenAuthenticatorBuilder = accesstoken.TokenAuthenticatorBuilder{Secret: instance.SecretKey}
 	if len(instance.StorageLocation) == 0 {
 		log.Fatal("Storage Path missing")
 	}

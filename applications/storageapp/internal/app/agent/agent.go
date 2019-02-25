@@ -37,7 +37,7 @@ func (agent *Agent) Initialize() {
 
 func (instance *Agent) Run() {
 	tempFileLocation = "."
-	tokenAuthBuilder := accesstoken.TokenAutenticatorBuilder{"abc"}
+	tokenAuthBuilder := accesstoken.TokenAuthenticatorBuilder{"abc"}
 	agentTokenAuthenticator = tokenAuthBuilder.BuildAgentExecuteTokenAuthenticator()
 	instance.agentInfo = cldstrg.AgentInfo{Id: viper.GetString("agentID")}
 	instance.jobManager = JobManager{}

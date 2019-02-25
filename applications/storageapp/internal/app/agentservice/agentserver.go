@@ -37,7 +37,7 @@ var (
 
 	//config
 	refreshDuration time.Duration
-	tokenAuthenticatorBuilder accesstoken.TokenAutenticatorBuilder
+	tokenAuthenticatorBuilder accesstoken.TokenAuthenticatorBuilder
 )
 
 func initializeConfig() {
@@ -46,7 +46,7 @@ func initializeConfig() {
 
 func (instance *AgentServer) InitializeServer() {
 	serverID = uuid.New().String()
-	tokenAuthenticatorBuilder = accesstoken.TokenAutenticatorBuilder{Secret : "abc"}
+	tokenAuthenticatorBuilder = accesstoken.TokenAuthenticatorBuilder{Secret : "abc"}
 	refreshDuration, _ = time.ParseDuration(viper.GetString("refreshDuration"))
 	redisClientBuilder := redisutil.RedisClientBuilder{
 		Host:                viper.GetString("externalService.cache.host"),
@@ -75,6 +75,7 @@ func (instance *AgentServer) InitializeServer() {
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
+	
 }
 
 func (instance *AgentServer) authenticateRequest(method string, jwtStr string) error {

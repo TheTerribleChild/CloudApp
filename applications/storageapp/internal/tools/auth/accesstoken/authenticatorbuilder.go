@@ -4,26 +4,26 @@ import (
 	accesstoken "theterriblechild/CloudApp/tools/auth/accesstoken"
 )
 
-type TokenAutenticatorBuilder struct {
+type TokenAuthenticatorBuilder struct {
 	Secret string
 }
 
-func (instance *TokenAutenticatorBuilder) BuildFileWriteTokenAuthenticator() accesstoken.TokenAuthenticator {
+func (instance *TokenAuthenticatorBuilder) BuildFileWriteTokenAuthenticator() accesstoken.TokenAuthenticator {
 	return accesstoken.BuildTokenAuthenticator(instance.Secret, []accesstoken.Permission{CloudStorage_FileWrite})
 }
 
-func (instance *TokenAutenticatorBuilder) BuildFileReadTokenAuthenticator() accesstoken.TokenAuthenticator {
+func (instance *TokenAuthenticatorBuilder) BuildFileReadTokenAuthenticator() accesstoken.TokenAuthenticator {
 	return accesstoken.BuildTokenAuthenticator(instance.Secret, []accesstoken.Permission{CloudStorage_FileRead})
 }
 
-func (instance *TokenAutenticatorBuilder) BuildAgentPollTokenAuthenticator() accesstoken.TokenAuthenticator {
+func (instance *TokenAuthenticatorBuilder) BuildAgentPollTokenAuthenticator() accesstoken.TokenAuthenticator {
 	return accesstoken.BuildTokenAuthenticator(instance.Secret, []accesstoken.Permission{CloudStorage_AgentPoll})
 }
 
-func (instance *TokenAutenticatorBuilder) BuildAgentExecuteTokenAuthenticator() accesstoken.TokenAuthenticator {
+func (instance *TokenAuthenticatorBuilder) BuildAgentExecuteTokenAuthenticator() accesstoken.TokenAuthenticator {
 	return accesstoken.BuildTokenAuthenticator(instance.Secret, []accesstoken.Permission{CloudStorage_AgentExecute})
 }
 
-func (instance *TokenAutenticatorBuilder) BuildTaskTokenAuthenticator() accesstoken.TokenAuthenticator {
+func (instance *TokenAuthenticatorBuilder) BuildTaskTokenAuthenticator() accesstoken.TokenAuthenticator {
 	return accesstoken.BuildTokenAuthenticator(instance.Secret, []accesstoken.Permission{CloudStorage_StatusUpdate})
 }
