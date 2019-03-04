@@ -12,11 +12,15 @@ import (
 )
 
 const (
-	PING = "PING"
-	SET  = "SET"
-	GET  = "GET"
-	DEL  = "DEL"
-	TIME = "TIME"
+	PING   = "PING"
+	SET    = "SET"
+	GET    = "GET"
+	DEL    = "DEL"
+	TIME   = "TIME"
+	EXPIRE = "EXPIRE"
+	MULTI  = "MULTI"
+	EXEC   = "EXEC"
+	DISCARD = "DISCARD"
 )
 
 type RedisClient struct {
@@ -73,9 +77,27 @@ func (instance *RedisClient) Ping() error {
 	return Ping(conn)
 }
 
-func (instance *RedisClient) Set(key string, value interface{}) error {
+func (instance *RedisClient) Set(key string, value interface{}, ttl int) error {
 	conn := instance.pool.Get()
 	defer conn.Close()
+	if ttl > 0 {
+		if err := BeginTxn(conn); err != nil {
+			return err
+		}
+		if err := Set(conn, key, value); err != nil {
+			DiscardTxn(conn)
+			return err
+		}
+		if err := Expire(conn, key, ttl); err != nil {
+			DiscardTxn(conn)
+			return err
+		}
+		if err := CommitTxn(conn); err != nil {
+			DiscardTxn(conn)
+			return err
+		}
+		return nil
+	}
 	return Set(conn, key, value)
 }
 
@@ -109,6 +131,12 @@ func (instance *RedisClient) Delete(keys ...interface{}) (int, error) {
 	return Delete(conn, keys...)
 }
 
+func (instance *RedisClient) Expire(key string, ttl int) error {
+	conn := instance.pool.Get()
+	defer conn.Close()
+	return Expire(conn, key, ttl)
+}
+
 func (instance *RedisClient) GetCurrentTime() (time.Time, error) {
 	conn := instance.pool.Get()
 	defer conn.Close()
@@ -132,8 +160,7 @@ func Ping(conn redis.Conn) error {
 }
 
 func Set(conn redis.Conn, key string, value interface{}) error {
-	_, err := conn.Do(SET, key, value)
-	return err
+	return conn.Send(SET, key, value)
 }
 
 func Get(conn redis.Conn, key string) (interface{}, error) {
@@ -142,6 +169,10 @@ func Get(conn redis.Conn, key string) (interface{}, error) {
 
 func Delete(conn redis.Conn, keys ...interface{}) (int, error) {
 	return redis.Int(conn.Do(DEL, keys...))
+}
+
+func Expire(conn redis.Conn, key string, ttl int) error {
+	return conn.Send(EXPIRE, key, ttl)
 }
 
 func SetJsonCompress(conn redis.Conn, key string, value interface{}) error {
@@ -181,6 +212,18 @@ func GetCurrentTime(conn redis.Conn) (time.Time, error) {
 		return time.Time{}, err
 	}
 	return time.Unix(times[0], times[1]), nil
+}
+
+func BeginTxn(conn redis.Conn) error {
+	return conn.Send(MULTI)
+}
+
+func CommitTxn(conn redis.Conn) error {
+	return conn.Send(EXEC)
+}
+
+func DiscardTxn(conn redis.Conn) error {
+	return conn.Send(DISCARD)
 }
 
 func IsEmptyError(err error) bool {

@@ -1,0 +1,32 @@
+{
+    "adminServer": {
+        "grpc": {
+            "port": 8081
+        },
+        "rest": {
+            "port": 8080
+        }
+    },
+    "externalService": {
+        "adminDatabase": {
+            "host": "localhost",
+            "port": 5432,
+            "user": "postgres",
+            "password": "",
+            "database": "cloudadmin"
+        },
+        "cache": {
+            "host": "localhost",
+            "port": 6379,
+            "password": "",
+            "maxActiveConnection": 1000,
+            "maxIdleConnection": 10
+        },
+        "smtp": {
+            "email": "",
+            "password": "",
+            "host": "",
+            "port": 587
+        }
+    }
+}

@@ -10,6 +10,8 @@ import (
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
 	math "math"
+	common "theterriblechild/CloudApp/common"
+	model "theterriblechild/CloudApp/common/model"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -71,11 +73,8 @@ func (m *CreateAccountMessage) GetCreateUser() *CreateUserMessage {
 }
 
 type CreateUserMessage struct {
-	Email                string   `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
-	FirstName            string   `protobuf:"bytes,2,opt,name=first_name,json=firstName,proto3" json:"first_name,omitempty"`
-	LastName             string   `protobuf:"bytes,3,opt,name=last_name,json=lastName,proto3" json:"last_name,omitempty"`
-	Password             string   `protobuf:"bytes,4,opt,name=password,proto3" json:"password,omitempty"`
-	AccountId            string   `protobuf:"bytes,5,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	UserCreationToken    string   `protobuf:"bytes,1,opt,name=user_creation_token,json=userCreationToken,proto3" json:"user_creation_token,omitempty"`
+	Password             string   `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -106,23 +105,9 @@ func (m *CreateUserMessage) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_CreateUserMessage proto.InternalMessageInfo
 
-func (m *CreateUserMessage) GetEmail() string {
+func (m *CreateUserMessage) GetUserCreationToken() string {
 	if m != nil {
-		return m.Email
-	}
-	return ""
-}
-
-func (m *CreateUserMessage) GetFirstName() string {
-	if m != nil {
-		return m.FirstName
-	}
-	return ""
-}
-
-func (m *CreateUserMessage) GetLastName() string {
-	if m != nil {
-		return m.LastName
+		return m.UserCreationToken
 	}
 	return ""
 }
@@ -132,107 +117,6 @@ func (m *CreateUserMessage) GetPassword() string {
 		return m.Password
 	}
 	return ""
-}
-
-func (m *CreateUserMessage) GetAccountId() string {
-	if m != nil {
-		return m.AccountId
-	}
-	return ""
-}
-
-type GetMessage struct {
-	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Paging               *Paging  `protobuf:"bytes,2,opt,name=paging,proto3" json:"paging,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *GetMessage) Reset()         { *m = GetMessage{} }
-func (m *GetMessage) String() string { return proto.CompactTextString(m) }
-func (*GetMessage) ProtoMessage()    {}
-func (*GetMessage) Descriptor() ([]byte, []int) {
-	return fileDescriptor_96292a55e4fedcbc, []int{2}
-}
-
-func (m *GetMessage) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_GetMessage.Unmarshal(m, b)
-}
-func (m *GetMessage) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_GetMessage.Marshal(b, m, deterministic)
-}
-func (m *GetMessage) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetMessage.Merge(m, src)
-}
-func (m *GetMessage) XXX_Size() int {
-	return xxx_messageInfo_GetMessage.Size(m)
-}
-func (m *GetMessage) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetMessage.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_GetMessage proto.InternalMessageInfo
-
-func (m *GetMessage) GetId() string {
-	if m != nil {
-		return m.Id
-	}
-	return ""
-}
-
-func (m *GetMessage) GetPaging() *Paging {
-	if m != nil {
-		return m.Paging
-	}
-	return nil
-}
-
-type Paging struct {
-	Start                int32    `protobuf:"varint,1,opt,name=start,proto3" json:"start,omitempty"`
-	Size                 int32    `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *Paging) Reset()         { *m = Paging{} }
-func (m *Paging) String() string { return proto.CompactTextString(m) }
-func (*Paging) ProtoMessage()    {}
-func (*Paging) Descriptor() ([]byte, []int) {
-	return fileDescriptor_96292a55e4fedcbc, []int{3}
-}
-
-func (m *Paging) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Paging.Unmarshal(m, b)
-}
-func (m *Paging) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Paging.Marshal(b, m, deterministic)
-}
-func (m *Paging) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Paging.Merge(m, src)
-}
-func (m *Paging) XXX_Size() int {
-	return xxx_messageInfo_Paging.Size(m)
-}
-func (m *Paging) XXX_DiscardUnknown() {
-	xxx_messageInfo_Paging.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Paging proto.InternalMessageInfo
-
-func (m *Paging) GetStart() int32 {
-	if m != nil {
-		return m.Start
-	}
-	return 0
-}
-
-func (m *Paging) GetSize() int32 {
-	if m != nil {
-		return m.Size
-	}
-	return 0
 }
 
 type CreateAgentMessage struct {
@@ -247,7 +131,7 @@ func (m *CreateAgentMessage) Reset()         { *m = CreateAgentMessage{} }
 func (m *CreateAgentMessage) String() string { return proto.CompactTextString(m) }
 func (*CreateAgentMessage) ProtoMessage()    {}
 func (*CreateAgentMessage) Descriptor() ([]byte, []int) {
-	return fileDescriptor_96292a55e4fedcbc, []int{4}
+	return fileDescriptor_96292a55e4fedcbc, []int{2}
 }
 
 func (m *CreateAgentMessage) XXX_Unmarshal(b []byte) error {
@@ -282,261 +166,174 @@ func (m *CreateAgentMessage) GetAgentName() string {
 	return ""
 }
 
-type String struct {
-	Value                string   `protobuf:"bytes,1,opt,name=value,proto3" json:"value,omitempty"`
+type RegisterUserRequest struct {
+	Email                string   `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *String) Reset()         { *m = String{} }
-func (m *String) String() string { return proto.CompactTextString(m) }
-func (*String) ProtoMessage()    {}
-func (*String) Descriptor() ([]byte, []int) {
-	return fileDescriptor_96292a55e4fedcbc, []int{5}
+func (m *RegisterUserRequest) Reset()         { *m = RegisterUserRequest{} }
+func (m *RegisterUserRequest) String() string { return proto.CompactTextString(m) }
+func (*RegisterUserRequest) ProtoMessage()    {}
+func (*RegisterUserRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_96292a55e4fedcbc, []int{3}
 }
 
-func (m *String) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_String.Unmarshal(m, b)
+func (m *RegisterUserRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_RegisterUserRequest.Unmarshal(m, b)
 }
-func (m *String) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_String.Marshal(b, m, deterministic)
+func (m *RegisterUserRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_RegisterUserRequest.Marshal(b, m, deterministic)
 }
-func (m *String) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_String.Merge(m, src)
+func (m *RegisterUserRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RegisterUserRequest.Merge(m, src)
 }
-func (m *String) XXX_Size() int {
-	return xxx_messageInfo_String.Size(m)
+func (m *RegisterUserRequest) XXX_Size() int {
+	return xxx_messageInfo_RegisterUserRequest.Size(m)
 }
-func (m *String) XXX_DiscardUnknown() {
-	xxx_messageInfo_String.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_String proto.InternalMessageInfo
-
-func (m *String) GetValue() string {
-	if m != nil {
-		return m.Value
-	}
-	return ""
+func (m *RegisterUserRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_RegisterUserRequest.DiscardUnknown(m)
 }
 
-type Empty struct {
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
+var xxx_messageInfo_RegisterUserRequest proto.InternalMessageInfo
 
-func (m *Empty) Reset()         { *m = Empty{} }
-func (m *Empty) String() string { return proto.CompactTextString(m) }
-func (*Empty) ProtoMessage()    {}
-func (*Empty) Descriptor() ([]byte, []int) {
-	return fileDescriptor_96292a55e4fedcbc, []int{6}
-}
-
-func (m *Empty) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Empty.Unmarshal(m, b)
-}
-func (m *Empty) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Empty.Marshal(b, m, deterministic)
-}
-func (m *Empty) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Empty.Merge(m, src)
-}
-func (m *Empty) XXX_Size() int {
-	return xxx_messageInfo_Empty.Size(m)
-}
-func (m *Empty) XXX_DiscardUnknown() {
-	xxx_messageInfo_Empty.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Empty proto.InternalMessageInfo
-
-type Account struct {
-	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name                 string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *Account) Reset()         { *m = Account{} }
-func (m *Account) String() string { return proto.CompactTextString(m) }
-func (*Account) ProtoMessage()    {}
-func (*Account) Descriptor() ([]byte, []int) {
-	return fileDescriptor_96292a55e4fedcbc, []int{7}
-}
-
-func (m *Account) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Account.Unmarshal(m, b)
-}
-func (m *Account) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Account.Marshal(b, m, deterministic)
-}
-func (m *Account) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Account.Merge(m, src)
-}
-func (m *Account) XXX_Size() int {
-	return xxx_messageInfo_Account.Size(m)
-}
-func (m *Account) XXX_DiscardUnknown() {
-	xxx_messageInfo_Account.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Account proto.InternalMessageInfo
-
-func (m *Account) GetId() string {
-	if m != nil {
-		return m.Id
-	}
-	return ""
-}
-
-func (m *Account) GetName() string {
-	if m != nil {
-		return m.Name
-	}
-	return ""
-}
-
-type User struct {
-	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Email                string   `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
-	FirstName            string   `protobuf:"bytes,3,opt,name=first_name,json=firstName,proto3" json:"first_name,omitempty"`
-	LastName             string   `protobuf:"bytes,4,opt,name=last_name,json=lastName,proto3" json:"last_name,omitempty"`
-	AccountId            string   `protobuf:"bytes,5,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
-	Password             string   `protobuf:"bytes,6,opt,name=password,proto3" json:"password,omitempty"`
-	PasswordSalt         string   `protobuf:"bytes,7,opt,name=password_salt,json=passwordSalt,proto3" json:"password_salt,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *User) Reset()         { *m = User{} }
-func (m *User) String() string { return proto.CompactTextString(m) }
-func (*User) ProtoMessage()    {}
-func (*User) Descriptor() ([]byte, []int) {
-	return fileDescriptor_96292a55e4fedcbc, []int{8}
-}
-
-func (m *User) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_User.Unmarshal(m, b)
-}
-func (m *User) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_User.Marshal(b, m, deterministic)
-}
-func (m *User) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_User.Merge(m, src)
-}
-func (m *User) XXX_Size() int {
-	return xxx_messageInfo_User.Size(m)
-}
-func (m *User) XXX_DiscardUnknown() {
-	xxx_messageInfo_User.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_User proto.InternalMessageInfo
-
-func (m *User) GetId() string {
-	if m != nil {
-		return m.Id
-	}
-	return ""
-}
-
-func (m *User) GetEmail() string {
+func (m *RegisterUserRequest) GetEmail() string {
 	if m != nil {
 		return m.Email
 	}
 	return ""
 }
 
-func (m *User) GetFirstName() string {
-	if m != nil {
-		return m.FirstName
-	}
-	return ""
-}
-
-func (m *User) GetLastName() string {
-	if m != nil {
-		return m.LastName
-	}
-	return ""
-}
-
-func (m *User) GetAccountId() string {
-	if m != nil {
-		return m.AccountId
-	}
-	return ""
-}
-
-func (m *User) GetPassword() string {
-	if m != nil {
-		return m.Password
-	}
-	return ""
-}
-
-func (m *User) GetPasswordSalt() string {
-	if m != nil {
-		return m.PasswordSalt
-	}
-	return ""
-}
-
-type Agent struct {
-	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	AccountId            string   `protobuf:"bytes,2,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
-	Name                 string   `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+type RegisterUserResponse struct {
+	VerificationToken    string   `protobuf:"bytes,1,opt,name=verification_token,json=verificationToken,proto3" json:"verification_token,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *Agent) Reset()         { *m = Agent{} }
-func (m *Agent) String() string { return proto.CompactTextString(m) }
-func (*Agent) ProtoMessage()    {}
-func (*Agent) Descriptor() ([]byte, []int) {
-	return fileDescriptor_96292a55e4fedcbc, []int{9}
+func (m *RegisterUserResponse) Reset()         { *m = RegisterUserResponse{} }
+func (m *RegisterUserResponse) String() string { return proto.CompactTextString(m) }
+func (*RegisterUserResponse) ProtoMessage()    {}
+func (*RegisterUserResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_96292a55e4fedcbc, []int{4}
 }
 
-func (m *Agent) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Agent.Unmarshal(m, b)
+func (m *RegisterUserResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_RegisterUserResponse.Unmarshal(m, b)
 }
-func (m *Agent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Agent.Marshal(b, m, deterministic)
+func (m *RegisterUserResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_RegisterUserResponse.Marshal(b, m, deterministic)
 }
-func (m *Agent) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Agent.Merge(m, src)
+func (m *RegisterUserResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RegisterUserResponse.Merge(m, src)
 }
-func (m *Agent) XXX_Size() int {
-	return xxx_messageInfo_Agent.Size(m)
+func (m *RegisterUserResponse) XXX_Size() int {
+	return xxx_messageInfo_RegisterUserResponse.Size(m)
 }
-func (m *Agent) XXX_DiscardUnknown() {
-	xxx_messageInfo_Agent.DiscardUnknown(m)
+func (m *RegisterUserResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_RegisterUserResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_Agent proto.InternalMessageInfo
+var xxx_messageInfo_RegisterUserResponse proto.InternalMessageInfo
 
-func (m *Agent) GetId() string {
+func (m *RegisterUserResponse) GetVerificationToken() string {
 	if m != nil {
-		return m.Id
+		return m.VerificationToken
 	}
 	return ""
 }
 
-func (m *Agent) GetAccountId() string {
+type ConfirmCodeRequest struct {
+	VerificationToken    string   `protobuf:"bytes,1,opt,name=verification_token,json=verificationToken,proto3" json:"verification_token,omitempty"`
+	VerificationCode     string   `protobuf:"bytes,2,opt,name=verification_code,json=verificationCode,proto3" json:"verification_code,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ConfirmCodeRequest) Reset()         { *m = ConfirmCodeRequest{} }
+func (m *ConfirmCodeRequest) String() string { return proto.CompactTextString(m) }
+func (*ConfirmCodeRequest) ProtoMessage()    {}
+func (*ConfirmCodeRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_96292a55e4fedcbc, []int{5}
+}
+
+func (m *ConfirmCodeRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ConfirmCodeRequest.Unmarshal(m, b)
+}
+func (m *ConfirmCodeRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ConfirmCodeRequest.Marshal(b, m, deterministic)
+}
+func (m *ConfirmCodeRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ConfirmCodeRequest.Merge(m, src)
+}
+func (m *ConfirmCodeRequest) XXX_Size() int {
+	return xxx_messageInfo_ConfirmCodeRequest.Size(m)
+}
+func (m *ConfirmCodeRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_ConfirmCodeRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ConfirmCodeRequest proto.InternalMessageInfo
+
+func (m *ConfirmCodeRequest) GetVerificationToken() string {
 	if m != nil {
-		return m.AccountId
+		return m.VerificationToken
 	}
 	return ""
 }
 
-func (m *Agent) GetName() string {
+func (m *ConfirmCodeRequest) GetVerificationCode() string {
 	if m != nil {
-		return m.Name
+		return m.VerificationCode
+	}
+	return ""
+}
+
+type ConfirmCodeResponse struct {
+	Success              bool     `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	UserCreationToken    string   `protobuf:"bytes,2,opt,name=user_creation_token,json=userCreationToken,proto3" json:"user_creation_token,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ConfirmCodeResponse) Reset()         { *m = ConfirmCodeResponse{} }
+func (m *ConfirmCodeResponse) String() string { return proto.CompactTextString(m) }
+func (*ConfirmCodeResponse) ProtoMessage()    {}
+func (*ConfirmCodeResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_96292a55e4fedcbc, []int{6}
+}
+
+func (m *ConfirmCodeResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ConfirmCodeResponse.Unmarshal(m, b)
+}
+func (m *ConfirmCodeResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ConfirmCodeResponse.Marshal(b, m, deterministic)
+}
+func (m *ConfirmCodeResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ConfirmCodeResponse.Merge(m, src)
+}
+func (m *ConfirmCodeResponse) XXX_Size() int {
+	return xxx_messageInfo_ConfirmCodeResponse.Size(m)
+}
+func (m *ConfirmCodeResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_ConfirmCodeResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ConfirmCodeResponse proto.InternalMessageInfo
+
+func (m *ConfirmCodeResponse) GetSuccess() bool {
+	if m != nil {
+		return m.Success
+	}
+	return false
+}
+
+func (m *ConfirmCodeResponse) GetUserCreationToken() string {
+	if m != nil {
+		return m.UserCreationToken
 	}
 	return ""
 }
@@ -544,58 +341,58 @@ func (m *Agent) GetName() string {
 func init() {
 	proto.RegisterType((*CreateAccountMessage)(nil), "adminservice.CreateAccountMessage")
 	proto.RegisterType((*CreateUserMessage)(nil), "adminservice.CreateUserMessage")
-	proto.RegisterType((*GetMessage)(nil), "adminservice.GetMessage")
-	proto.RegisterType((*Paging)(nil), "adminservice.Paging")
 	proto.RegisterType((*CreateAgentMessage)(nil), "adminservice.CreateAgentMessage")
-	proto.RegisterType((*String)(nil), "adminservice.String")
-	proto.RegisterType((*Empty)(nil), "adminservice.Empty")
-	proto.RegisterType((*Account)(nil), "adminservice.Account")
-	proto.RegisterType((*User)(nil), "adminservice.User")
-	proto.RegisterType((*Agent)(nil), "adminservice.Agent")
+	proto.RegisterType((*RegisterUserRequest)(nil), "adminservice.RegisterUserRequest")
+	proto.RegisterType((*RegisterUserResponse)(nil), "adminservice.RegisterUserResponse")
+	proto.RegisterType((*ConfirmCodeRequest)(nil), "adminservice.ConfirmCodeRequest")
+	proto.RegisterType((*ConfirmCodeResponse)(nil), "adminservice.ConfirmCodeResponse")
 }
 
 func init() { proto.RegisterFile("proto/adminservice.proto", fileDescriptor_96292a55e4fedcbc) }
 
 var fileDescriptor_96292a55e4fedcbc = []byte{
-	// 608 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x54, 0xcd, 0x6e, 0xd3, 0x40,
-	0x10, 0x96, 0x9d, 0x38, 0x69, 0x27, 0x2d, 0x82, 0x25, 0x42, 0x56, 0xa0, 0x25, 0xda, 0x5e, 0x42,
-	0x05, 0xb5, 0x08, 0x42, 0x48, 0x3d, 0x11, 0x2a, 0x54, 0x51, 0x09, 0x84, 0x1c, 0xb8, 0x70, 0x09,
-	0x5b, 0x7b, 0x71, 0x57, 0xda, 0xd8, 0xd6, 0xee, 0x26, 0x08, 0x2a, 0x2e, 0xbc, 0x02, 0x2f, 0xc0,
-	0x85, 0x77, 0xe1, 0xce, 0x2b, 0xf0, 0x20, 0x68, 0x77, 0xed, 0x38, 0x4e, 0xd2, 0x72, 0xb1, 0x3c,
-	0x3f, 0xfa, 0xbe, 0x99, 0xf9, 0x66, 0x16, 0xfc, 0x5c, 0x64, 0x2a, 0x0b, 0x48, 0x3c, 0x65, 0xa9,
-	0xa4, 0x62, 0xce, 0x22, 0x7a, 0x64, 0x5c, 0x68, 0x67, 0xd9, 0xd7, 0xbb, 0x97, 0x64, 0x59, 0xc2,
-	0x69, 0x40, 0x72, 0x16, 0x90, 0x34, 0xcd, 0x14, 0x51, 0x2c, 0x4b, 0xa5, 0xcd, 0xc5, 0x1c, 0xba,
-	0x27, 0x82, 0x12, 0x45, 0x47, 0x51, 0x94, 0xcd, 0x52, 0xf5, 0x9a, 0x4a, 0x49, 0x12, 0x8a, 0x10,
-	0x34, 0x53, 0x32, 0xa5, 0xbe, 0xd3, 0x77, 0x06, 0xdb, 0xa1, 0xf9, 0x47, 0xcf, 0xa1, 0x13, 0x99,
-	0xdc, 0xc9, 0x4c, 0x52, 0xe1, 0xbb, 0x7d, 0x67, 0xd0, 0x19, 0xde, 0x3f, 0xaa, 0x55, 0x60, 0xc1,
-	0xde, 0x4b, 0x2a, 0x0a, 0xa4, 0x10, 0xa2, 0x85, 0x0b, 0xff, 0x74, 0xe0, 0xd6, 0x5a, 0x06, 0xea,
-	0x82, 0x47, 0xa7, 0x84, 0xf1, 0x82, 0xcc, 0x1a, 0x68, 0x0f, 0xe0, 0x13, 0x13, 0x52, 0x4d, 0x4c,
-	0x1d, 0xae, 0x09, 0x6d, 0x1b, 0xcf, 0x1b, 0x5d, 0xcc, 0x5d, 0xd8, 0xe6, 0xa4, 0x8c, 0x36, 0x4c,
-	0x74, 0x4b, 0x3b, 0x4c, 0xb0, 0x07, 0x5b, 0x39, 0x91, 0xf2, 0x73, 0x26, 0x62, 0xbf, 0x69, 0x63,
-	0xa5, 0xad, 0x71, 0x89, 0xed, 0x75, 0xc2, 0x62, 0xdf, 0xb3, 0xb8, 0x85, 0xe7, 0x55, 0x8c, 0xcf,
-	0x00, 0x4e, 0xe9, 0x62, 0x0c, 0x37, 0xc0, 0x65, 0x71, 0x51, 0x97, 0xcb, 0x62, 0xf4, 0x10, 0x5a,
-	0x39, 0x49, 0x58, 0x9a, 0x14, 0xdd, 0x77, 0xeb, 0xdd, 0xbf, 0x35, 0xb1, 0xb0, 0xc8, 0xc1, 0x43,
-	0x68, 0x59, 0x8f, 0x6e, 0x51, 0x2a, 0x22, 0x94, 0x81, 0xf2, 0x42, 0x6b, 0xe8, 0x21, 0x4b, 0xf6,
-	0xd5, 0x36, 0xe7, 0x85, 0xe6, 0x1f, 0x87, 0x80, 0x0a, 0x41, 0x12, 0x5a, 0xc9, 0x51, 0x2f, 0xda,
-	0x59, 0x29, 0xda, 0x84, 0x75, 0x7a, 0x6d, 0x56, 0xc6, 0xa3, 0xc7, 0x81, 0xf7, 0xa1, 0x35, 0x56,
-	0xa2, 0xa8, 0x63, 0x4e, 0xf8, 0xac, 0xd4, 0xd5, 0x1a, 0xb8, 0x0d, 0xde, 0xcb, 0x69, 0xae, 0xbe,
-	0xe0, 0x47, 0xd0, 0x2e, 0xf6, 0x60, 0xad, 0xf3, 0x72, 0x21, 0xdc, 0x6a, 0x21, 0xf0, 0x6f, 0x07,
-	0x9a, 0x5a, 0xc8, 0xb5, 0xe4, 0x85, 0xa2, 0xee, 0xd5, 0x8a, 0x36, 0xae, 0x55, 0xb4, 0xb9, 0xa2,
-	0xe8, 0xf5, 0xaa, 0xd5, 0x04, 0x6f, 0xad, 0x08, 0x7e, 0x00, 0xbb, 0xe5, 0xff, 0x44, 0x12, 0xae,
-	0xfc, 0xb6, 0x49, 0xd8, 0x29, 0x9d, 0x63, 0xc2, 0x15, 0x3e, 0x03, 0xcf, 0x0c, 0x7c, 0xad, 0x95,
-	0x3a, 0xb1, 0xbb, 0x4a, 0x5c, 0x8e, 0xa5, 0x51, 0x8d, 0x65, 0xf8, 0xab, 0x01, 0x3b, 0x23, 0xbd,
-	0x16, 0x63, 0xbb, 0x16, 0xe8, 0x23, 0xec, 0xd6, 0x8e, 0x0c, 0xe1, 0x4d, 0x47, 0x53, 0xbf, 0xc0,
-	0xde, 0xed, 0x7a, 0x8e, 0x15, 0xe8, 0xce, 0xf7, 0x3f, 0x7f, 0x7f, 0xb8, 0x37, 0x71, 0x27, 0x98,
-	0x3f, 0x0e, 0x8a, 0x2a, 0x8e, 0x9d, 0x43, 0xc4, 0x01, 0xaa, 0xbb, 0x42, 0xff, 0xbb, 0xc9, 0xcd,
-	0xd8, 0x03, 0x83, 0x8d, 0xf1, 0xde, 0x12, 0x76, 0x70, 0x59, 0x35, 0xff, 0x2d, 0xd0, 0x67, 0xaf,
-	0xd9, 0xde, 0x41, 0xfb, 0x94, 0x2a, 0x43, 0xe5, 0xd7, 0x91, 0xaa, 0xd3, 0xd9, 0xcc, 0xd1, 0x33,
-	0x1c, 0x5d, 0x84, 0x34, 0x87, 0x86, 0x0b, 0x2e, 0xf5, 0x57, 0xa3, 0xa3, 0x0c, 0x3a, 0x4b, 0x9b,
-	0x8f, 0xfa, 0x1b, 0x67, 0xb4, 0x74, 0x14, 0x9b, 0x19, 0x1e, 0x18, 0x86, 0x03, 0xbc, 0x7f, 0x65,
-	0x17, 0xe6, 0x2e, 0x8e, 0x9d, 0xc3, 0x17, 0xcf, 0x3e, 0x3c, 0x55, 0x17, 0x54, 0x51, 0x21, 0xd8,
-	0x39, 0xa7, 0xd1, 0x05, 0xe3, 0x71, 0x70, 0xc2, 0xb3, 0x59, 0x3c, 0xca, 0xf3, 0x80, 0xe4, 0x39,
-	0x67, 0x91, 0x7d, 0x2b, 0xed, 0x23, 0x4b, 0xf2, 0x3c, 0x98, 0x66, 0x31, 0xe5, 0xe7, 0x2d, 0xf3,
-	0x76, 0x3e, 0xf9, 0x17, 0x00, 0x00, 0xff, 0xff, 0x79, 0xa8, 0x21, 0xbc, 0x83, 0x05, 0x00, 0x00,
+	// 650 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x54, 0x51, 0x6b, 0xd4, 0x40,
+	0x10, 0x26, 0x87, 0xda, 0x76, 0xae, 0x6a, 0x6f, 0x7b, 0xb4, 0x67, 0x68, 0xb5, 0x5d, 0x44, 0x4a,
+	0x8b, 0x17, 0x7a, 0x22, 0x42, 0x9f, 0xac, 0x47, 0x29, 0x82, 0xfa, 0x10, 0xf5, 0x45, 0x84, 0x90,
+	0x26, 0xd3, 0xeb, 0x62, 0x92, 0x5d, 0x77, 0xf7, 0x5a, 0x8f, 0xd2, 0x17, 0xc1, 0x17, 0x5f, 0xfd,
+	0x35, 0xfe, 0x0e, 0xff, 0x82, 0x3f, 0x44, 0xb2, 0xd9, 0xf4, 0x12, 0x2f, 0xad, 0xf8, 0x72, 0x5c,
+	0x66, 0x26, 0xf3, 0x7d, 0x33, 0xf3, 0x7d, 0x81, 0x9e, 0x90, 0x5c, 0x73, 0x2f, 0x8c, 0x53, 0x96,
+	0x29, 0x94, 0xa7, 0x2c, 0xc2, 0xbe, 0x09, 0x91, 0xc5, 0x6a, 0xcc, 0x5d, 0x1b, 0x71, 0x3e, 0x4a,
+	0xd0, 0x0b, 0x05, 0xf3, 0xc2, 0x2c, 0xe3, 0x3a, 0xd4, 0x8c, 0x67, 0xaa, 0xa8, 0x75, 0x97, 0x22,
+	0x9e, 0xa6, 0x3c, 0xd3, 0x13, 0x61, 0xdf, 0x76, 0x3b, 0x29, 0x8f, 0x31, 0xf1, 0xcc, 0x6f, 0x11,
+	0xa2, 0x09, 0x74, 0x87, 0x12, 0x43, 0x8d, 0xfb, 0x51, 0xc4, 0xc7, 0x99, 0x7e, 0x8d, 0x4a, 0x85,
+	0x23, 0x24, 0x04, 0x6e, 0x64, 0x61, 0x8a, 0x3d, 0x67, 0xc3, 0xd9, 0x5a, 0xf0, 0xcd, 0x7f, 0xf2,
+	0x1c, 0xda, 0x91, 0xa9, 0x0d, 0xc6, 0x0a, 0x65, 0xaf, 0xb5, 0xe1, 0x6c, 0xb5, 0x07, 0x0f, 0xfa,
+	0x35, 0x9a, 0x45, 0xb3, 0xf7, 0x0a, 0xa5, 0xed, 0xe4, 0x43, 0x74, 0x19, 0xa2, 0x01, 0x74, 0x66,
+	0x0a, 0x48, 0x1f, 0x96, 0xf3, 0x7e, 0x81, 0xa9, 0x63, 0x3c, 0x0b, 0x34, 0xff, 0x84, 0x99, 0x45,
+	0xee, 0xe4, 0xa9, 0xa1, 0xcd, 0xbc, 0xcb, 0x13, 0xc4, 0x85, 0x79, 0x11, 0x2a, 0x75, 0xc6, 0x65,
+	0x6c, 0x38, 0x2c, 0xf8, 0x97, 0xcf, 0xd4, 0x07, 0x62, 0xc7, 0x19, 0xe1, 0x74, 0x98, 0x75, 0x80,
+	0xb0, 0x18, 0x2f, 0x60, 0xb1, 0x6d, 0xbc, 0x60, 0x23, 0x2f, 0x63, 0x93, 0xce, 0xcb, 0x03, 0x33,
+	0x71, 0xcb, 0xa6, 0xf3, 0xc8, 0x9b, 0x30, 0x45, 0xba, 0x03, 0xcb, 0x3e, 0x8e, 0x98, 0xd2, 0x28,
+	0x73, 0xda, 0x3e, 0x7e, 0x1e, 0xa3, 0xd2, 0xa4, 0x0b, 0x37, 0x31, 0x0d, 0x59, 0x62, 0xfb, 0x15,
+	0x0f, 0xf4, 0x00, 0xba, 0xf5, 0x62, 0x25, 0x78, 0xa6, 0x90, 0x3c, 0x06, 0x72, 0x8a, 0x92, 0x1d,
+	0xb3, 0xa8, 0x61, 0xc6, 0x6a, 0xc6, 0xcc, 0x48, 0x05, 0x90, 0x21, 0xcf, 0x8e, 0x99, 0x4c, 0x87,
+	0x3c, 0xc6, 0x12, 0xf2, 0xff, 0x9a, 0x90, 0x1d, 0xa8, 0x05, 0x83, 0x88, 0xc7, 0xe5, 0x78, 0x4b,
+	0xd5, 0x44, 0x0e, 0x41, 0x03, 0x58, 0xae, 0x21, 0x5a, 0xde, 0x3d, 0x98, 0x53, 0xe3, 0x28, 0x42,
+	0xa5, 0x0c, 0xce, 0xbc, 0x5f, 0x3e, 0x5e, 0x75, 0xb6, 0xd6, 0x15, 0x67, 0x1b, 0x9c, 0xc1, 0x1d,
+	0xab, 0xb1, 0xb7, 0x85, 0x56, 0x08, 0xc2, 0xed, 0x9a, 0xf6, 0x08, 0x6d, 0xd2, 0x52, 0x5d, 0x98,
+	0x6e, 0xa7, 0x5f, 0x91, 0xf5, 0x41, 0x2a, 0xf4, 0x84, 0xae, 0x7f, 0xfd, 0xf5, 0xfb, 0x47, 0x6b,
+	0x95, 0x92, 0xc2, 0x31, 0xde, 0xe9, 0xae, 0x67, 0x8f, 0xab, 0xf6, 0x9c, 0xed, 0xc1, 0x4f, 0x07,
+	0xda, 0xf9, 0x2d, 0x4a, 0xd8, 0x8f, 0x00, 0x53, 0x11, 0x92, 0x7f, 0xe9, 0xb7, 0x09, 0xd0, 0x35,
+	0x80, 0x5d, 0x7a, 0x77, 0x0a, 0x98, 0xcf, 0x9b, 0xa3, 0x91, 0x57, 0x30, 0x77, 0x88, 0xda, 0xb4,
+	0x5e, 0xa9, 0xbe, 0x79, 0x88, 0x97, 0x23, 0xb4, 0xfb, 0x85, 0x03, 0x8d, 0x25, 0xd6, 0x4c, 0xaf,
+	0x15, 0xd2, 0xfd, 0xab, 0x97, 0x77, 0xce, 0xe2, 0x8b, 0xc1, 0x37, 0x07, 0x16, 0x8d, 0x94, 0x4b,
+	0xf2, 0x63, 0x68, 0x57, 0x04, 0x4e, 0x36, 0x1a, 0x37, 0x56, 0xd1, 0x7e, 0x13, 0xfd, 0x5d, 0x03,
+	0xb9, 0x43, 0x1f, 0xcd, 0xee, 0xcb, 0x3b, 0x9f, 0x1a, 0xe5, 0xc2, 0x33, 0x1e, 0x30, 0x3b, 0xfc,
+	0xde, 0x2a, 0x4d, 0x20, 0xcd, 0x49, 0x4b, 0x3a, 0x13, 0x58, 0xac, 0xca, 0x9d, 0x6c, 0xd6, 0xf9,
+	0x34, 0xf8, 0xc6, 0xa5, 0xd7, 0x95, 0x14, 0xaa, 0xa3, 0xd4, 0x30, 0x5c, 0xa3, 0xab, 0x53, 0x86,
+	0xd2, 0xd6, 0x99, 0xed, 0xe4, 0x8b, 0xfe, 0x02, 0xed, 0x8a, 0x60, 0x67, 0x36, 0x31, 0xe3, 0x1e,
+	0x77, 0xf3, 0x9a, 0x0a, 0x8b, 0xfb, 0xd0, 0xe0, 0xde, 0xa7, 0xf7, 0x1a, 0x70, 0x8d, 0x63, 0x26,
+	0x7b, 0xce, 0xf6, 0x8b, 0x67, 0x1f, 0x9e, 0xea, 0x13, 0xd4, 0x28, 0x25, 0x3b, 0x4a, 0x30, 0x3a,
+	0x61, 0x49, 0xec, 0x0d, 0x13, 0x3e, 0x8e, 0xf7, 0x85, 0xf0, 0x42, 0x21, 0x12, 0xeb, 0x2b, 0x55,
+	0x74, 0x09, 0x85, 0x28, 0x3e, 0xb9, 0x47, 0xb7, 0xcc, 0x37, 0xf7, 0xc9, 0x9f, 0x00, 0x00, 0x00,
+	0xff, 0xff, 0x5a, 0x16, 0x32, 0x45, 0xe0, 0x05, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -606,163 +403,322 @@ var _ grpc.ClientConn
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion4
 
-// AdminServiceClient is the client API for AdminService service.
+// AccountServiceClient is the client API for AccountService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
-type AdminServiceClient interface {
-	CreateAccount(ctx context.Context, in *CreateAccountMessage, opts ...grpc.CallOption) (*Empty, error)
-	CreateUser(ctx context.Context, in *CreateUserMessage, opts ...grpc.CallOption) (*Empty, error)
-	GetUser(ctx context.Context, in *GetMessage, opts ...grpc.CallOption) (*Empty, error)
-	CreateAgent(ctx context.Context, in *CreateAgentMessage, opts ...grpc.CallOption) (*Empty, error)
+type AccountServiceClient interface {
+	CreateAccount(ctx context.Context, in *CreateAccountMessage, opts ...grpc.CallOption) (*common.Empty, error)
 }
 
-type adminServiceClient struct {
+type accountServiceClient struct {
 	cc *grpc.ClientConn
 }
 
-func NewAdminServiceClient(cc *grpc.ClientConn) AdminServiceClient {
-	return &adminServiceClient{cc}
+func NewAccountServiceClient(cc *grpc.ClientConn) AccountServiceClient {
+	return &accountServiceClient{cc}
 }
 
-func (c *adminServiceClient) CreateAccount(ctx context.Context, in *CreateAccountMessage, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/adminservice.AdminService/CreateAccount", in, out, opts...)
+func (c *accountServiceClient) CreateAccount(ctx context.Context, in *CreateAccountMessage, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/adminservice.AccountService/CreateAccount", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *adminServiceClient) CreateUser(ctx context.Context, in *CreateUserMessage, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/adminservice.AdminService/CreateUser", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
+// AccountServiceServer is the server API for AccountService service.
+type AccountServiceServer interface {
+	CreateAccount(context.Context, *CreateAccountMessage) (*common.Empty, error)
 }
 
-func (c *adminServiceClient) GetUser(ctx context.Context, in *GetMessage, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/adminservice.AdminService/GetUser", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
+func RegisterAccountServiceServer(s *grpc.Server, srv AccountServiceServer) {
+	s.RegisterService(&_AccountService_serviceDesc, srv)
 }
 
-func (c *adminServiceClient) CreateAgent(ctx context.Context, in *CreateAgentMessage, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/adminservice.AdminService/CreateAgent", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// AdminServiceServer is the server API for AdminService service.
-type AdminServiceServer interface {
-	CreateAccount(context.Context, *CreateAccountMessage) (*Empty, error)
-	CreateUser(context.Context, *CreateUserMessage) (*Empty, error)
-	GetUser(context.Context, *GetMessage) (*Empty, error)
-	CreateAgent(context.Context, *CreateAgentMessage) (*Empty, error)
-}
-
-func RegisterAdminServiceServer(s *grpc.Server, srv AdminServiceServer) {
-	s.RegisterService(&_AdminService_serviceDesc, srv)
-}
-
-func _AdminService_CreateAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _AccountService_CreateAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateAccountMessage)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AdminServiceServer).CreateAccount(ctx, in)
+		return srv.(AccountServiceServer).CreateAccount(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/adminservice.AdminService/CreateAccount",
+		FullMethod: "/adminservice.AccountService/CreateAccount",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminServiceServer).CreateAccount(ctx, req.(*CreateAccountMessage))
+		return srv.(AccountServiceServer).CreateAccount(ctx, req.(*CreateAccountMessage))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AdminService_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+var _AccountService_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "adminservice.AccountService",
+	HandlerType: (*AccountServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "CreateAccount",
+			Handler:    _AccountService_CreateAccount_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "proto/adminservice.proto",
+}
+
+// UserServiceClient is the client API for UserService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type UserServiceClient interface {
+	CreateUser(ctx context.Context, in *CreateUserMessage, opts ...grpc.CallOption) (*common.Empty, error)
+	GetUser(ctx context.Context, in *common.GetMessage, opts ...grpc.CallOption) (*model.User, error)
+}
+
+type userServiceClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewUserServiceClient(cc *grpc.ClientConn) UserServiceClient {
+	return &userServiceClient{cc}
+}
+
+func (c *userServiceClient) CreateUser(ctx context.Context, in *CreateUserMessage, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/adminservice.UserService/CreateUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetUser(ctx context.Context, in *common.GetMessage, opts ...grpc.CallOption) (*model.User, error) {
+	out := new(model.User)
+	err := c.cc.Invoke(ctx, "/adminservice.UserService/GetUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// UserServiceServer is the server API for UserService service.
+type UserServiceServer interface {
+	CreateUser(context.Context, *CreateUserMessage) (*common.Empty, error)
+	GetUser(context.Context, *common.GetMessage) (*model.User, error)
+}
+
+func RegisterUserServiceServer(s *grpc.Server, srv UserServiceServer) {
+	s.RegisterService(&_UserService_serviceDesc, srv)
+}
+
+func _UserService_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateUserMessage)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AdminServiceServer).CreateUser(ctx, in)
+		return srv.(UserServiceServer).CreateUser(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/adminservice.AdminService/CreateUser",
+		FullMethod: "/adminservice.UserService/CreateUser",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminServiceServer).CreateUser(ctx, req.(*CreateUserMessage))
+		return srv.(UserServiceServer).CreateUser(ctx, req.(*CreateUserMessage))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AdminService_GetUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetMessage)
+func _UserService_GetUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(common.GetMessage)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AdminServiceServer).GetUser(ctx, in)
+		return srv.(UserServiceServer).GetUser(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/adminservice.AdminService/GetUser",
+		FullMethod: "/adminservice.UserService/GetUser",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminServiceServer).GetUser(ctx, req.(*GetMessage))
+		return srv.(UserServiceServer).GetUser(ctx, req.(*common.GetMessage))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AdminService_CreateAgent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+var _UserService_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "adminservice.UserService",
+	HandlerType: (*UserServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "CreateUser",
+			Handler:    _UserService_CreateUser_Handler,
+		},
+		{
+			MethodName: "GetUser",
+			Handler:    _UserService_GetUser_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "proto/adminservice.proto",
+}
+
+// AgentServiceClient is the client API for AgentService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type AgentServiceClient interface {
+	CreateAgent(ctx context.Context, in *CreateAgentMessage, opts ...grpc.CallOption) (*common.Empty, error)
+}
+
+type agentServiceClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewAgentServiceClient(cc *grpc.ClientConn) AgentServiceClient {
+	return &agentServiceClient{cc}
+}
+
+func (c *agentServiceClient) CreateAgent(ctx context.Context, in *CreateAgentMessage, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/adminservice.AgentService/CreateAgent", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// AgentServiceServer is the server API for AgentService service.
+type AgentServiceServer interface {
+	CreateAgent(context.Context, *CreateAgentMessage) (*common.Empty, error)
+}
+
+func RegisterAgentServiceServer(s *grpc.Server, srv AgentServiceServer) {
+	s.RegisterService(&_AgentService_serviceDesc, srv)
+}
+
+func _AgentService_CreateAgent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateAgentMessage)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AdminServiceServer).CreateAgent(ctx, in)
+		return srv.(AgentServiceServer).CreateAgent(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/adminservice.AdminService/CreateAgent",
+		FullMethod: "/adminservice.AgentService/CreateAgent",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminServiceServer).CreateAgent(ctx, req.(*CreateAgentMessage))
+		return srv.(AgentServiceServer).CreateAgent(ctx, req.(*CreateAgentMessage))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-var _AdminService_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "adminservice.AdminService",
-	HandlerType: (*AdminServiceServer)(nil),
+var _AgentService_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "adminservice.AgentService",
+	HandlerType: (*AgentServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "CreateAccount",
-			Handler:    _AdminService_CreateAccount_Handler,
-		},
-		{
-			MethodName: "CreateUser",
-			Handler:    _AdminService_CreateUser_Handler,
-		},
-		{
-			MethodName: "GetUser",
-			Handler:    _AdminService_GetUser_Handler,
-		},
-		{
 			MethodName: "CreateAgent",
-			Handler:    _AdminService_CreateAgent_Handler,
+			Handler:    _AgentService_CreateAgent_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "proto/adminservice.proto",
+}
+
+// RegistrationServiceClient is the client API for RegistrationService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type RegistrationServiceClient interface {
+	RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*RegisterUserResponse, error)
+	ConfirmCode(ctx context.Context, in *ConfirmCodeRequest, opts ...grpc.CallOption) (*ConfirmCodeResponse, error)
+}
+
+type registrationServiceClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewRegistrationServiceClient(cc *grpc.ClientConn) RegistrationServiceClient {
+	return &registrationServiceClient{cc}
+}
+
+func (c *registrationServiceClient) RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*RegisterUserResponse, error) {
+	out := new(RegisterUserResponse)
+	err := c.cc.Invoke(ctx, "/adminservice.RegistrationService/RegisterUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *registrationServiceClient) ConfirmCode(ctx context.Context, in *ConfirmCodeRequest, opts ...grpc.CallOption) (*ConfirmCodeResponse, error) {
+	out := new(ConfirmCodeResponse)
+	err := c.cc.Invoke(ctx, "/adminservice.RegistrationService/ConfirmCode", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// RegistrationServiceServer is the server API for RegistrationService service.
+type RegistrationServiceServer interface {
+	RegisterUser(context.Context, *RegisterUserRequest) (*RegisterUserResponse, error)
+	ConfirmCode(context.Context, *ConfirmCodeRequest) (*ConfirmCodeResponse, error)
+}
+
+func RegisterRegistrationServiceServer(s *grpc.Server, srv RegistrationServiceServer) {
+	s.RegisterService(&_RegistrationService_serviceDesc, srv)
+}
+
+func _RegistrationService_RegisterUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RegistrationServiceServer).RegisterUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/adminservice.RegistrationService/RegisterUser",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RegistrationServiceServer).RegisterUser(ctx, req.(*RegisterUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RegistrationService_ConfirmCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ConfirmCodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RegistrationServiceServer).ConfirmCode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/adminservice.RegistrationService/ConfirmCode",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RegistrationServiceServer).ConfirmCode(ctx, req.(*ConfirmCodeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _RegistrationService_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "adminservice.RegistrationService",
+	HandlerType: (*RegistrationServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "RegisterUser",
+			Handler:    _RegistrationService_RegisterUser_Handler,
+		},
+		{
+			MethodName: "ConfirmCode",
+			Handler:    _RegistrationService_ConfirmCode_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

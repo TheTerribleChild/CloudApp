@@ -3,31 +3,18 @@ option go_package="theterriblechild/CloudApp/applications/adminapp/model";
 package adminservice;
 
 import "google/api/annotations.proto";
+import "commontype.proto";
+import "model/model.proto";
 
-service AdminService{
-    rpc CreateAccount(CreateAccountMessage) returns (Empty) {
+//============================Account Service============================
+
+service AccountService{
+    rpc CreateAccount(CreateAccountMessage) returns (commontype.Empty) {
         option (google.api.http) = {
-			post: "/v1/account"
+			post: "/admin/v1/accounts"
 			body: "*"
 		};
     };
-    rpc CreateUser(CreateUserMessage) returns (Empty) {
-        option (google.api.http) = {
-			post: "/v1/account/{account_id}/user"
-			body: "*"
-		};
-    }
-    rpc GetUser(GetMessage) returns (Empty){
-        option (google.api.http) = {
-			get: "/v1/user/{id}"
-		};
-    }
-    rpc CreateAgent(CreateAgentMessage) returns (Empty) {
-        option (google.api.http) = {
-			post: "/v1/account/{account_id}/agent"
-			body: "*"
-		};
-    }
 }
 
 message CreateAccountMessage{
@@ -35,22 +22,34 @@ message CreateAccountMessage{
     CreateUserMessage create_user = 2;
 }
 
+//============================User Service===============================
+service UserService{
+    rpc CreateUser(CreateUserMessage) returns (commontype.Empty) {
+        option (google.api.http) = {
+			post: "/admin/v1/users"
+			body: "*"
+		};
+    }
+    rpc GetUser(commontype.GetMessage) returns (model.User){
+        option (google.api.http) = {
+			get: "/admin/v1/users/{id}"
+		};
+    }
+}
+
 message CreateUserMessage{
-    string email = 1;
-    string first_name = 2;
-    string last_name = 3;
-    string password = 4;
-    string account_id = 5;
+    string user_creation_token = 1;
+    string password = 2;
 }
 
-message GetMessage{
-    string id = 1;
-}
-
-message ListMessage {
-    string id = 1;
-    int32 start = 2;
-    int32 size = 3;
+//============================Agent Service==============================
+service AgentService{
+    rpc CreateAgent(CreateAgentMessage) returns (commontype.Empty) {
+        option (google.api.http) = {
+			post: "/admin/v1/accounts/{account_id}/agents"
+			body: "*"
+		};
+    }
 }
 
 message CreateAgentMessage {
@@ -58,29 +57,37 @@ message CreateAgentMessage {
     string agent_name = 2;
 }
 
-message String{
-    string value = 1;
+//============================Registration Service=======================
+
+service RegistrationService{
+    rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse) {
+        option (google.api.http) = {
+			post: "/admin/v1/register/user"
+			body: "*"
+		};
+    };
+    rpc ConfirmCode (ConfirmCodeRequest) returns (ConfirmCodeResponse){
+        option (google.api.http) = {
+			post: "/admin/v1/register/verify"
+			body: "*"
+		};
+    };
 }
 
-message Empty{}
-
-message Account {
-    string id = 1;
-    string name = 2;
+message RegisterUserRequest {
+    string email = 1;
 }
 
-message User {
-    string id =1;
-    string email = 2;
-    string first_name = 3;
-    string last_name = 4;
-    string account_id = 5;
-    string password = 6;
-    string password_salt = 7;
+message RegisterUserResponse {
+    string verification_token = 1;
 }
 
-message Agent {
-    string id = 1;
-    string account_id = 2;
-    string name = 3;
+message ConfirmCodeRequest {
+    string verification_token = 1;
+    string verification_code = 2;
+}
+
+message ConfirmCodeResponse {
+    bool success = 1;
+    string user_creation_token = 2;
 }

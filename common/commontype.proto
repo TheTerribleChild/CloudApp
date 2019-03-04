@@ -1,0 +1,19 @@
+syntax = "proto3";
+option go_package="theterriblechild/CloudApp/common";
+package commontype;
+
+message GetMessage{
+    string id = 1;
+}
+
+message ListMessage {
+    string id = 1;
+    int32 start = 2;
+    int32 size = 3;
+}
+
+message String{
+    string value = 1;
+}
+
+message Empty{}
