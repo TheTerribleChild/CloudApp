@@ -34,13 +34,13 @@ func (instance *AgentSessionManager) initialize() {
 func (instance *AgentSessionManager) createSession(agentID string) (newSession AgentSession, err error) {
 	oldSession := &AgentSession{}
 	newSession = AgentSession{}
-	currentTime, err := redisClient.GetCurrentTime()
+	currentTime, err := cacheClient.GetCurrentTime()
 	if err != nil {
 		log.Println("Unable to retrieve time: " + err.Error())
 		err = status.Error(codes.Internal, "Unable to retrieve message")
 		return
 	}
-	if err = redisClient.GetJsonDecompress(agentID, &oldSession); err != nil && err != redis.ErrNil {
+	if err = cacheClient.GetJsonDecompress(agentID, &oldSession); err != nil && err != redis.ErrNil {
 		log.Println(err.Error())
 		err = status.Error(codes.Internal, "Unable to retrieve message")
 		return
@@ -60,7 +60,7 @@ func (instance *AgentSessionManager) createSession(agentID string) (newSession A
 	newSession.LastActiveTime = currentTime
 	newSession.pollChan = make(chan *cldstrg.AgentMessage)
 	newSession.forceCloseChan = make(chan bool)
-	if err = redisClient.SetJsonCompress(agentID, newSession); err != nil {
+	if err = cacheClient.SetJsonCompress(agentID, newSession, 0); err != nil {
 		log.Println("Unable to store new session: " + err.Error())
 		err = status.Error(codes.Internal, "Unable to retrieve message")
 		return
@@ -72,7 +72,7 @@ func (instance *AgentSessionManager) createSession(agentID string) (newSession A
 
 func (instance *AgentSessionManager) endSession(agentID string) {
 	instance.sessionMap.Delete(agentID)
-	if count, err := redisClient.Delete(agentID); err != nil {
+	if count, err := cacheClient.Delete(agentID); err != nil {
 		log.Printf("Fail to delete session for agent '%s'", agentID)
 	} else if count == 0 {
 		log.Printf("Unable to find session for agent '%s' to delete")
@@ -96,5 +96,5 @@ func (instance *AgentSessionManager) renewSession(agentID string) error {
 	}
 	session := rtn.(AgentSession)
 	session.LastActiveTime = time.Now()
-	return redisClient.SetJsonCompress(agentID, session)
+	return cacheClient.SetJsonCompress(agentID, session)
 }

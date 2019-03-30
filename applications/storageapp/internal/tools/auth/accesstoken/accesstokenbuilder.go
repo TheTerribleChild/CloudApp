@@ -7,6 +7,7 @@ import (
  )
 
 type AccessTokenBuilder struct {
+	accesstoken.AccessTokenBuilder
 	tokenFactory accesstoken.JWTTokenFactory
 }
 

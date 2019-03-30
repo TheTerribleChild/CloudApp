@@ -9,7 +9,7 @@ message GetMessage{
 message ListMessage {
     string id = 1;
     int32 start = 2;
-    int32 size = 3;
+    int32 limit = 3;
 }
 
 message String{

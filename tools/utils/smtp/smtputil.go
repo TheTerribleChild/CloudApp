@@ -1,4 +1,4 @@
-package smtp
+package smtputil
 
 import (
 	"fmt"

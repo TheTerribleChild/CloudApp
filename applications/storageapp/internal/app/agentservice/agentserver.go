@@ -7,6 +7,7 @@ import (
 	cldstrg "theterriblechild/CloudApp/applications/storageapp/internal/model"
 	accesstoken "theterriblechild/CloudApp/applications/storageapp/internal/tools/auth/accesstoken"
 	auth "theterriblechild/CloudApp/tools/auth/accesstoken"
+	cacheutil "theterriblechild/CloudApp/tools/utils/cache"
 	grpcutil "theterriblechild/CloudApp/tools/utils/grpc"
 	redisutil "theterriblechild/CloudApp/tools/utils/redis"
 
@@ -32,11 +33,11 @@ type AgentServer struct {
 var (
 	queueConsumer       QueueConsumer
 	agentSessionManager AgentSessionManager
-	redisClient         *redisutil.RedisClient
+	cacheClient         cacheutil.CacheClient
 	serverID            string
 
 	//config
-	refreshDuration time.Duration
+	refreshDuration           time.Duration
 	tokenAuthenticatorBuilder accesstoken.TokenAuthenticatorBuilder
 )
 
@@ -46,7 +47,7 @@ func initializeConfig() {
 
 func (instance *AgentServer) InitializeServer() {
 	serverID = uuid.New().String()
-	tokenAuthenticatorBuilder = accesstoken.TokenAuthenticatorBuilder{Secret : "abc"}
+	tokenAuthenticatorBuilder = accesstoken.TokenAuthenticatorBuilder{Secret: "abc"}
 	refreshDuration, _ = time.ParseDuration(viper.GetString("refreshDuration"))
 	redisClientBuilder := redisutil.RedisClientBuilder{
 		Host:                viper.GetString("externalService.cache.host"),
@@ -55,7 +56,7 @@ func (instance *AgentServer) InitializeServer() {
 		MaxActiveConnection: viper.GetInt("externalService.cache.maxActiveConnection"),
 		MaxIdleConnection:   viper.GetInt("externalService.cache.maxIdleConnection"),
 	}
-	redisClient, _ = redisClientBuilder.Build()
+	cacheClient, _ = redisClientBuilder.Build()
 	agentSessionManager = AgentSessionManager{}
 	agentSessionManager.initialize()
 	queueConsumer = QueueConsumer{}
@@ -75,7 +76,7 @@ func (instance *AgentServer) InitializeServer() {
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
-	
+
 }
 
 func (instance *AgentServer) authenticateRequest(method string, jwtStr string) error {

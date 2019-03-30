@@ -12,6 +12,7 @@ get:
 	$(GOGET) github.com/Masterminds/squirrel
 	$(GOGET) github.com/jmoiron/sqlx
 	$(GOGET) github.com/favadi/protoc-go-inject-tag 
+	$(GOGET) github.com/patrickmn/go-cache
 
 proto: 
 	@echo Generating proto file

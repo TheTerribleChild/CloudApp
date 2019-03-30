@@ -5,6 +5,7 @@ import (
 	"fmt"
 	_ "github.com/lib/pq"
 	"theterriblechild/CloudApp/applications/adminapp/internal/dal"
+	reflectutil "theterriblechild/CloudApp/tools/utils/reflect"
 	"theterriblechild/CloudApp/common/model"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
@@ -91,13 +92,19 @@ func (instance *PostgreDB) getBaseRunner(txnId string) sq.BaseRunner {
 }
 
 func (instance *PostgreDB) CreateAccount(account *model.Account, txnId string) error {
-	result, err := psql.Insert(dal.AccountTable).Columns(dal.AccountTableColumns...).Values(account.Id, account.Name).RunWith(instance.getBaseRunner(txnId)).Exec()
+	fieldValMap := reflectutil.GetTagValueAndFieldValueByTagName(account, dal.DBTag)
+	log.Println(fieldValMap)
+	result, err := psql.Insert(dal.AccountTable).SetMap(fieldValMap).RunWith(instance.getBaseRunner(txnId)).Exec()
 	log.Println(result)
 	return err
 }
 
 func (instance *PostgreDB) CreateUser(user *model.User, txnId string) error {
-	return nil
+	fieldValMap := reflectutil.GetTagValueAndFieldValueByTagName(user, dal.DBTag)
+	log.Println(fieldValMap)
+	result, err := psql.Insert(dal.UserTable).SetMap(fieldValMap).RunWith(instance.getBaseRunner(txnId)).Exec()
+	log.Println(result, err)
+	return err
 }
 
 func (instance *PostgreDB) GetUserByEmail(email string) (user model.User, err error) {

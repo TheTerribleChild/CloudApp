@@ -3,6 +3,7 @@ package dal
 import (
 	"time"
 	"theterriblechild/CloudApp/common/model"
+	reflectutil "theterriblechild/CloudApp/tools/utils/reflect"
 	"context"
 )
 
@@ -30,5 +31,13 @@ type DatabaseConfig struct {
 }
 
 const AccountTable = "admin.account"
-var AccountTableColumns = []string{"id", "name"}
 const UserTable = "admin.user"
+var AccountTableColumns []string
+var UserTableColumns []string
+
+var DBTag = "db"
+
+func init() {
+	AccountTableColumns = reflectutil.GetTagValueByTagName(model.Account{}, DBTag)
+	UserTableColumns = reflectutil.GetTagValueByTagName(model.User{}, DBTag)
+}

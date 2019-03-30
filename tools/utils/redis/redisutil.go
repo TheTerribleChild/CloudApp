@@ -101,9 +101,27 @@ func (instance *RedisClient) Set(key string, value interface{}, ttl int) error {
 	return Set(conn, key, value)
 }
 
-func (instance *RedisClient) SetJsonCompress(key string, value interface{}) error {
+func (instance *RedisClient) SetJsonCompress(key string, value interface{}, ttl int) error {
 	conn := instance.pool.Get()
 	defer conn.Close()
+	if ttl > 0 {
+		if err := BeginTxn(conn); err != nil {
+			return err
+		}
+		if err := SetJsonCompress(conn, key, value); err != nil {
+			DiscardTxn(conn)
+			return err
+		}
+		if err := Expire(conn, key, ttl); err != nil {
+			DiscardTxn(conn)
+			return err
+		}
+		if err := CommitTxn(conn); err != nil {
+			DiscardTxn(conn)
+			return err
+		}
+		return nil
+	}
 	return SetJsonCompress(conn, key, value)
 }
 

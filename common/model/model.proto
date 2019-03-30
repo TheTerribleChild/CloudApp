@@ -20,16 +20,14 @@ message User {
     string last_name = 4;
     //@inject_tag: db:"account_id"
     string account_id = 5;
-    //@inject_tag: db:"password"
-    string password = 6;
-    //@inject_tag: db:"password_salt"
-    string password_salt = 7;
+    //@inject_tag: db:"password_hash"
+    string password_hash = 6;
     //@inject_tag: db:"created_date"
-    string created_date = 8;
+    int64 created_date = 7;
 }
 
 message Agent {
-    //@inject_tag: db:"first_name"
+    //@inject_tag: db:"id"
     string id = 1;
     //@inject_tag: db:"account_id"
     string account_id = 2;

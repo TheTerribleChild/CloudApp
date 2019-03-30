@@ -6,9 +6,11 @@ import (
 	"net/http"
 	"theterriblechild/CloudApp/applications/adminapp/internal/dal"
 	"theterriblechild/CloudApp/applications/adminapp/internal/dal/postgres"
+	"theterriblechild/CloudApp/applications/adminapp/internal/dal/cachestore"
 	adminmodel "theterriblechild/CloudApp/applications/adminapp/model"
 	commontype "theterriblechild/CloudApp/common"
-	redisutil "theterriblechild/CloudApp/tools/utils/redis"
+	"theterriblechild/CloudApp/tools/utils/redis"
+	"theterriblechild/CloudApp/tools/utils/cache"
 	"theterriblechild/CloudApp/tools/utils/smtp"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -20,17 +22,18 @@ import (
 
 type AdminServer struct {
 	adminDB     dal.AdminDB
-	smtpClient  *smtp.SMTPClient
-	redisClient *redisutil.RedisClient
+	smtpClient  *smtputil.SMTPClient
+	cacheClient cacheutil.CacheClient
 
 	accountResource      *AccountResouce
 	userResource         *UserResource
-	registrationResource *RegistrationService
+	registrationResource *RegistrationResource
+	authenticationResource *AuthenticationResource
 }
 
 func (instance *AdminServer) InitializeServer() {
 
-	instance.adminDB = &postgres.PostgreDB{}
+	db := &postgres.PostgreDB{}
 	config := dal.DatabaseConfig{
 		Host:     viper.GetString("externalService.adminDatabase.host"),
 		Port:     viper.GetInt("externalService.adminDatabase.port"),
@@ -38,12 +41,12 @@ func (instance *AdminServer) InitializeServer() {
 		Password: viper.GetString("externalService.adminDatabase.password"),
 		Database: viper.GetString("externalService.adminDatabase.database"),
 	}
-	if err := instance.adminDB.InitializeDatabase(config); err != nil {
+	if err := db.InitializeDatabase(config); err != nil {
 		log.Println(err)
 		panic("unable to connect to database.")
 	}
 
-	instance.smtpClient = &smtp.SMTPClient{
+	instance.smtpClient = &smtputil.SMTPClient{
 		Email:    viper.GetString("externalService.smtp.email"),
 		Password: viper.GetString("externalService.smtp.password"),
 		Host:     viper.GetString("externalService.smtp.host"),
@@ -57,11 +60,14 @@ func (instance *AdminServer) InitializeServer() {
 		MaxActiveConnection: viper.GetInt("externalService.cache.maxActiveConnection"),
 		MaxIdleConnection:   viper.GetInt("externalService.cache.maxIdleConnection"),
 	}
-	instance.redisClient, _ = redisClientBuilder.Build()
+	instance.cacheClient, _ = redisClientBuilder.Build()
+
+	instance.adminDB = &cachestore.CachedAdminDB{AdminDB:db, CacheClient : instance.cacheClient, TTL:120}
 
 	instance.accountResource = &AccountResouce{adminServer: instance}
 	instance.userResource = &UserResource{adminServer: instance}
-	instance.registrationResource = &RegistrationService{adminServer: instance}
+	instance.registrationResource = &RegistrationResource{adminServer: instance}
+	instance.authenticationResource = &AuthenticationResource{adminServer: instance}
 
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
@@ -81,6 +87,9 @@ func (instance *AdminServer) InitializeServer() {
 	if err := adminmodel.RegisterRegistrationServiceHandlerFromEndpoint(ctx, mux, grpcURL, opts); err != nil {
 		log.Println(err)
 	}
+	if err := adminmodel.RegisterAuthenticationServiceHandlerFromEndpoint(ctx, mux, grpcURL, opts); err != nil {
+		log.Println(err)
+	}
 
 	srv := &http.Server{
 		Addr:    restURL,
@@ -94,6 +103,7 @@ func (instance *AdminServer) InitializeServer() {
 	adminmodel.RegisterAccountServiceServer(s, instance.accountResource)
 	adminmodel.RegisterUserServiceServer(s, instance.userResource)
 	adminmodel.RegisterRegistrationServiceServer(s, instance.registrationResource)
+	adminmodel.RegisterAuthenticationServiceServer(s, instance.authenticationResource)
 	reflection.Register(s)
 	log.Println("initializing grpc")
 	s.Serve(lis)

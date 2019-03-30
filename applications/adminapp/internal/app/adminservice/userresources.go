@@ -26,3 +26,8 @@ func (instance *UserResource) GetUser(ctx context.Context, request *commontype.G
 	r = &model.User{}
 	return r, err
 }
+
+func (instance *UserResource) SetPassword(ctx context.Context, request *adminmodel.SetPasswordMessage) (r *commontype.Empty, err error) {
+
+	return &commontype.Empty{}, nil
+}
