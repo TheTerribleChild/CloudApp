@@ -2,7 +2,7 @@ package reflectutil
 
 import (
 	"reflect"
-	"log"
+	_ "log"
 )
 
 func GetTagValueByTagName(obj interface{}, tagName string) (fieldNames []string) {
@@ -29,10 +29,8 @@ func GetTagValueAndFieldValueByTagName(obj interface{}, tagName string) (fieldVa
 	}
 	v := reflect.ValueOf(obj)
 	for v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface {
-		log.Println(v.Kind(), v.Type())
 		v = v.Elem()
 	}
-	log.Println(v.Kind(), v.Type())
 	t := v.Type() 
 	fieldValueMap = make(map[string] interface{})
 
@@ -42,4 +40,16 @@ func GetTagValueAndFieldValueByTagName(obj interface{}, tagName string) (fieldVa
 		}
 	}
 	return fieldValueMap
+}
+
+func GetType(obj interface{}) reflect.Type {
+	if obj == nil {
+		return nil
+	}
+
+	v := reflect.ValueOf(obj)
+	for v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface {
+		v = v.Elem()
+	}
+	return v.Type()
 }

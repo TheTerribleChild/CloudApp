@@ -42,6 +42,20 @@ service UserService{
             body: "*"
         };
     }
+
+    rpc SetPasswordWithToken(SetPasswordWithTokenMessage) returns (commontype.Empty) {
+        option (google.api.http) = {
+            post: "/admin/v1/users/password"
+            body: "*"
+        };
+    }
+
+    rpc ResetPassword(ResetPasswordMessage) returns (commontype.Empty) {
+        option (google.api.http) = {
+            post: "/admin/v1/users/resetpassword"
+            body: "*"
+        };
+    }
 }
 
 message CreateUserMessage{
@@ -50,9 +64,18 @@ message CreateUserMessage{
 }
 
 message SetPasswordMessage{
-    string token = 1;
-    string id = 2;
-    string password = 3;
+    string id = 1;
+    string old_password = 2;
+    string new_password = 3;
+}
+
+message SetPasswordWithTokenMessage{
+    string id = 1;
+    string new_password = 2;
+}
+
+message ResetPasswordMessage{
+    string user_email = 1;
 }
 
 //============================Agent Service==============================

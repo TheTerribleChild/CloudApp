@@ -17,3 +17,7 @@ message String{
 }
 
 message Empty{}
+
+message Token{
+    string token = 1;
+}

@@ -31,3 +31,13 @@ func (instance *UserResource) SetPassword(ctx context.Context, request *adminmod
 
 	return &commontype.Empty{}, nil
 }
+
+func (instance *UserResource) SetPasswordWithToken(ctx context.Context, request *adminmodel.SetPasswordWithTokenMessage) (r *commontype.Empty, err error) {
+
+	return &commontype.Empty{}, nil
+}
+
+func (instance *UserResource) ResetPassword(ctx context.Context, request *adminmodel.ResetPasswordMessage) (r *commontype.Empty, err error) {
+
+	return &commontype.Empty{}, nil
+}

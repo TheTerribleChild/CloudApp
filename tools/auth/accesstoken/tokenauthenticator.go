@@ -53,7 +53,7 @@ func (instance TokenAuthenticator) AuthenticateAccessToken(tokenInterface interf
 	var containsPermission []Permission
 
 	if token, ok := tokenInterface.(AccessTokenInterface); ok {
-		containsPermission = token.GetAccessToken().Permissions
+		containsPermission = token.GetPermission()
 	} else if token, ok := tokenInterface.(*AccessToken); ok {
 		containsPermission = token.Permissions
 	} else {
