@@ -5,13 +5,13 @@ import (
 	"net"
 	"net/http"
 	"theterriblechild/CloudApp/applications/adminapp/internal/dal"
-	"theterriblechild/CloudApp/applications/adminapp/internal/dal/postgres"
 	"theterriblechild/CloudApp/applications/adminapp/internal/dal/cachestore"
+	"theterriblechild/CloudApp/applications/adminapp/internal/dal/postgres"
 	adminmodel "theterriblechild/CloudApp/applications/adminapp/model"
 	commontype "theterriblechild/CloudApp/common"
-	"theterriblechild/CloudApp/tools/utils/redis"
-	"theterriblechild/CloudApp/tools/utils/cache"
-	"theterriblechild/CloudApp/tools/utils/smtp"
+	cacheutil "theterriblechild/CloudApp/tools/utils/cache"
+	redisutil "theterriblechild/CloudApp/tools/utils/redis"
+	smtputil "theterriblechild/CloudApp/tools/utils/smtp"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/viper"
@@ -25,15 +25,14 @@ type AdminServer struct {
 	smtpClient  *smtputil.SMTPClient
 	cacheClient cacheutil.CacheClient
 
-	accountResource      *AccountResouce
-	userResource         *UserResource
-	registrationResource *RegistrationResource
+	accountResource        *AccountResouce
+	userResource           *UserResource
+	registrationResource   *RegistrationResource
 	authenticationResource *AuthenticationResource
 }
 
 func (instance *AdminServer) InitializeServer() {
 
-	db := &postgres.PostgreDB{}
 	config := dal.DatabaseConfig{
 		Host:     viper.GetString("externalService.adminDatabase.host"),
 		Port:     viper.GetInt("externalService.adminDatabase.port"),
@@ -41,7 +40,9 @@ func (instance *AdminServer) InitializeServer() {
 		Password: viper.GetString("externalService.adminDatabase.password"),
 		Database: viper.GetString("externalService.adminDatabase.database"),
 	}
-	if err := db.InitializeDatabase(config); err != nil {
+	db, err := postgres.GetAdminDB(config)
+
+	if err != nil {
 		log.Println(err)
 		panic("unable to connect to database.")
 	}
@@ -62,7 +63,7 @@ func (instance *AdminServer) InitializeServer() {
 	}
 	instance.cacheClient, _ = redisClientBuilder.Build()
 
-	instance.adminDB = &cachestore.CachedAdminDB{AdminDB:db, CacheClient : instance.cacheClient, TTL:120}
+	instance.adminDB = &cachestore.CachedAdminDB{AdminDB: db, CacheClient: instance.cacheClient, TTL: 120}
 
 	instance.accountResource = &AccountResouce{adminServer: instance}
 	instance.userResource = &UserResource{adminServer: instance}

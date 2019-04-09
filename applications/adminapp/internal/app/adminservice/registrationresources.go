@@ -1,22 +1,25 @@
 package adminservice
 
 import (
+	"database/sql"
+	"encoding/base64"
 	"log"
 	adminmodel "theterriblechild/CloudApp/applications/adminapp/model"
 	"theterriblechild/CloudApp/common/model"
 	hashutil "theterriblechild/CloudApp/tools/utils/hash"
 	redisutil "theterriblechild/CloudApp/tools/utils/redis"
 	_ "theterriblechild/CloudApp/tools/utils/regex"
-	"encoding/base64"
+
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
-	"database/sql"
 	"golang.org/x/net/context"
+
 	//"google.golang.org/grpc"
 	"math/rand"
 	"strconv"
 
 	"fmt"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -33,9 +36,8 @@ func (instance *RegistrationResource) RegisterUser(ctx context.Context, request 
 	log.Println(request)
 	r = &adminmodel.RegisterUserResponse{}
 
-
 	_, err = instance.adminServer.adminDB.GetUserByEmail(request.Email)
-	switch{
+	switch {
 	case err == sql.ErrNoRows:
 		break
 	case err != nil:
@@ -66,12 +68,12 @@ func (instance *RegistrationResource) ConfirmCode(ctx context.Context, request *
 		return r, status.Error(codes.InvalidArgument, "Invalid arguement")
 	}
 
-	key := getEmailVerificationKey( request.VerificationToken, request.VerificationCode)
+	key := getEmailVerificationKey(request.VerificationToken, request.VerificationCode)
 	log.Println(key)
-	value , err := instance.adminServer.cacheClient.GetString(key); 
+	value, err := instance.adminServer.cacheClient.GetString(key)
 	if redisutil.IsEmptyError(err) {
 		return r, status.Error(codes.Unauthenticated, "Unrecognized verification code")
-	}else if err != nil {
+	} else if err != nil {
 		log.Println(err)
 		return r, status.Error(codes.Internal, "")
 	}
@@ -97,16 +99,16 @@ func (instance *RegistrationResource) createNewAccountAndUser(ctx context.Contex
 		return err
 	}
 	pwHash, err := bcrypt.GenerateFromPassword(tempPw, bcrypt.DefaultCost)
-	pwHashStr := base64.StdEncoding.EncodeToString(pwHash)//string(pwHash)
+	pwHashStr := base64.StdEncoding.EncodeToString(pwHash) //string(pwHash)
 	decoded, _ := base64.StdEncoding.DecodeString(pwHashStr)
 	log.Println(pwHash, pwHashStr, decoded)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
-	newAccount := &model.Account{Id:accountId}
-	newUser := &model.User{Id:userId, Email: email, AccountId: accountId, PasswordHash: string(pwHash)}
-	if txnId, err := instance.adminServer.adminDB.StartTxn(ctx);err == nil {
+	newAccount := &model.Account{Id: accountId}
+	newUser := &model.User{Id: userId, Email: email, AccountId: accountId, PasswordHash: string(pwHash)}
+	if txnId, err := instance.adminServer.adminDB.StartTxn(ctx); err == nil {
 		if err = instance.adminServer.adminDB.CreateAccount(newAccount, txnId); err != nil {
 			log.Println(err)
 			return err
@@ -122,15 +124,14 @@ func (instance *RegistrationResource) createNewAccountAndUser(ctx context.Contex
 			return err
 		}
 		return nil
-	}else {
+	} else {
 		log.Println(err)
 		return err
 	}
-		
+
 	return err
 }
 
 func getEmailVerificationKey(verificationToken string, verificationCode string) string {
-	return confirmKeyPrefix + hashutil.GetHashString(fmt.Sprintf("%s-%s",verificationToken, verificationCode))
+	return confirmKeyPrefix + hashutil.GetHashString(fmt.Sprintf("%s-%s", verificationToken, verificationCode))
 }
-

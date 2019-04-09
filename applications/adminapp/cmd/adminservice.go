@@ -1,10 +1,11 @@
 package main
 
-import(
-	"theterriblechild/CloudApp/applications/adminapp/internal/app/adminservice"
-	"github.com/spf13/viper"
+import (
 	"fmt"
 	"os"
+	"theterriblechild/CloudApp/applications/adminapp/internal/app/adminservice"
+
+	"github.com/spf13/viper"
 )
 
 func main() {

@@ -36,7 +36,11 @@ func GetTagValueAndFieldValueByTagName(obj interface{}, tagName string) (fieldVa
 
 	for i := 0; i < t.NumField(); i++ {
 		if tagVal, ok := t.Field(i).Tag.Lookup(tagName); ok {
-			fieldValueMap[tagVal] = v.FieldByName(t.Field(i).Name).Interface()
+			fieldValue := v.FieldByName(t.Field(i).Name).Interface()
+			if fieldValue == reflect.Zero(reflect.TypeOf(fieldValue)).Interface() {
+				continue
+			}
+			fieldValueMap[tagVal] = fieldValue
 		}
 	}
 	return fieldValueMap
