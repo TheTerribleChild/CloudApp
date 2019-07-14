@@ -24,9 +24,9 @@ func GetTokenManager(key string, issuer string) TokenManager {
 	}
 }
 
-func (instance TokenManager) BuildTokenString(token AccessTokenInterface) (tokenStr string, err error) {
+func (instance TokenManager) BuildTokenString(token AccessTokenInterface, expiresAt int64) (tokenStr string, id string, err error) {
 	token.SetPermission(token.GetRequiredPermission())
-	return instance.TokenFactory.GetSignedString(token)
+	return instance.TokenFactory.GetSignedString(token, expiresAt)
 }
 
 func (instance TokenManager) DecodeToken(tokenStr string, token AccessTokenInterface) error {
@@ -38,10 +38,10 @@ func (instance TokenManager) DecodeToken(tokenStr string, token AccessTokenInter
 	return instance.tokenAuthMap[tokenType].AuthenticateAndDecodeJWTString(tokenStr, token)
 }
 
-func (instance TokenManager) BuildInternalRequestTokenString(token AccessTokenInterface) (tokenStr string, err error) {
+func (instance TokenManager) BuildInternalRequestTokenString(token AccessTokenInterface, expiresAt int64) (tokenStr string, id string, err error) {
 	permissions := append(token.GetRequiredPermission(), Permission_Internal)
 	token.SetPermission(permissions)
-	return instance.TokenFactory.GetSignedString(token)
+	return instance.TokenFactory.GetSignedString(token, expiresAt)
 }
 
 func (instance TokenManager) IsInternal(tokenStr string) (isInternal bool, err error) {

@@ -11,7 +11,7 @@ import "model/model.proto";
 service AccountService{
     rpc CreateAccount(CreateAccountMessage) returns (commontype.Empty) {
         option (google.api.http) = {
-			post: "/admin/v1/accounts"
+			post: "/api/admin/v1/accounts"
 			body: "*"
 		};
     };
@@ -32,27 +32,27 @@ service UserService{
     }
     rpc GetUser(commontype.GetMessage) returns (model.User){
         option (google.api.http) = {
-			get: "/admin/v1/users/{id}"
+			get: "/api/admin/v1/users/{id}"
 		};
     }
 
     rpc SetPassword(SetPasswordMessage) returns (commontype.Empty) {
         option (google.api.http) = {
-            post: "/admin/v1/users/{id}/password"
+            post: "/api/admin/v1/users/{id}/password"
             body: "*"
         };
     }
 
     rpc SetPasswordWithToken(SetPasswordWithTokenMessage) returns (commontype.Empty) {
         option (google.api.http) = {
-            post: "/admin/v1/users/password"
+            post: "/api/admin/v1/users/password"
             body: "*"
         };
     }
 
     rpc ResetPassword(ResetPasswordMessage) returns (commontype.Empty) {
         option (google.api.http) = {
-            post: "/admin/v1/users/resetpassword"
+            post: "/api/admin/v1/users/resetpassword"
             body: "*"
         };
     }
@@ -82,7 +82,7 @@ message ResetPasswordMessage{
 service AgentService{
     rpc CreateAgent(CreateAgentMessage) returns (commontype.Empty) {
         option (google.api.http) = {
-			post: "/admin/v1/accounts/{account_id}/agents"
+			post: "/api/admin/v1/accounts/{account_id}/agents"
 			body: "*"
 		};
     }
@@ -97,13 +97,13 @@ message CreateAgentMessage {
 service RegistrationService{
     rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse) {
         option (google.api.http) = {
-			post: "/admin/v1/register/user"
+			post: "/api/admin/v1/register/user"
 			body: "*"
 		};
     };
     rpc ConfirmCode (ConfirmCodeRequest) returns (ConfirmCodeResponse){
         option (google.api.http) = {
-			post: "/admin/v1/register/verify"
+			post: "/api/admin/v1/register/verify"
 			body: "*"
 		};
     };
@@ -131,7 +131,7 @@ message ConfirmCodeResponse {
 service AuthenticationService{
     rpc Login(LoginRequest) returns (LoginResponse) {
         option (google.api.http) = {
-            post: "/auth/v1/login"
+            post: "/api/auth/v1/login"
             body: "*"
         };
     }
