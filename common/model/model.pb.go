@@ -21,10 +21,8 @@ var _ = math.Inf
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 type Account struct {
-	//@inject_tag: db:"id"
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty" db:"id"`
-	//@inject_tag: db:"name"
-	Name                 string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty" db:"name"`
+	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name                 string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -70,20 +68,13 @@ func (m *Account) GetName() string {
 }
 
 type User struct {
-	//@inject_tag: db:"id"
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty" db:"id"`
-	//@inject_tag: db:"email"
-	Email string `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty" db:"email"`
-	//@inject_tag: db:"first_name"
-	FirstName string `protobuf:"bytes,3,opt,name=first_name,json=firstName,proto3" json:"first_name,omitempty" db:"first_name"`
-	//@inject_tag: db:"last_name"
-	LastName string `protobuf:"bytes,4,opt,name=last_name,json=lastName,proto3" json:"last_name,omitempty" db:"last_name"`
-	//@inject_tag: db:"account_id"
-	AccountId string `protobuf:"bytes,5,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty" db:"account_id"`
-	//@inject_tag: db:"password_hash"
-	PasswordHash string `protobuf:"bytes,6,opt,name=password_hash,json=passwordHash,proto3" json:"password_hash,omitempty" db:"password_hash"`
-	//@inject_tag: db:"created_date"
-	CreatedDate          int64    `protobuf:"varint,7,opt,name=created_date,json=createdDate,proto3" json:"created_date,omitempty" db:"created_date"`
+	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Email                string   `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
+	FirstName            string   `protobuf:"bytes,3,opt,name=first_name,json=firstName,proto3" json:"first_name,omitempty"`
+	LastName             string   `protobuf:"bytes,4,opt,name=last_name,json=lastName,proto3" json:"last_name,omitempty"`
+	AccountId            string   `protobuf:"bytes,5,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	PasswordHash         string   `protobuf:"bytes,6,opt,name=password_hash,json=passwordHash,proto3" json:"password_hash,omitempty"`
+	CreatedDate          int64    `protobuf:"varint,7,opt,name=created_date,json=createdDate,proto3" json:"created_date,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -164,12 +155,9 @@ func (m *User) GetCreatedDate() int64 {
 }
 
 type Agent struct {
-	//@inject_tag: db:"id"
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty" db:"id"`
-	//@inject_tag: db:"account_id"
-	AccountId string `protobuf:"bytes,2,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty" db:"account_id"`
-	//@inject_tag: db:"name"
-	Name                 string   `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty" db:"name"`
+	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	AccountId            string   `protobuf:"bytes,2,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	Name                 string   `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -227,7 +215,9 @@ func init() {
 	proto.RegisterType((*Agent)(nil), "model.Agent")
 }
 
-func init() { proto.RegisterFile("model/model.proto", fileDescriptor_312ac5bcab6cbb43) }
+func init() {
+	proto.RegisterFile("model/model.proto", fileDescriptor_312ac5bcab6cbb43)
+}
 
 var fileDescriptor_312ac5bcab6cbb43 = []byte{
 	// 274 bytes of a gzipped FileDescriptorProto

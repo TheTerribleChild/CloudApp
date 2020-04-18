@@ -11,9 +11,9 @@ import "model/model.proto";
 service AccountService{
     rpc CreateAccount(CreateAccountMessage) returns (commontype.Empty) {
         option (google.api.http) = {
-			post: "/api/admin/v1/accounts"
-			body: "*"
-		};
+          post: "/api/admin/v1/accounts"
+          body: "*"
+        };
     };
 }
 
@@ -26,14 +26,14 @@ message CreateAccountMessage{
 service UserService{
     rpc CreateUser(CreateUserMessage) returns (commontype.Empty) {
         option (google.api.http) = {
-			post: "/admin/v1/users"
-			body: "*"
-		};
+          post: "/admin/v1/users"
+          body: "*"
+        };
     }
     rpc GetUser(commontype.GetMessage) returns (model.User){
         option (google.api.http) = {
-			get: "/api/admin/v1/users/{id}"
-		};
+          get: "/api/admin/v1/users/{id}"
+        };
     }
 
     rpc SetPassword(SetPasswordMessage) returns (commontype.Empty) {
@@ -65,12 +65,11 @@ message CreateUserMessage{
 
 message SetPasswordMessage{
     string id = 1;
-    string old_password = 2;
-    string new_password = 3;
+    string new_password = 2;
 }
 
 message SetPasswordWithTokenMessage{
-    string id = 1;
+    string password_reset_token = 1;
     string new_password = 2;
 }
 
@@ -82,9 +81,9 @@ message ResetPasswordMessage{
 service AgentService{
     rpc CreateAgent(CreateAgentMessage) returns (commontype.Empty) {
         option (google.api.http) = {
-			post: "/api/admin/v1/accounts/{account_id}/agents"
-			body: "*"
-		};
+          post: "/api/admin/v1/accounts/{account_id}/agents"
+          body: "*"
+        };
     }
 }
 
@@ -97,15 +96,15 @@ message CreateAgentMessage {
 service RegistrationService{
     rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse) {
         option (google.api.http) = {
-			post: "/api/admin/v1/register/user"
-			body: "*"
-		};
+          post: "/api/admin/v1/register/user"
+          body: "*"
+        };
     };
     rpc ConfirmCode (ConfirmCodeRequest) returns (ConfirmCodeResponse){
         option (google.api.http) = {
-			post: "/api/admin/v1/register/verify"
-			body: "*"
-		};
+          post: "/api/admin/v1/register/verify"
+          body: "*"
+        };
     };
 }
 
@@ -124,7 +123,7 @@ message ConfirmCodeRequest {
 
 message ConfirmCodeResponse {
     bool success = 1;
-    string user_creation_token = 2;
+    string password_reset_token = 2;
 }
 
 //============================Authentication Service=====================

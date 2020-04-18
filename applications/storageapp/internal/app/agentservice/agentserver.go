@@ -33,7 +33,7 @@ type AgentServer struct {
 var (
 	queueConsumer       QueueConsumer
 	agentSessionManager AgentSessionManager
-	cacheClient         cacheutil.CacheClient
+	cacheClient         cacheutil.ICacheClient
 	serverID            string
 
 	//config

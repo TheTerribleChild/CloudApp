@@ -9,7 +9,7 @@ import (
 
 type CachedAdminDB struct {
 	dal.AdminDB
-	CacheClient cacheutil.CacheClient
+	CacheClient cacheutil.ICacheClient
 	TTL         int
 }
 
@@ -29,7 +29,7 @@ func (instance *CachedAdminDB) GetUserByID(userID string) (user model.User, err 
 		user = cachedUser
 		return
 	}
-	user, err = instance.AdminDB.GetUserByEmail(userID)
+	user, err = instance.AdminDB.GetUserByID(userID)
 	if err == nil {
 		instance.CacheClient.SetJsonCompress(cacheKey, user, instance.TTL)
 	}

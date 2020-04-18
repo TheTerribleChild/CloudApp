@@ -9,6 +9,8 @@ import (
 )
 
 func main() {
+	dir, _ := os.Getwd()
+  	fmt.Println("DIR:" + dir)
 	viper.SetConfigFile("config.json")
 	viper.AddConfigPath(".")
 	err := viper.ReadInConfig()

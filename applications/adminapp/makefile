@@ -5,6 +5,7 @@ GOTEST=$(GOCMD) test
 GOGET=$(GOCMD) get -u
 
 get:
+	$(GOGET) google.golang.org/grpc
 	$(GOGET) github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
 	$(GOGET) github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
 	$(GOGET) github.com/golang/protobuf/protoc-gen-go
@@ -30,3 +31,4 @@ config:
 
 compile: proto
 	go build -o bin/AdminService/AdminService cmd/*.go
+	cp resource/scripts/debug.sh bin/AdminService

@@ -3,7 +3,10 @@ package smtputil
 import (
 	"fmt"
 	"net/smtp"
+	"regexp"
 )
+var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+
 
 type SMTPClient struct {
 	Email    string
@@ -24,4 +27,8 @@ func (instance *SMTPClient) SendEmail(toEmail string, subject string, body strin
 
 func (instance *SMTPClient) SendEmailAsync(toEmail string, subject string, body string) {
 	go instance.SendEmail(toEmail, subject, body)
+}
+
+func IsValidEmail(email string) bool {
+	return emailRegex.MatchString(email)
 }

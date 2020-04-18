@@ -5,15 +5,19 @@ import (
 	"net"
 	"net/http"
 	"theterriblechild/CloudApp/applications/adminapp/internal/dal"
-	"theterriblechild/CloudApp/applications/adminapp/internal/dal/cachestore"
 	"theterriblechild/CloudApp/applications/adminapp/internal/dal/postgres"
 	adminmodel "theterriblechild/CloudApp/applications/adminapp/model"
 	commontype "theterriblechild/CloudApp/common"
+	accesstoken "theterriblechild/CloudApp/tools/auth/accesstoken"
 	cacheutil "theterriblechild/CloudApp/tools/utils/cache"
-	redisutil "theterriblechild/CloudApp/tools/utils/redis"
+	databaseutil "theterriblechild/CloudApp/tools/utils/database"
+	dbconfig "theterriblechild/CloudApp/tools/utils/database/databaseconfig"
+
+	//redisutil "theterriblechild/CloudApp/tools/utils/database/redis"
 	smtputil "theterriblechild/CloudApp/tools/utils/smtp"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/jmoiron/sqlx"
 	"github.com/spf13/viper"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -23,7 +27,11 @@ import (
 type AdminServer struct {
 	adminDB     dal.AdminDB
 	smtpClient  *smtputil.SMTPClient
-	cacheClient cacheutil.CacheClient
+	cacheClient cacheutil.ICacheClient
+
+	registrationDal dal.IRegistrationDal
+	userDal         dal.IUserDal
+	accountDal      dal.IAccountDal
 
 	accountResource        *AccountResouce
 	userResource           *UserResource
@@ -33,19 +41,24 @@ type AdminServer struct {
 
 func (instance *AdminServer) InitializeServer() {
 
-	config := dal.DatabaseConfig{
+	adminDBConfig := dbconfig.DatabaseConfig{
 		Host:     viper.GetString("externalService.adminDatabase.host"),
 		Port:     viper.GetInt("externalService.adminDatabase.port"),
 		User:     viper.GetString("externalService.adminDatabase.user"),
 		Password: viper.GetString("externalService.adminDatabase.password"),
 		Database: viper.GetString("externalService.adminDatabase.database"),
+		Schema:   viper.GetString("externalService.adminDatabase.database"),
 	}
-	db, err := postgres.GetAdminDB(config)
-
+	adminclient, err := databaseutil.GetDatabase(databaseutil.PostgreSQL, adminDBConfig)
 	if err != nil {
 		log.Println(err)
-		panic("unable to connect to database.")
+		panic("unable to connect to admin database.")
 	}
+	admindb, _ := adminclient.(*sqlx.DB)
+
+	instance.registrationDal = &postgres.RegistrationDalImpl{DB: admindb}
+	instance.userDal = &postgres.UserDalImpl{DB: admindb}
+	instance.accountDal = &postgres.AccountDalImpl{DB: admindb}
 
 	instance.smtpClient = &smtputil.SMTPClient{
 		Email:    viper.GetString("externalService.smtp.email"),
@@ -54,20 +67,38 @@ func (instance *AdminServer) InitializeServer() {
 		Port:     viper.GetInt("externalService.smtp.port"),
 	}
 
-	redisClientBuilder := redisutil.RedisClientBuilder{
-		Host:                viper.GetString("externalService.cache.host"),
-		Port:                viper.GetInt("externalService.cache.host"),
-		Password:            viper.GetString("externalService.cache.password"),
-		MaxActiveConnection: viper.GetInt("externalService.cache.maxActiveConnection"),
-		MaxIdleConnection:   viper.GetInt("externalService.cache.maxIdleConnection"),
+	redisClientConfig := dbconfig.DatabaseConfig{
+		Host:         viper.GetString("externalService.cache.host"),
+		Port:         viper.GetInt("externalService.cache.host"),
+		Password:     viper.GetString("externalService.cache.password"),
+		MaxConns:     viper.GetInt("externalService.cache.maxActiveConnection"),
+		MaxIdleConns: viper.GetInt("externalService.cache.maxIdleConnection"),
 	}
-	instance.cacheClient, _ = redisClientBuilder.Build()
+	redisClient, err := databaseutil.GetDatabase(databaseutil.Redis, redisClientConfig)
+	instance.cacheClient, _ = redisClient.(cacheutil.ICacheClient)
 
-	instance.adminDB = &cachestore.CachedAdminDB{AdminDB: db, CacheClient: instance.cacheClient, TTL: 120}
+	tokenManger := accesstoken.GetTokenManager("123", "AdminService")
+	userUtil := UserUtil{
+		userDal:      instance.userDal,
+		tokenManager: tokenManger,
+		cacheClient:  instance.cacheClient,
+	}
 
-	instance.accountResource = &AccountResouce{adminServer: instance}
-	instance.userResource = &UserResource{adminServer: instance}
-	instance.registrationResource = &RegistrationResource{adminServer: instance}
+	instance.accountResource = &AccountResouce{
+		accountDal: instance.accountDal,
+	}
+	instance.userResource = &UserResource{
+		userDal:     instance.userDal,
+		cacheClient: instance.cacheClient,
+		userUtil:    userUtil,
+	}
+	instance.registrationResource = &RegistrationResource{
+		registrationDal: instance.registrationDal,
+		userDal:         instance.userDal,
+		userUtil:        &userUtil,
+		cacheClient:     instance.cacheClient,
+		smtpClient:      instance.smtpClient,
+	}
 	instance.authenticationResource = &AuthenticationResource{adminServer: instance}
 
 	ctx := context.Background()

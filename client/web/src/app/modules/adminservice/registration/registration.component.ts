@@ -5,6 +5,7 @@ import { first } from 'rxjs/operators';
 
 import { RegistrationService } from "src/app/core/services"
 import { RegistrationState } from "./registration.component.state"
+import { HttpClient } from '@angular/common/http';
 
 @Component({
     selector : 'registration',
@@ -14,16 +15,23 @@ import { RegistrationState } from "./registration.component.state"
 export class RegistrationComponent implements OnInit {
     registerEmailForm: FormGroup;
     verificationCodeForm: FormGroup;
+    setPasswordForm: FormGroup;
     loading = false;
     submittedEmail = false;
+    passwordMismatch = false;
+    validValidationCode = true;
     state = RegistrationState.Start;
     verificationToken: string;
+    setPasswordTokenId: string;
 
     constructor(
         private formBuilder: FormBuilder,
         private router: Router,
         private registrationService: RegistrationService,
-        ){}
+        private http: HttpClient
+        ){
+            
+        }
 
     ngOnInit() {
         this.registerEmailForm = this.formBuilder.group({
@@ -31,6 +39,10 @@ export class RegistrationComponent implements OnInit {
         });
         this.verificationCodeForm = this.formBuilder.group({
             code: ['', Validators.required]
+        });
+        this.setPasswordForm = this.formBuilder.group({
+            password: ['', [Validators.required, Validators.minLength(6)]],
+            passwordConfirmation: ['', [Validators.required, Validators.minLength(6)]]
         });
         this.state = RegistrationState.Start;
     }
@@ -43,27 +55,32 @@ export class RegistrationComponent implements OnInit {
         return this.verificationCodeForm.controls;
     }
 
+    get pf() {
+        return this.setPasswordForm.controls;
+    }
+
     onSubmitEmail() {
         this.submittedEmail = true;
         if (this.registerEmailForm.invalid) {
             return;
         }
         this.loading = true;
-        this.registrationService.submitEmail(this.ef.email.value)
-            .pipe(first())
-            .subscribe(
-                data => {
-                    console.log(data);
-                    this.verificationToken = data['verification_token'];
-                    console.log(this.verificationToken);
-                    this.loading = false;
-                    this.state = RegistrationState.VerifiedEmail;
-                },
-                error => {
-                    console.log(error)
-                    this.loading = false;
-                }
-            );
+        this.registrationService.submitEmail2();
+        // this.registrationService.submitEmail(this.ef.email.value)
+        //     .pipe(first())
+        //     .subscribe(
+        //         data => {
+        //             console.log(data);
+        //             this.verificationToken = data['verification_token'];
+        //             console.log(this.verificationToken);
+        //             this.loading = false;
+        //             this.state = RegistrationState.VerifiedEmail;
+        //         },
+        //         error => {
+        //             console.log(error)
+        //             this.loading = false;
+        //         }
+        //     );
         console.log(this.registerEmailForm.get('email').value);    
     }
 
@@ -76,8 +93,38 @@ export class RegistrationComponent implements OnInit {
             .pipe(first())
             .subscribe(
                 data => {
+                    this.setPasswordTokenId = data['set_password_token_id'];
                     this.loading = false;
-                    this.state = RegistrationState.SetPassword;
+                    if(this.setPasswordTokenId){
+                        this.state = RegistrationState.SetPassword;
+                    } else {
+
+                    }
+                    console.log(data);
+                },
+                error => {
+                    this.loading = false;
+                    this.validValidationCode = false;
+                    console.log(error);
+                }
+            )
+    }
+
+    onSubmitPassword() {
+        if (this.setPasswordForm.invalid) {
+            return;
+        }
+        if (this.pf.password.value != this.pf.passwordConfirmation.value){
+            this.passwordMismatch = true;
+            return;
+        }
+        this.loading = true;
+        this.registrationService.setPassword(this.setPasswordTokenId, this.pf.password.value)
+            .pipe(first())
+            .subscribe(
+                data => {
+                    this.router.navigate(['/login']);
+                    console.log(data);
                 },
                 error => {
                     this.loading = false;
@@ -95,5 +142,9 @@ export class RegistrationComponent implements OnInit {
 
     isSetPassword() {
         return this.state == RegistrationState.SetPassword;
+    }
+
+    isValidVerificationCode() {
+        return this.validValidationCode;
     }
 }

@@ -13,6 +13,13 @@ func (instance *AccessToken) SetPermission(permissions []Permission){
 	instance.Permissions = permissions
 }
 
+func (instance *AccessToken) AddPermission(permissions Permission){
+	if instance.Permissions == nil {
+		instance.Permissions = make([]Permission, 1)
+	}
+	instance.Permissions = append(instance.Permissions, permissions)
+}
+
 func (instance *AccessToken) GetRequiredPermission()[]Permission{
 	return []Permission{}
 }

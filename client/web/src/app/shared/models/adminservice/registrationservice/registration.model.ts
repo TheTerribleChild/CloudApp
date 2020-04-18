@@ -10,3 +10,8 @@ export class VerifyCodeTokenMessage {
 export class VerificationTokenResponse {
     verification_token: string;
 }
+
+export class SetPasswordWithTokenMessage {
+    token_id: string;
+    new_password: string;
+}

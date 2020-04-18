@@ -2,16 +2,17 @@ package adminservice
 
 import (
 	"database/sql"
-	"encoding/base64"
 	"log"
+	"theterriblechild/CloudApp/applications/adminapp/internal/dal"
+	"theterriblechild/CloudApp/applications/adminapp/internal/utils/auth/password"
 	adminmodel "theterriblechild/CloudApp/applications/adminapp/model"
-	"theterriblechild/CloudApp/common/model"
+	cacheutil "theterriblechild/CloudApp/tools/utils/cache"
 	hashutil "theterriblechild/CloudApp/tools/utils/hash"
 	redisutil "theterriblechild/CloudApp/tools/utils/redis"
 	_ "theterriblechild/CloudApp/tools/utils/regex"
+	smtputil "theterriblechild/CloudApp/tools/utils/smtp"
 
 	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/net/context"
 
 	//"google.golang.org/grpc"
@@ -25,7 +26,11 @@ import (
 )
 
 type RegistrationResource struct {
-	adminServer *AdminServer
+	registrationDal dal.IRegistrationDal
+	userDal         dal.IUserDal
+	userUtil        *UserUtil
+	cacheClient     cacheutil.ICacheClient
+	smtpClient      *smtputil.SMTPClient
 }
 
 const (
@@ -35,9 +40,16 @@ const (
 func (instance *RegistrationResource) RegisterUser(ctx context.Context, request *adminmodel.RegisterUserRequest) (r *adminmodel.RegisterUserResponse, err error) {
 	log.Println(request)
 	r = &adminmodel.RegisterUserResponse{}
-
-	_, err = instance.adminServer.adminDB.GetUserByEmail(request.Email)
+	if !smtputil.IsValidEmail(request.Email) {
+		log.Println(fmt.Sprintf("User registration failed: %s is not a valid email", request.Email))
+		return r, status.Error(codes.InvalidArgument, fmt.Sprintf("%s is not a valid email", request.Email))
+	}
+	user, err := instance.userDal.GetUserByEmail(request.Email)
+	log.Println(user)
 	switch {
+	case len(user.ID) > 0:
+		log.Printf("User with email '%s' is already registered", request.Email)
+		return r, status.Error(codes.AlreadyExists, fmt.Sprintf("User with email '%s' is already registered", request.Email))
 	case err == sql.ErrNoRows:
 		break
 	case err != nil:
@@ -48,12 +60,12 @@ func (instance *RegistrationResource) RegisterUser(ctx context.Context, request 
 	verificationToken := hashutil.GetHashString(fmt.Sprintf("%s-%d", request.Email, verificationCode))
 	key := getEmailVerificationKey(verificationToken, strconv.Itoa(verificationCode))
 	log.Println(verificationCode, verificationToken, key)
-	if err := instance.adminServer.cacheClient.Set(key, request.Email, 2400); err != nil { //move expire time to config
+	if err := instance.cacheClient.Set(key, request.Email, 2400); err != nil { //move expire time to config
 		log.Println(err)
 		return r, status.Error(codes.Internal, "")
 	}
 
-	err = instance.adminServer.smtpClient.SendEmail(request.Email, fmt.Sprintf("CloudApp Registration Confirmation: %d", verificationCode), fmt.Sprintf("Your confirmation code is: %d", verificationCode))
+	err = instance.smtpClient.SendEmail(request.Email, fmt.Sprintf("CloudApp Registration Confirmation: %d", verificationCode), fmt.Sprintf("Your confirmation code is: %d", verificationCode))
 	if err != nil {
 		log.Println(err)
 		return r, status.Error(codes.Internal, "")
@@ -70,17 +82,21 @@ func (instance *RegistrationResource) ConfirmCode(ctx context.Context, request *
 
 	key := getEmailVerificationKey(request.VerificationToken, request.VerificationCode)
 	log.Println(key)
-	value, err := instance.adminServer.cacheClient.GetString(key)
+	value, err := instance.cacheClient.GetString(key)
+	log.Println(value)
 	if redisutil.IsEmptyError(err) {
 		return r, status.Error(codes.Unauthenticated, "Unrecognized verification code")
 	} else if err != nil {
 		log.Println(err)
 		return r, status.Error(codes.Internal, "")
 	}
+	if _, err = instance.cacheClient.Delete(key); err != nil {
+		log.Println("Unable to clean confirmation code from cache", err)
+	}
 	email := value
 	log.Println(email)
-	err = instance.createNewAccountAndUser(ctx, email)
-	r = &adminmodel.ConfirmCodeResponse{}
+	passwordResetTokenId, err := instance.createNewAccountAndUser(ctx, email)
+	r = &adminmodel.ConfirmCodeResponse{PasswordResetToken: passwordResetTokenId}
 	if err != nil {
 		log.Println("here", err)
 		return r, status.Error(codes.Internal, "error")
@@ -88,48 +104,39 @@ func (instance *RegistrationResource) ConfirmCode(ctx context.Context, request *
 	return r, err
 }
 
-func (instance *RegistrationResource) createNewAccountAndUser(ctx context.Context, email string) error {
+func (instance *RegistrationResource) createNewAccountAndUser(ctx context.Context, email string) (passwordResetTokenId string, err error) {
 
 	accountId := uuid.New().String()
 	userId := uuid.New().String()
+	passwordResetTokenId = ""
 	tempPw := make([]byte, 64)
-	_, err := rand.Read(tempPw)
+	_, err = rand.Read(tempPw)
 	if err != nil {
 		log.Println(err)
-		return err
+		return
 	}
-	pwHash, err := bcrypt.GenerateFromPassword(tempPw, bcrypt.DefaultCost)
-	pwHashStr := base64.StdEncoding.EncodeToString(pwHash) //string(pwHash)
-	decoded, _ := base64.StdEncoding.DecodeString(pwHashStr)
-	log.Println(pwHash, pwHashStr, decoded)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-	newAccount := &model.Account{Id: accountId}
-	newUser := &model.User{Id: userId, Email: email, AccountId: accountId, PasswordHash: string(pwHash)}
-	if txnId, err := instance.adminServer.adminDB.StartTxn(ctx); err == nil {
-		if err = instance.adminServer.adminDB.CreateAccount(newAccount, txnId); err != nil {
-			log.Println(err)
-			return err
-		}
-		if err = instance.adminServer.adminDB.CreateUser(newUser, txnId); err != nil {
-			log.Println(err)
-			instance.adminServer.adminDB.RollbackTxn(txnId)
-			return err
-		}
-		if err = instance.adminServer.adminDB.CommitTxn(txnId); err != nil {
-			log.Println(err)
-			instance.adminServer.adminDB.RollbackTxn(txnId)
-			return err
-		}
-		return nil
-	} else {
-		log.Println(err)
-		return err
-	}
+	pwHash, err := passwordutil.EncryptPasswordBytes(tempPw)
 
-	return err
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	newAccount := &dal.Account{ID: accountId}
+	newUser := &dal.User{ID: userId, Email: email, AccountID: accountId, PasswordHash: string(pwHash)}
+	log.Println(newUser)
+	if err := instance.registrationDal.RegisterAccountAndUser(newAccount, newUser); err != nil {
+		log.Println(err)
+		return passwordResetTokenId, err
+	}
+	_, passwordResetTokenId, err = instance.userUtil.GeneratePasswordResetTokenString(userId)
+	if err != nil {
+		log.Println(err)
+	}
+	err = instance.smtpClient.SendEmail(email, "Your account for Cloud App has been registered", "Your account for Cloud App has been registered. "+passwordResetTokenId)
+	if err != nil {
+		log.Println(err)
+	}
+	return
 }
 
 func getEmailVerificationKey(verificationToken string, verificationCode string) string {

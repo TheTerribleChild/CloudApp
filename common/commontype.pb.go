@@ -231,7 +231,9 @@ func init() {
 	proto.RegisterType((*Token)(nil), "commontype.Token")
 }
 
-func init() { proto.RegisterFile("commontype.proto", fileDescriptor_5465023ec2044510) }
+func init() {
+	proto.RegisterFile("commontype.proto", fileDescriptor_5465023ec2044510)
+}
 
 var fileDescriptor_5465023ec2044510 = []byte{
 	// 199 bytes of a gzipped FileDescriptorProto

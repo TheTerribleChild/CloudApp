@@ -22,7 +22,7 @@ type JWTTokenClaim struct {
 func (instance *JWTTokenFactory) GetSignedString(content interface{}, expirationTime int64) (string, string, error){
 	id, _ := uuid.NewUUID()
 	currentTime := time.Now().Unix()
-	if instance.GetTime == nil {
+	if instance.GetTime != nil {
 		if t, err := instance.GetTime(); err == nil {
 			currentTime = t
 		}

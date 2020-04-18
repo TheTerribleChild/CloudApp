@@ -1,14 +1,13 @@
 package databaseutil
 
 import (
-	"context"
-	"database/sql"
 	"reflect"
 	"time"
+	"database/sql"
 
-	"github.com/Masterminds/squirrel"
-	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
+	"theterriblechild/CloudApp/tools/utils/database/databaseconfig"
+	"theterriblechild/CloudApp/tools/utils/database/postgresql"
+	"theterriblechild/CloudApp/tools/utils/database/redis"
 )
 
 type DatabaseConfig struct {
@@ -21,6 +20,24 @@ type DatabaseConfig struct {
 	MaxConns        int
 	MaxIdleConns    int
 	MaxConnLifetime time.Duration
+}
+
+type DatabaseType int
+
+const (
+	PostgreSQL DatabaseType = 1
+	Redis      DatabaseType = 2
+)
+
+func GetDatabase(databaseType DatabaseType, config databaseconfig.DatabaseConfig) (dbclient interface{}, err error) {
+	switch databaseType {
+	case PostgreSQL:
+		dbclient, err = postgresql.GetPostgreSQLDB(config)
+		return
+	case Redis:
+		dbclient, err = redisutil.GetRedisClient(config)
+	}
+	return
 }
 
 type Pagination struct {
@@ -44,55 +61,12 @@ func GetTagValueByTagName(obj interface{}, tagName string) (fieldValueMap map[st
 	return fieldValueMap
 }
 
-func BuildAbstractDB(db *sqlx.DB) *AbstractAdminDB {
-	return &AbstractAdminDB{db: db, txnMap: make(map[string]*sql.Tx)}
-}
-
-type AbstractAdminDB struct {
-	txnMap map[string]*sql.Tx
-	db     *sqlx.DB
-}
-
-func (instance *AbstractAdminDB) Close() error {
-	for _, tx := range instance.txnMap {
-		tx.Rollback()
-	}
-	return instance.db.Close()
-}
-
-//Use context
-func (instance *AbstractAdminDB) StartTxn(ctx context.Context) (txnId string, err error) {
-	if tx, err := instance.db.BeginTx(ctx, nil); err == nil {
-		txnId = uuid.New().String()
-		instance.txnMap[txnId] = tx
-	}
-	return txnId, nil
-}
-func (instance *AbstractAdminDB) CommitTxn(txnId string) error {
-	if instance.txnMap[txnId] != nil {
-		err := instance.txnMap[txnId].Commit()
-		delete(instance.txnMap, txnId)
-		return err
-	}
-	return nil
-}
-
-func (instance *AbstractAdminDB) RollbackTxn(txnId string) error {
-	if instance.txnMap[txnId] != nil {
-		err := instance.txnMap[txnId].Rollback()
-		delete(instance.txnMap, txnId)
-		return err
-	}
-	return nil
-}
-
-func (instance *AbstractAdminDB) GetBaseRunner(txnId string) squirrel.BaseRunner {
-	if instance.txnMap[txnId] != nil {
-		return instance.txnMap[txnId]
-	}
-	return instance.db
-}
-
-func (instance *AbstractAdminDB) GetDB() *sqlx.DB {
-	return instance.db
+func NewNullString(s string) sql.NullString {
+    if len(s) == 0 {
+        return sql.NullString{}
+    }
+    return sql.NullString{
+         String: s,
+         Valid: true,
+    }
 }
