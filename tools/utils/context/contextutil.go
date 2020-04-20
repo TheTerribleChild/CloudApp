@@ -14,7 +14,7 @@ type ContextBuilder struct{
 
 const(
 	Toe = "toe"
-	Auth = "authentication"
+	Auth = "authorization"
 	UserName = "username"
 	UserID = "userid"
 	AgentID = "agentid"

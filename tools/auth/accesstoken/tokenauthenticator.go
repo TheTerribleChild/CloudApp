@@ -52,7 +52,7 @@ func (instance TokenAuthenticator) AuthenticateAndDecodeJWTString(jwtString stri
 func (instance TokenAuthenticator) AuthenticateAccessToken(tokenInterface interface{}) error {
 	var containsPermission []Permission
 
-	if token, ok := tokenInterface.(AccessTokenInterface); ok {
+	if token, ok := tokenInterface.(IAccessToken); ok {
 		containsPermission = token.GetPermission()
 	} else if token, ok := tokenInterface.(*AccessToken); ok {
 		containsPermission = token.Permissions

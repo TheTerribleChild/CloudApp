@@ -5,6 +5,7 @@ import (
 	"log"
 	"theterriblechild/CloudApp/applications/adminapp/internal/dal"
 	"theterriblechild/CloudApp/applications/adminapp/internal/utils/auth/password"
+	userutil "theterriblechild/CloudApp/applications/adminapp/internal/utils/user"
 	adminmodel "theterriblechild/CloudApp/applications/adminapp/model"
 	cacheutil "theterriblechild/CloudApp/tools/utils/cache"
 	hashutil "theterriblechild/CloudApp/tools/utils/hash"
@@ -28,7 +29,7 @@ import (
 type RegistrationResource struct {
 	registrationDal dal.IRegistrationDal
 	userDal         dal.IUserDal
-	userUtil        *UserUtil
+	userUtil        *userutil.UserUtil
 	cacheClient     cacheutil.ICacheClient
 	smtpClient      *smtputil.SMTPClient
 }

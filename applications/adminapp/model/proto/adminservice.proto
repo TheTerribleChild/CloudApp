@@ -8,8 +8,8 @@ import "model/model.proto";
 
 //============================Account Service============================
 
-service AccountService{
-    rpc CreateAccount(CreateAccountMessage) returns (commontype.Empty) {
+service AccountService {
+    rpc CreateAccount (CreateAccountRequest) returns (commontype.Empty) {
         option (google.api.http) = {
           post: "/api/admin/v1/accounts"
           body: "*"
@@ -17,40 +17,40 @@ service AccountService{
     };
 }
 
-message CreateAccountMessage{
+message CreateAccountRequest {
     string name = 1;
-    CreateUserMessage create_user = 2;
+    CreateUserRequest create_user = 2;
 }
 
 //============================User Service===============================
-service UserService{
-    rpc CreateUser(CreateUserMessage) returns (commontype.Empty) {
+service UserService {
+    rpc CreateUser (CreateUserRequest) returns (commontype.Empty) {
         option (google.api.http) = {
           post: "/admin/v1/users"
           body: "*"
         };
     }
-    rpc GetUser(commontype.GetMessage) returns (model.User){
+    rpc GetUser (commontype.GetMessage) returns (model.User) {
         option (google.api.http) = {
           get: "/api/admin/v1/users/{id}"
         };
     }
 
-    rpc SetPassword(SetPasswordMessage) returns (commontype.Empty) {
+    rpc SetPassword (SetPasswordRequest) returns (commontype.Empty) {
         option (google.api.http) = {
             post: "/api/admin/v1/users/{id}/password"
             body: "*"
         };
     }
 
-    rpc SetPasswordWithToken(SetPasswordWithTokenMessage) returns (commontype.Empty) {
+    rpc SetPasswordWithToken (SetPasswordWithTokenRequest) returns (commontype.Empty) {
         option (google.api.http) = {
             post: "/api/admin/v1/users/password"
             body: "*"
         };
     }
 
-    rpc ResetPassword(ResetPasswordMessage) returns (commontype.Empty) {
+    rpc ResetPassword (ResetPasswordRequest) returns (commontype.Empty) {
         option (google.api.http) = {
             post: "/api/admin/v1/users/resetpassword"
             body: "*"
@@ -58,38 +58,72 @@ service UserService{
     }
 }
 
-message CreateUserMessage{
+message CreateUserRequest {
     string user_creation_token = 1;
     string password = 2;
 }
 
-message SetPasswordMessage{
+message SetPasswordRequest {
     string id = 1;
     string new_password = 2;
 }
 
-message SetPasswordWithTokenMessage{
+message SetPasswordWithTokenRequest {
     string password_reset_token = 1;
     string new_password = 2;
 }
 
-message ResetPasswordMessage{
+message ResetPasswordRequest {
     string user_email = 1;
 }
 
 //============================Agent Service==============================
 service AgentService{
-    rpc CreateAgent(CreateAgentMessage) returns (commontype.Empty) {
+    rpc RegisterAgent(CreateAgentRequest) returns (CreateAgentResponse) {
         option (google.api.http) = {
           post: "/api/admin/v1/accounts/{account_id}/agents"
           body: "*"
         };
     }
+
+    rpc ListAgents(ListAgentsRequest) returns (ListAgentsResponse) {
+        option (google.api.http) = {
+          get: "/api/admin/v1/accounts/{account_id}/agents"
+        };
+    }
+
+    rpc UpdateAgent(model.Agent) returns (model.Agent) {
+        option (google.api.http) = {
+          put: "/api/admin/v1/accounts/{account_id}/agents/{id}"
+          body: "*"
+        };
+    }
+
+    rpc DeleteAgent(model.Agent) returns (commontype.Empty) {
+        option (google.api.http) = {
+          delete: "/api/admin/v1/accounts/{account_id}/agents/{id}"
+        };
+    }
 }
 
-message CreateAgentMessage {
+message CreateAgentRequest {
     string account_id = 1;
     string agent_name = 2;
+}
+
+message CreateAgentResponse {
+    model.Agent agent = 1;
+    string agent_token = 2;
+}
+
+message ListAgentsRequest {
+    string account_id = 1;
+    commontype.Search search = 2;
+    string auth = 3;
+}
+
+message ListAgentsResponse {
+    repeated model.Agent agents = 1;
 }
 
 //============================Registration Service=======================
@@ -143,5 +177,8 @@ message LoginRequest {
 }
 
 message LoginResponse {
-
+    string user_id = 1;
+    string email = 2;
+    string account_id = 3;
+    string access_token = 4;
 }

@@ -17,7 +17,7 @@ type AccountResouce struct {
 	accountDal dal.IAccountDal
 }
 
-func (instance *AccountResouce) CreateAccount(ctx context.Context, request *adminmodel.CreateAccountMessage) (r *commontype.Empty, err error) {
+func (instance *AccountResouce) CreateAccount(ctx context.Context, request *adminmodel.CreateAccountRequest) (r *commontype.Empty, err error) {
 	log.Println(request)
 
 	newAccount := &dal.Account{ID: uuid.New().String(), Name: databaseutil.NewNullString(request.Name)}

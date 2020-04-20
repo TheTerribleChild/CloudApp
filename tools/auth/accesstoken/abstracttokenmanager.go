@@ -24,12 +24,12 @@ func GetTokenManager(key string, issuer string) TokenManager {
 	}
 }
 
-func (instance TokenManager) BuildTokenString(token AccessTokenInterface, expiresAt int64) (tokenStr string, id string, err error) {
+func (instance TokenManager) BuildTokenString(token IAccessToken, expiresAt int64) (tokenStr string, id string, err error) {
 	token.SetPermission(token.GetRequiredPermission())
 	return instance.TokenFactory.GetSignedString(token, expiresAt)
 }
 
-func (instance TokenManager) DecodeToken(tokenStr string, token AccessTokenInterface) error {
+func (instance TokenManager) DecodeToken(tokenStr string, token IAccessToken) error {
 	tokenType := reflectutil.GetType(token)
 	if authenticator, ok := instance.tokenAuthMap[tokenType]; ok {
 		return authenticator.AuthenticateAndDecodeJWTString(tokenStr, token)
@@ -38,7 +38,7 @@ func (instance TokenManager) DecodeToken(tokenStr string, token AccessTokenInter
 	return instance.tokenAuthMap[tokenType].AuthenticateAndDecodeJWTString(tokenStr, token)
 }
 
-func (instance TokenManager) BuildInternalRequestTokenString(token AccessTokenInterface, expiresAt int64) (tokenStr string, id string, err error) {
+func (instance TokenManager) BuildInternalRequestTokenString(token IAccessToken, expiresAt int64) (tokenStr string, id string, err error) {
 	permissions := append(token.GetRequiredPermission(), Permission_Internal)
 	token.SetPermission(permissions)
 	return instance.TokenFactory.GetSignedString(token, expiresAt)

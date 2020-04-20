@@ -6,7 +6,8 @@ import (
 	"theterriblechild/CloudApp/applications/adminapp/internal/dal"
 	reflectutil "theterriblechild/CloudApp/tools/utils/reflect"
 )
-// 
+
+//
 type UserDalImpl struct {
 	DB *sqlx.DB
 }
@@ -24,7 +25,8 @@ func (instance *UserDalImpl) CreateUser(user *dal.User) error {
 func (instance *UserDalImpl) UpdateUser(user *dal.User) error {
 	fieldValMap := reflectutil.GetTagValueAndFieldValueByTagName(user, dal.DBTag)
 	log.Println(fieldValMap)
-	result, err := psql.Update(dal.UserTable).SetMap(fieldValMap).Where("id = ?", user.ID).Exec()
+	sql, args, err := psql.Update(dal.UserTable).SetMap(fieldValMap).Where("id = ?", user.ID).ToSql()
+	result, err := instance.DB.Exec(sql, args...)
 	log.Println(result, err)
 	return err
 }

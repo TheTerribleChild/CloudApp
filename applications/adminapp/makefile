@@ -30,5 +30,6 @@ config:
 	cp configs/* bin/AdminService
 
 compile: proto
+	gofmt -s -w .
 	go build -o bin/AdminService/AdminService cmd/*.go
 	cp resource/scripts/debug.sh bin/AdminService

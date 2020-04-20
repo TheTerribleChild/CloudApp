@@ -24,7 +24,7 @@ func (instance *AccessToken) GetRequiredPermission()[]Permission{
 	return []Permission{}
 }
 
-type AccessTokenInterface interface {
+type IAccessToken interface {
 	GetPermission() []Permission
 	SetPermission([]Permission)
 	GetRequiredPermission() []Permission

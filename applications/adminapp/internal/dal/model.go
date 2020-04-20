@@ -27,3 +27,13 @@ type User struct {
 func (instance User) GetKeyString() string {
 	return instance.ID
 }
+
+type Agent struct {
+	ID        string `db:"id"`
+	AccountID string `db:"account_id"`
+	Name      string `db:"name"`
+}
+
+func (instance Agent) GetKeyString() string {
+	return instance.ID
+}

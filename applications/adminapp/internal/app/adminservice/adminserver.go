@@ -6,12 +6,13 @@ import (
 	"net/http"
 	"theterriblechild/CloudApp/applications/adminapp/internal/dal"
 	"theterriblechild/CloudApp/applications/adminapp/internal/dal/postgres"
+	userutil "theterriblechild/CloudApp/applications/adminapp/internal/utils/user"
 	adminmodel "theterriblechild/CloudApp/applications/adminapp/model"
-	commontype "theterriblechild/CloudApp/common"
-	accesstoken "theterriblechild/CloudApp/tools/auth/accesstoken"
+	"theterriblechild/CloudApp/tools/authentication/accesstoken"
 	cacheutil "theterriblechild/CloudApp/tools/utils/cache"
 	databaseutil "theterriblechild/CloudApp/tools/utils/database"
 	dbconfig "theterriblechild/CloudApp/tools/utils/database/databaseconfig"
+	timeutil "theterriblechild/CloudApp/tools/utils/time"
 
 	//redisutil "theterriblechild/CloudApp/tools/utils/database/redis"
 	smtputil "theterriblechild/CloudApp/tools/utils/smtp"
@@ -32,11 +33,13 @@ type AdminServer struct {
 	registrationDal dal.IRegistrationDal
 	userDal         dal.IUserDal
 	accountDal      dal.IAccountDal
+	agentDal        dal.IAgentDal
 
 	accountResource        *AccountResouce
 	userResource           *UserResource
 	registrationResource   *RegistrationResource
 	authenticationResource *AuthenticationResource
+	agentResource          *AgentResource
 }
 
 func (instance *AdminServer) InitializeServer() {
@@ -59,6 +62,7 @@ func (instance *AdminServer) InitializeServer() {
 	instance.registrationDal = &postgres.RegistrationDalImpl{DB: admindb}
 	instance.userDal = &postgres.UserDalImpl{DB: admindb}
 	instance.accountDal = &postgres.AccountDalImpl{DB: admindb}
+	instance.agentDal = &postgres.AgentDalImpl{DB: admindb}
 
 	instance.smtpClient = &smtputil.SMTPClient{
 		Email:    viper.GetString("externalService.smtp.email"),
@@ -76,12 +80,19 @@ func (instance *AdminServer) InitializeServer() {
 	}
 	redisClient, err := databaseutil.GetDatabase(databaseutil.Redis, redisClientConfig)
 	instance.cacheClient, _ = redisClient.(cacheutil.ICacheClient)
+	timeUtil := timeutil.TimeUtil{
+		GetTimeFunc: instance.cacheClient.GetCurrentTime,
+	}
 
-	tokenManger := accesstoken.GetTokenManager("123", "AdminService")
-	userUtil := UserUtil{
-		userDal:      instance.userDal,
-		tokenManager: tokenManger,
-		cacheClient:  instance.cacheClient,
+	tokenManger := accesstoken.TokenAuthenticationManager{
+		Secret:  "123456",
+		Issuer:  "AdminApp",
+		GetTime: timeUtil.GetTimeUnix,
+	}
+	userUtil := userutil.UserUtil{
+		UserDal:      instance.userDal,
+		TokenManager: tokenManger,
+		CacheClient:  instance.cacheClient,
 	}
 
 	instance.accountResource = &AccountResouce{
@@ -90,7 +101,7 @@ func (instance *AdminServer) InitializeServer() {
 	instance.userResource = &UserResource{
 		userDal:     instance.userDal,
 		cacheClient: instance.cacheClient,
-		userUtil:    userUtil,
+		userUtil:    &userUtil,
 	}
 	instance.registrationResource = &RegistrationResource{
 		registrationDal: instance.registrationDal,
@@ -99,7 +110,14 @@ func (instance *AdminServer) InitializeServer() {
 		cacheClient:     instance.cacheClient,
 		smtpClient:      instance.smtpClient,
 	}
-	instance.authenticationResource = &AuthenticationResource{adminServer: instance}
+	instance.authenticationResource = &AuthenticationResource{
+		userDal:      instance.userDal,
+		tokenManager: &tokenManger,
+	}
+	instance.agentResource = &AgentResource{
+		agentDal:     instance.agentDal,
+		tokenManager: &tokenManger,
+	}
 
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
@@ -108,7 +126,7 @@ func (instance *AdminServer) InitializeServer() {
 	restURL := ":" + viper.GetString("adminServer.rest.port")
 	grpcURL := ":" + viper.GetString("adminServer.grpc.port")
 
-	mux := runtime.NewServeMux()
+	mux := runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(CustomMatcher))
 	opts := []grpc.DialOption{grpc.WithInsecure()}
 	if err := adminmodel.RegisterAccountServiceHandlerFromEndpoint(ctx, mux, grpcURL, opts); err != nil {
 		log.Println(err)
@@ -120,6 +138,9 @@ func (instance *AdminServer) InitializeServer() {
 		log.Println(err)
 	}
 	if err := adminmodel.RegisterAuthenticationServiceHandlerFromEndpoint(ctx, mux, grpcURL, opts); err != nil {
+		log.Println(err)
+	}
+	if err := adminmodel.RegisterAgentServiceHandlerFromEndpoint(ctx, mux, grpcURL, opts); err != nil {
 		log.Println(err)
 	}
 
@@ -136,13 +157,17 @@ func (instance *AdminServer) InitializeServer() {
 	adminmodel.RegisterUserServiceServer(s, instance.userResource)
 	adminmodel.RegisterRegistrationServiceServer(s, instance.registrationResource)
 	adminmodel.RegisterAuthenticationServiceServer(s, instance.authenticationResource)
+	adminmodel.RegisterAgentServiceServer(s, instance.agentResource)
 	reflection.Register(s)
 	log.Println("initializing grpc")
 	s.Serve(lis)
 }
 
-func (instance *AdminServer) CreateAgent(ctx context.Context, request *adminmodel.CreateAgentMessage) (r *commontype.Empty, err error) {
-	log.Println(request)
-	r = &commontype.Empty{}
-	return r, err
+func CustomMatcher(key string) (string, bool) {
+	switch key {
+	case "X-Cloudapp-Authorization":
+		return "authorization", true
+	default:
+		return runtime.DefaultHeaderMatcher(key)
+	}
 }

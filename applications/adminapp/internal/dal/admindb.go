@@ -20,6 +20,7 @@ type DatabaseConfig struct {
 
 const AccountTable = "admin.account"
 const UserTable = "admin.user"
+const AgentTable = "admin.agent"
 
 var AccountTableColumns []string
 var UserTableColumns []string

@@ -6,7 +6,8 @@ import (
 	"theterriblechild/CloudApp/applications/adminapp/internal/dal"
 	reflectutil "theterriblechild/CloudApp/tools/utils/reflect"
 )
-// 
+
+//
 type RegistrationDalImpl struct {
 	DB *sqlx.DB
 }

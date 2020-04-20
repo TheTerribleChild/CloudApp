@@ -2,6 +2,7 @@ package cacheutil
 
 import (
 	"fmt"
+	"time"
 )
 
 type ICacheClient interface {
@@ -12,6 +13,7 @@ type ICacheClient interface {
 	ScanObject(key string, item interface{}) error
 	Delete(keys ...interface{}) (int, error) 
 	Expire(key string, ttl int) error
+	GetCurrentTime() (time.Time, error)
 }
 
 type ICacheKey interface {

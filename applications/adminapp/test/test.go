@@ -1,11 +1,12 @@
 package main
 
-import(
-	"theterriblechild/CloudApp/tools/utils/reflect"
-	"theterriblechild/CloudApp/common/model"
+import (
 	"log"
+	"theterriblechild/CloudApp/common/model"
+	"theterriblechild/CloudApp/tools/utils/reflect"
 )
-func main(){
+
+func main() {
 	user := model.User{}
 	mp := make(map[string]interface{})
 	mp["id"] = "123"

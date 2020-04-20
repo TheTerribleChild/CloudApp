@@ -1,18 +1,16 @@
 package adminservice
 
 import (
-	"encoding/base64"
 	"log"
 	"theterriblechild/CloudApp/applications/adminapp/internal/dal"
 	adminaccesstoken "theterriblechild/CloudApp/applications/adminapp/internal/utils/auth/accesstoken"
+	userutil "theterriblechild/CloudApp/applications/adminapp/internal/utils/user"
 	adminmodel "theterriblechild/CloudApp/applications/adminapp/model"
 	commontype "theterriblechild/CloudApp/common"
 	model "theterriblechild/CloudApp/common/model"
-	accesstoken "theterriblechild/CloudApp/tools/auth/accesstoken"
 	cacheutil "theterriblechild/CloudApp/tools/utils/cache"
 
 	_ "github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
@@ -21,11 +19,11 @@ import (
 
 type UserResource struct {
 	userDal     dal.IUserDal
-	userUtil    UserUtil
+	userUtil    *userutil.UserUtil
 	cacheClient cacheutil.ICacheClient
 }
 
-func (instance *UserResource) CreateUser(ctx context.Context, request *adminmodel.CreateUserMessage) (r *commontype.Empty, err error) {
+func (instance *UserResource) CreateUser(ctx context.Context, request *adminmodel.CreateUserRequest) (r *commontype.Empty, err error) {
 	log.Println(request)
 	r = &commontype.Empty{}
 	return r, err
@@ -37,12 +35,12 @@ func (instance *UserResource) GetUser(ctx context.Context, request *commontype.G
 	return r, err
 }
 
-func (instance *UserResource) SetPassword(ctx context.Context, request *adminmodel.SetPasswordMessage) (r *commontype.Empty, err error) {
+func (instance *UserResource) SetPassword(ctx context.Context, request *adminmodel.SetPasswordRequest) (r *commontype.Empty, err error) {
 
 	return &commontype.Empty{}, nil
 }
 
-func (instance *UserResource) SetPasswordWithToken(ctx context.Context, request *adminmodel.SetPasswordWithTokenMessage) (r *commontype.Empty, err error) {
+func (instance *UserResource) SetPasswordWithToken(ctx context.Context, request *adminmodel.SetPasswordWithTokenRequest) (r *commontype.Empty, err error) {
 	if len(request.PasswordResetToken) == 0 {
 		err = status.Error(codes.PermissionDenied, "Invalid token")
 		return
@@ -67,35 +65,7 @@ func (instance *UserResource) SetPasswordWithToken(ctx context.Context, request 
 	return &commontype.Empty{}, nil
 }
 
-func (instance *UserResource) ResetPassword(ctx context.Context, request *adminmodel.ResetPasswordMessage) (r *commontype.Empty, err error) {
+func (instance *UserResource) ResetPassword(ctx context.Context, request *adminmodel.ResetPasswordRequest) (r *commontype.Empty, err error) {
 
 	return &commontype.Empty{}, nil
-}
-
-type UserUtil struct {
-	userDal      dal.IUserDal
-	tokenManager accesstoken.TokenManager
-	cacheClient  cacheutil.ICacheClient
-}
-
-func (instance *UserUtil) SetPassword(userID string, newPassword string) error {
-	log.Println(userID + " " + newPassword)
-	user, err := instance.userDal.GetUserByID(userID)
-	log.Println(user)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-	pwHash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
-	user.PasswordHash = base64.StdEncoding.EncodeToString(pwHash)
-	instance.userDal.UpdateUser(&user)
-	return nil
-}
-
-func (instance *UserUtil) GeneratePasswordResetTokenString(userID string) (string, string, error) {
-	token := adminaccesstoken.PasswordResetToken{UserID: userID}
-	token.SetPermission([]accesstoken.Permission{adminaccesstoken.Permission_PasswordReset})
-	tokenStr, tokenId, _ := instance.tokenManager.BuildTokenString(&token, 0)
-	err := instance.cacheClient.StoreObject(tokenId, token, 36000)
-	return tokenStr, tokenId, err
 }

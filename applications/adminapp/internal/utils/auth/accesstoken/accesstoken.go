@@ -1,7 +1,7 @@
 package accesstoken
 
 import (
-	accesstoken "theterriblechild/CloudApp/tools/auth/accesstoken"
+	"theterriblechild/CloudApp/tools/authentication/accesstoken"
 )
 
 const (
@@ -13,6 +13,6 @@ type PasswordResetToken struct {
 	UserID string
 }
 
-func (instance PasswordResetToken) GetRequiredPermission()[]accesstoken.Permission{
+func (instance PasswordResetToken) GetRequiredPermission() []accesstoken.Permission {
 	return []accesstoken.Permission{Permission_PasswordReset}
 }

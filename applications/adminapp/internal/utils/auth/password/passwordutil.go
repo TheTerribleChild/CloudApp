@@ -1,6 +1,6 @@
 package passwordutil
 
-import(
+import (
 	"golang.org/x/crypto/bcrypt"
 )
 
