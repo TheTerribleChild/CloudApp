@@ -102,25 +102,41 @@ func(instance *TokenAuthenticationManager) decodeToAccessToken(jwtString string,
 }
 
 func (instance *TokenAuthenticationManager) authenticateAccessToken(tokenInterface interface{}) error {
-	var containsPermission []Permission
+	var providedPermissions []Permission
 	var requiredPermissions []Permission
 	if token, ok := tokenInterface.(IAccessToken); ok {
-		containsPermission = token.GetPermission()
+		providedPermissions = token.GetPermission()
 		requiredPermissions = token.GetRequiredPermission()
 	}else {
 		return status.Error(codes.Internal, "Bad access token.")
 	}
+	if !ValidateSufficientPermission(requiredPermissions, providedPermissions) {
+		return status.Error(codes.Unauthenticated, "Missing permission.")
+	}
+	return nil
+}
+
+func ValidateSufficientPermission(requiredPermissions []Permission, providedPermissions []Permission) bool {
 	permissonMap := make(map[Permission]bool)
 	for _, permission := range requiredPermissions {
 		permissonMap[permission] = false
 	}
-	for _, permission := range containsPermission {
+	for _, permission := range providedPermissions {
 		permissonMap[permission] = true
 	}
 	for _, permission := range requiredPermissions {
 		if !permissonMap[permission] {
-			return status.Error(codes.Unauthenticated, "Missing permission.")
+			return false
 		}
 	}
-	return nil
+	return true
+}
+
+func ValidateInternalPermission(providedPermissions []Permission) bool {
+	for _, permission := range providedPermissions {
+		if permission == Permission_Internal {
+			return true
+		}
+	}
+	return false
 }

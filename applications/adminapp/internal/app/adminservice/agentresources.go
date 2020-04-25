@@ -9,23 +9,26 @@ import (
 	adminvalidator "theterriblechild/CloudApp/applications/adminapp/validator"
 	commontype "theterriblechild/CloudApp/common"
 	"theterriblechild/CloudApp/common/model"
-	"theterriblechild/CloudApp/tools/authentication/accesstoken"
+	"theterriblechild/CloudApp/tools/authentication/cloudappprincipal"
 	"theterriblechild/CloudApp/tools/utils/validator"
 )
 
 type AgentResource struct {
-	agentDal     dal.IAgentDal
-	tokenManager *accesstoken.TokenAuthenticationManager
+	agentDal         dal.IAgentDal
+	principalManager *cloudappprincipal.PrincipalManager
 }
 
 func (instance *AgentResource) RegisterAgent(ctx context.Context, request *adminmodel.CreateAgentRequest) (r *adminmodel.CreateAgentResponse, err error) {
 	log.Println(request)
+	principal, _ := instance.principalManager.GetPrincipal(ctx)
 	err = validator.Validate(
 		ctx,
-		&adminvalidator.UserAccessContextValidtor{
-			TokenManager: instance.tokenManager,
-			Context:      ctx,
-			AccountId:    request.AccountId,
+		&cloudappprincipal.PrincipalValidator{
+			Principal: principal,
+		},
+		&adminvalidator.UserAccessValidtor{
+			Principal: principal,
+			AccountId: request.AccountId,
 		},
 	)
 	if err != nil {
@@ -39,12 +42,15 @@ func (instance *AgentResource) RegisterAgent(ctx context.Context, request *admin
 
 func (instance *AgentResource) ListAgents(ctx context.Context, request *adminmodel.ListAgentsRequest) (r *adminmodel.ListAgentsResponse, err error) {
 	log.Println(request)
+	principal, _ := instance.principalManager.GetPrincipal(ctx)
 	err = validator.Validate(
 		ctx,
-		&adminvalidator.UserAccessContextValidtor{
-			TokenManager: instance.tokenManager,
-			Context:      ctx,
-			AccountId:    request.AccountId,
+		&cloudappprincipal.PrincipalValidator{
+			Principal: principal,
+		},
+		&adminvalidator.UserAccessValidtor{
+			Principal: principal,
+			AccountId: request.AccountId,
 		},
 	)
 	if err != nil {
@@ -61,12 +67,15 @@ func (instance *AgentResource) ListAgents(ctx context.Context, request *adminmod
 
 func (instance *AgentResource) UpdateAgent(ctx context.Context, request *model.Agent) (r *model.Agent, err error) {
 	log.Println(request)
+	principal, _ := instance.principalManager.GetPrincipal(ctx)
 	err = validator.Validate(
 		ctx,
-		&adminvalidator.UserAccessContextValidtor{
-			TokenManager: instance.tokenManager,
-			Context:      ctx,
-			AccountId:    request.AccountId,
+		&cloudappprincipal.PrincipalValidator{
+			Principal: principal,
+		},
+		&adminvalidator.UserAccessValidtor{
+			Principal: principal,
+			AccountId: request.AccountId,
 		},
 	)
 	if err != nil {
@@ -78,12 +87,15 @@ func (instance *AgentResource) UpdateAgent(ctx context.Context, request *model.A
 
 func (instance *AgentResource) DeleteAgent(ctx context.Context, request *model.Agent) (r *commontype.Empty, err error) {
 	log.Println(request)
+	principal, _ := instance.principalManager.GetPrincipal(ctx)
 	err = validator.Validate(
 		ctx,
-		&adminvalidator.UserAccessContextValidtor{
-			TokenManager: instance.tokenManager,
-			Context:      ctx,
-			AccountId:    request.AccountId,
+		&cloudappprincipal.PrincipalValidator{
+			Principal: principal,
+		},
+		&adminvalidator.UserAccessValidtor{
+			Principal: principal,
+			AccountId: request.AccountId,
 		},
 	)
 	if err != nil {

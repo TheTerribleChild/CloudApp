@@ -9,9 +9,11 @@ import (
 	userutil "theterriblechild/CloudApp/applications/adminapp/internal/utils/user"
 	adminmodel "theterriblechild/CloudApp/applications/adminapp/model"
 	"theterriblechild/CloudApp/tools/authentication/accesstoken"
+	"theterriblechild/CloudApp/tools/authentication/cloudappprincipal"
 	cacheutil "theterriblechild/CloudApp/tools/utils/cache"
 	databaseutil "theterriblechild/CloudApp/tools/utils/database"
 	dbconfig "theterriblechild/CloudApp/tools/utils/database/databaseconfig"
+	grpcutil "theterriblechild/CloudApp/tools/utils/grpc"
 	timeutil "theterriblechild/CloudApp/tools/utils/time"
 
 	//redisutil "theterriblechild/CloudApp/tools/utils/database/redis"
@@ -89,6 +91,9 @@ func (instance *AdminServer) InitializeServer() {
 		Issuer:  "AdminApp",
 		GetTime: timeUtil.GetTimeUnix,
 	}
+	principalManager := cloudappprincipal.PrincipalManager{
+		TokenManager: &tokenManger,
+	}
 	userUtil := userutil.UserUtil{
 		UserDal:      instance.userDal,
 		TokenManager: tokenManger,
@@ -115,8 +120,8 @@ func (instance *AdminServer) InitializeServer() {
 		tokenManager: &tokenManger,
 	}
 	instance.agentResource = &AgentResource{
-		agentDal:     instance.agentDal,
-		tokenManager: &tokenManger,
+		agentDal:         instance.agentDal,
+		principalManager: &principalManager,
 	}
 
 	ctx := context.Background()
@@ -126,7 +131,7 @@ func (instance *AdminServer) InitializeServer() {
 	restURL := ":" + viper.GetString("adminServer.rest.port")
 	grpcURL := ":" + viper.GetString("adminServer.grpc.port")
 
-	mux := runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(CustomMatcher))
+	mux := runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(grpcutil.CustomMatcher))
 	opts := []grpc.DialOption{grpc.WithInsecure()}
 	if err := adminmodel.RegisterAccountServiceHandlerFromEndpoint(ctx, mux, grpcURL, opts); err != nil {
 		log.Println(err)
@@ -161,13 +166,4 @@ func (instance *AdminServer) InitializeServer() {
 	reflection.Register(s)
 	log.Println("initializing grpc")
 	s.Serve(lis)
-}
-
-func CustomMatcher(key string) (string, bool) {
-	switch key {
-	case "X-Cloudapp-Authorization":
-		return "authorization", true
-	default:
-		return runtime.DefaultHeaderMatcher(key)
-	}
 }

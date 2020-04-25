@@ -15,6 +15,10 @@ func (instance *AccessToken) SetPermission(permissions []Permission){
 	instance.Permissions = permissions
 }
 
+func (instance *AccessToken) GetRequiredPermission() []Permission {
+	return []Permission{}
+}
+
 type InternalToken struct {
 	AccessToken
 }
