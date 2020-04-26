@@ -20,6 +20,15 @@ func (instance *AgentDalImpl) CreateAgent(agent *dal.Agent) error {
 	return err
 }
 
+func (instance *AgentDalImpl) GetAgentByName(accountId string, agentName string) (agent dal.Agent, err error) {
+	sql, args, err := psql.Select("*").From(dal.AgentTable).Where("account_id = ? and name = ?", accountId, agentName).ToSql()
+	agent = dal.Agent{}
+	if err = instance.DB.Unsafe().Get(&agent, sql, args...); err != nil {
+		log.Println(err)
+	}
+	return
+}
+
 func (instance *AgentDalImpl) ListAgents(accountId string) (agents []dal.Agent, err error) {
 	sql, args, err := psql.Select("*").From(dal.AgentTable).Where("account_id = ?", accountId).ToSql()
 	if err != nil {

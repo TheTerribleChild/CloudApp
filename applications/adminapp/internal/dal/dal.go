@@ -17,7 +17,8 @@ type IAccountDal interface {
 
 type IAgentDal interface {
 	CreateAgent(agent *Agent) error
-	ListAgents(accountId string) ([]Agent, error)
+	GetAgentByName(accountId string, agentName string) (agent Agent, err error)
+	ListAgents(accountId string) (agents []Agent, err error)
 	UpdateAgent(agent *Agent) error
 	DeleteAgent(agentId string) error
 }

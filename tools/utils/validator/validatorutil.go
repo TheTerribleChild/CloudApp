@@ -5,9 +5,6 @@ import (
     "log"
 )
 
-type Validator interface {
-    Validate() error
-}
 
 func Validate(ctx context.Context, valiators ...Validator) error {
     for _, validator := range valiators {

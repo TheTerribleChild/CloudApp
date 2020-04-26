@@ -119,7 +119,6 @@ message CreateAgentResponse {
 message ListAgentsRequest {
     string account_id = 1;
     commontype.Search search = 2;
-    string auth = 3;
 }
 
 message ListAgentsResponse {

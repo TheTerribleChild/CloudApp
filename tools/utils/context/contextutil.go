@@ -131,3 +131,11 @@ func SetAgentID(ctx context.Context, agentID string) (context.Context) {
 	ctx = context.WithValue(ctx, AgentID, agentID)
 	return ctx
 }
+
+func SetAuth(ctx context.Context, auth string) (context.Context) {
+	if ctx == nil {
+		return ctx
+	}
+	ctx = context.WithValue(ctx, "authorization", auth)
+	return ctx
+}
